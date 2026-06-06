@@ -1,72 +1,132 @@
 /* ===========================================================
    screen.css
-   First screen: spotlight, the three bots, and the question banner.
-   All positions/sizes are expressed relative to the 1920 x 1080
-   stage, so they scale together with the screen.
+   First screen ("Screen 1") — replicated 1:1 from Figma.
+   Every position/size is the Figma coordinate expressed as a
+   percentage of the 1920 x 1080 stage, so the layout matches
+   the design exactly and scales as one unit.
    =========================================================== */
 
 /* ---------- Spotlight ----------
-   Full-height beam (650 x 1080) centered on the orange bot.
-   Sits above the background but behind the bots. */
+   Figma "Polygon 4": x=645 y=0 w=618 h=1103.
+   Centered on x=954 (49.69%), full-height beam, behind everything. */
 .spotlight {
     position: absolute;
     top: 0;
-    left: 50%;
+    left: 49.69%;
     transform: translateX(-50%);
-    height: 100%;
+    height: 102.13%; /* 1103 / 1080 */
     width: auto;
     z-index: 1;
     pointer-events: none;
 }
 
+/* ---------- Floor shadows & glow ----------
+   Recreated from the Figma ellipses (blurred assets) using
+   radial gradients so they stay self-contained. */
+.floor {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+/* Soft dark contact shadows under each bot */
+.floor--shadow {
+    height: 7.22%; /* 78 / 1080 */
+    background: radial-gradient(
+        ellipse at center,
+        rgba(15, 8, 4, 0.55) 0%,
+        rgba(15, 8, 4, 0.32) 45%,
+        rgba(15, 8, 4, 0) 72%
+    );
+    z-index: 2;
+}
+
+/* Ellipse 3 — under purple bot: x=209 y=898 w=335 h=78 */
+.floor--purple {
+    left: 10.885%;
+    top: 83.148%;
+    width: 17.448%;
+}
+
+/* Ellipse 4 — under white bot: x=1345 y=898 w=320 h=78 */
+.floor--white {
+    left: 70.052%;
+    top: 83.148%;
+    width: 16.667%;
+}
+
+/* Ellipse 1 — under orange bot: x=802 y=971 w=320 h=78 */
+.floor--orange {
+    left: 41.771%;
+    top: 89.907%;
+    width: 16.667%;
+}
+
+/* Ellipse 2 — warm glow pool under the orange bot:
+   x=675 y=915 w=584 h=150 */
+.floor--glow {
+    left: 35.156%;
+    top: 84.722%;
+    width: 30.417%;
+    height: 13.889%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255, 196, 128, 0.55) 0%,
+        rgba(255, 158, 74, 0.28) 45%,
+        rgba(255, 140, 60, 0) 75%
+    );
+    mix-blend-mode: screen;
+    z-index: 3;
+}
+
 /* ---------- Bots ----------
-   Shared: anchored to the floor (bottom), sized by height so the
-   aspect ratio is preserved, centered on their own left position. */
+   Sized by width (% of stage) at the exact Figma top/left.
+   The SVG intrinsic sizes match the Figma node sizes, so the
+   heights come out correct automatically. */
 .bot {
     position: absolute;
-    width: auto;
-    z-index: 2;
+    height: auto;
     cursor: pointer;
-    transform: translateX(-50%);
+    z-index: 5;
     transition: transform 0.15s ease, filter 0.15s ease;
+    transform-origin: bottom center;
 }
 
-/* Left — purple shadow bot (tall, slightly back) */
+/* Left — purple bot: x=137 y=336 w=478 */
 .bot--purple {
-    left: 18%;
-    bottom: 8.5%;
-    height: 56%;
+    left: 7.135%;
+    top: 31.111%;
+    width: 24.896%;
 }
 
-/* Center — orange bot (largest, brought forward = main focus) */
+/* Center — orange bot (focal): x=729.24 y=422 w=449.43 */
 .bot--orange {
-    left: 49.5%;
-    bottom: 5%;
-    height: 60%;
-    z-index: 3; /* in front so it reads as the focal bot */
+    left: 37.981%;
+    top: 39.074%;
+    width: 23.408%;
+    z-index: 6; /* in front of the side bots */
 }
 
-/* Right — white & blue bot (smallest, further back) */
+/* Right — white & blue bot: x=1327 y=417 w=356 */
 .bot--white-blue {
-    left: 81.5%;
-    bottom: 13%;
-    height: 46%;
+    left: 69.115%;
+    top: 38.611%;
+    width: 18.542%;
 }
 
 /* Subtle feedback for the tappable bots */
 .bot:hover {
-    transform: translateX(-50%) scale(1.03);
+    transform: scale(1.03);
 }
 
 /* ---------- Question banner ----------
-   Full-width template (1866 x 145) pinned near the top. */
+   Figma "Question_template": x=28 y=45 w=1865 h=145 */
 .question {
     position: absolute;
-    top: 2.2%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 97.2%; /* 1866 / 1920 */
-    z-index: 5;
+    left: 1.458%;
+    top: 4.167%;
+    width: 97.135%;
+    z-index: 10;
 }
 
 .question__template {
@@ -74,17 +134,19 @@
     height: auto;
 }
 
-/* Text overlaid on the cream bar, after the bot avatar on the left */
+/* Text "Tap the bot to fix its batteries."
+   Figma text node: x=179.19 y=31.62 within the template,
+   Rajdhani Bold, 45px, #4f2b0f. */
 .question__text {
     position: absolute;
-    top: 50%;
-    left: 9%; /* clears the embedded bot avatar */
-    transform: translateY(-50%);
+    left: 9.608%; /* 179.19 / 1865 */
+    top: 27.81%; /* 31.62 / 145  */
 
     margin: 0;
-    color: #3a2b1c;
+    color: #4f2b0f;
+    font-family: "Rajdhani", sans-serif;
     font-weight: 700;
-    font-size: 2cqw; /* scales with the stage width */
+    font-size: 2.344cqw; /* 45 / 1920 */
     line-height: 1;
     white-space: nowrap;
 }
