@@ -32,9 +32,7 @@
     <main class="game" id="game">
         <div class="game__screen" id="stage">
 
-            <!-- ============================================================
-                 SCREEN 1 — choose the bot
-                 ============================================================ -->
+            <!-- ===== SCREEN 1 - choose the bot ===== -->
             <section class="screen screen--1 is-active" id="screen-1" data-screen="1">
 
                 <!-- Spotlight beam focused on the center (orange) bot -->
@@ -57,21 +55,18 @@
                     src="assets/images/Sahdow_Purple_Bot.webp"
                     alt="Purple bot"
                     data-bot="purple"
-                    decoding="async"
                 />
                 <img
                     class="bot bot--orange"
                     src="assets/images/orange_bot.webp"
                     alt="Orange bot"
                     data-bot="orange"
-                    decoding="async"
                 />
                 <img
                     class="bot bot--white-blue"
                     src="assets/images/White_blue_bot.webp"
                     alt="White and blue bot"
                     data-bot="white-blue"
-                    decoding="async"
                 />
 
                 <!-- Question banner at the top -->
@@ -81,16 +76,13 @@
                         src="assets/images/Question_template.webp"
                         alt=""
                         aria-hidden="true"
-                        decoding="async"
                     />
                     <p class="question__text">Tap the bot to fix its batteries.</p>
                 </div>
 
             </section>
 
-            <!-- ============================================================
-                 SCREEN 2 — inside the bot (place the batteries)
-                 ============================================================ -->
+            <!-- ===== SCREEN 2 - inside the bot (place the batteries) ===== -->
             <section class="screen screen--2" id="screen-2" data-screen="2">
 
                 <!-- Circuit-board panel (border + slots + connectors) -->
@@ -99,22 +91,51 @@
                     src="assets/images/battery_slots.svg"
                     alt=""
                     aria-hidden="true"
-                    decoding="async"
                 />
 
+                <!-- Slot drop-zones (overlay the panel's recesses) -->
+                <div class="slot slot--big" data-slot="big" aria-hidden="true"></div>
+                <div class="slot slot--small-left" data-slot="small-left" aria-hidden="true"></div>
+                <div class="slot slot--small-right" data-slot="small-right" aria-hidden="true"></div>
+
+                <!-- Current flows through the orange connectors
+                     (paths trace the exact connector centerlines). -->
+                <svg
+                    class="charge-fx"
+                    id="charge-fx"
+                    viewBox="0 0 1920 1080"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                >
+                    <!-- Green glow that hugs the connectors once charged -->
+                    <g class="charge-glow">
+                        <path d="M 653 560 L 759 406" />
+                        <path d="M 1264 560 L 1166 405" />
+                        <path d="M 838 636 L 1093 636" />
+                    </g>
+                    <!-- Travelling current pulses -->
+                    <g class="charge-flow">
+                        <path d="M 653 560 L 759 406" />
+                        <path d="M 1264 560 L 1166 405" />
+                        <path d="M 838 636 L 1093 636" />
+                    </g>
+                </svg>
+
                 <!-- Battery trays at the bottom -->
-                <img
-                    class="tray tray--blue"
-                    src="assets/images/Blue_tray.svg"
-                    alt="Blue batteries tray"
-                    decoding="async"
-                />
-                <img
-                    class="tray tray--yellow"
-                    src="assets/images/Yellow_tray.svg"
-                    alt="Yellow batteries tray"
-                    decoding="async"
-                />
+                <div class="tray tray--blue">
+                    <div class="tray__inner"></div>
+                    <div class="tray__deco tray__deco--top"><i></i><i></i><i></i></div>
+                    <div class="tray__deco tray__deco--bottom"><i></i><i></i><i></i></div>
+                    <div class="tray__deco tray__deco--left"><i></i><i></i><i></i></div>
+                    <div class="tray__deco tray__deco--right"><i></i><i></i><i></i></div>
+                </div>
+                <div class="tray tray--yellow">
+                    <div class="tray__inner"></div>
+                    <div class="tray__deco tray__deco--top"><i></i><i></i><i></i></div>
+                    <div class="tray__deco tray__deco--bottom"><i></i><i></i><i></i></div>
+                    <div class="tray__deco tray__deco--left"><i></i><i></i><i></i></div>
+                    <div class="tray__deco tray__deco--right"><i></i><i></i><i></i></div>
+                </div>
 
                 <!-- Mascot avatar tab (top-left) -->
                 <img
@@ -122,8 +143,9 @@
                     src="assets/images/screen2_avatar.png"
                     alt=""
                     aria-hidden="true"
-                    decoding="async"
                 />
+
+                <!-- Batteries are injected here by js/batteries.js -->
 
             </section>
 
@@ -132,6 +154,7 @@
 
     <!-- Scripts -->
     <script src="js/navigation.js" defer></script>
+    <script src="js/batteries.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 </html>

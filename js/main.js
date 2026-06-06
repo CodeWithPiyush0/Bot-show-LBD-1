@@ -29,6 +29,12 @@
             }
         });
 
+        // Deep-link: "#2" / "#screen-2" opens Screen 2 directly.
+        const hash = window.location.hash.replace("#", "");
+        if (hash === "2" || hash === "screen-2") {
+            window.GameNav.show("screen-2");
+        }
+
         console.log("Bot Show: ready.");
     }
 
