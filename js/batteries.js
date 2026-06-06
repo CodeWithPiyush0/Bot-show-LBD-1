@@ -52,7 +52,10 @@
 
     let stage = null;
     let chargeFx = null;
+    let bigGlow = null;
     let charged = false;
+    let enabled = true; // dragging is gated off during the Screen 2 intro
+    let contentEl = null;
     const slotEls = {};
     const slotOccupant = {};
 
@@ -88,7 +91,7 @@
             group.style.top = pctY(g.cy);
             setTransform(group, 1);
 
-            screen.appendChild(group);
+            (contentEl || screen).appendChild(group);
             attachDrag(group);
         });
     }
@@ -150,9 +153,87 @@
 
         // 3) top slot glows green, current settles to green
         global.setTimeout(function () {
-            if (slotEls.big) slotEls.big.classList.add("is-charged");
+            if (bigGlow) bigGlow.classList.add("is-charged");
             if (chargeFx) chargeFx.classList.add("is-green");
         }, 1400);
+    }
+
+    /* ---- ghost hint: demonstrate the drag a few times ---- */
+    function buildGhost(color, count, cx, cy) {
+        const g = document.createElement("div");
+        g.className = "battery-group battery-group--" + color + " is-ghost";
+        for (let i = 0; i < count; i++) {
+            const bat = document.createElement("img");
+            bat.className = "battery battery--" + color;
+            bat.src = "assets/images/" + color + "_battery.png";
+            bat.alt = "";
+            bat.draggable = false;
+            g.appendChild(bat);
+        }
+        g.style.left = pctX(cx);
+        g.style.top = pctY(cy);
+        setTransform(g, 1);
+        return g;
+    }
+
+    function playHint() {
+        if (!contentEl || charged) {
+            enabled = true;
+            return;
+        }
+        enabled = false;
+        const fromX = GROUPS[0].cx; // blue tray centre
+        const fromY = GROUPS[0].cy;
+        const slot = SLOTS["small-left"];
+        const toX = slot.x + slot.w / 2;
+        const toY = slot.y + slot.h / 2;
+
+        const ghost = buildGhost("blue", GROUPS[0].count, fromX, fromY);
+        contentEl.appendChild(ghost);
+
+        const MOVE = 1000;
+        const HOLD = 250;
+        const FADE = 300;
+        const GAP = 250;
+        const CYCLE = MOVE + HOLD + FADE + GAP;
+        let n = 0;
+
+        function cycle() {
+            if (n >= 3) {
+                ghost.remove();
+                enabled = true;
+                return;
+            }
+            n += 1;
+
+            // reset to the tray (no transition)
+            ghost.style.transition = "none";
+            ghost.style.left = pctX(fromX);
+            ghost.style.top = pctY(fromY);
+            setTransform(ghost, 1);
+            ghost.style.opacity = "0";
+            void ghost.offsetWidth; // force reflow so the reset applies
+
+            // fade in and glide to the slot
+            ghost.style.transition =
+                "left " + MOVE + "ms ease, top " + MOVE + "ms ease, transform " +
+                MOVE + "ms ease, opacity 250ms ease";
+            window.requestAnimationFrame(function () {
+                ghost.style.opacity = "0.75";
+                ghost.style.left = pctX(toX);
+                ghost.style.top = pctY(toY);
+                setTransform(ghost, PLACED_SCALE);
+            });
+
+            // fade out at the slot
+            window.setTimeout(function () {
+                ghost.style.transition = "opacity " + FADE + "ms ease";
+                ghost.style.opacity = "0";
+            }, MOVE + HOLD);
+
+            window.setTimeout(cycle, CYCLE);
+        }
+        cycle();
     }
 
     function slotAtPoint(clientX, clientY) {
@@ -188,7 +269,7 @@
         let dragging = false;
 
         group.addEventListener("pointerdown", (e) => {
-            if (charged) return; // locked after charging
+            if (charged || !enabled) return; // locked after charging / during intro
             e.preventDefault();
             dragging = true;
             stageRect = stage.getBoundingClientRect();
@@ -237,6 +318,8 @@
         if (!stage || !screen) return;
 
         chargeFx = document.getElementById("charge-fx");
+        contentEl = document.getElementById("s2-content");
+        bigGlow = document.querySelector(".slot-glow--big");
 
         document.querySelectorAll("#screen-2 .slot").forEach((el) => {
             const id = el.dataset.slot;
@@ -247,6 +330,12 @@
         createGroups(screen);
     }
 
-    global.Batteries = { init };
+    global.Batteries = {
+        init: init,
+        setEnabled: function (v) {
+            enabled = !!v;
+        },
+        playHint: playHint,
+    };
     document.addEventListener("DOMContentLoaded", init);
 })(window);

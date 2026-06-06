@@ -77,6 +77,16 @@
                         alt=""
                         aria-hidden="true"
                     />
+                    <video
+                        class="question__avatar"
+                        src="assets/videos/bite_talking.mp4"
+                        muted
+                        loop
+                        autoplay
+                        playsinline
+                        preload="auto"
+                        aria-hidden="true"
+                    ></video>
                     <p class="question__text" data-text="Tap the bot to fix its batteries."></p>
                 </div>
 
@@ -85,67 +95,97 @@
             <!-- ===== SCREEN 2 - inside the bot (place the batteries) ===== -->
             <section class="screen screen--2" id="screen-2" data-screen="2">
 
-                <!-- Circuit-board panel (border + slots + connectors) -->
-                <img
-                    class="panel"
-                    src="assets/images/battery_slots.svg"
-                    alt=""
-                    aria-hidden="true"
-                />
+                <!-- Gameplay content. Scaled down slightly while the
+                     question banner is open, then back to normal. -->
+                <div class="s2-content is-compact" id="s2-content">
 
-                <!-- Slot drop-zones (overlay the panel's recesses) -->
-                <div class="slot slot--big" data-slot="big" aria-hidden="true"></div>
-                <div class="slot slot--small-left" data-slot="small-left" aria-hidden="true"></div>
-                <div class="slot slot--small-right" data-slot="small-right" aria-hidden="true"></div>
+                    <!-- Circuit-board panel (border + slots + connectors) -->
+                    <img
+                        class="panel"
+                        src="assets/images/battery_slots.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
 
-                <!-- Current flows through the orange connectors
-                     (paths trace the exact connector centerlines). -->
-                <svg
-                    class="charge-fx"
-                    id="charge-fx"
-                    viewBox="0 0 1920 1080"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                >
-                    <!-- Green glow that hugs the connectors once charged -->
-                    <g class="charge-glow">
-                        <path d="M 653 560 L 759 406" />
-                        <path d="M 1264 560 L 1166 405" />
-                        <path d="M 838 636 L 1093 636" />
-                    </g>
-                    <!-- Travelling current pulses -->
-                    <g class="charge-flow">
-                        <path d="M 653 560 L 759 406" />
-                        <path d="M 1264 560 L 1166 405" />
-                        <path d="M 838 636 L 1093 636" />
-                    </g>
-                </svg>
+                    <!-- Green glow overlay for the charged top slot.
+                         Uses the standalone slot art so the glow hugs
+                         its exact rounded shape. -->
+                    <img
+                        class="slot-glow slot-glow--big"
+                        src="assets/images/Bigger_Slot.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
 
-                <!-- Battery trays at the bottom -->
-                <div class="tray tray--blue">
-                    <div class="tray__inner"></div>
-                    <div class="tray__deco tray__deco--top"><i></i><i></i><i></i></div>
-                    <div class="tray__deco tray__deco--bottom"><i></i><i></i><i></i></div>
-                    <div class="tray__deco tray__deco--left"><i></i><i></i><i></i></div>
-                    <div class="tray__deco tray__deco--right"><i></i><i></i><i></i></div>
+                    <!-- Slot drop-zones (overlay the panel's recesses) -->
+                    <div class="slot slot--big" data-slot="big" aria-hidden="true"></div>
+                    <div class="slot slot--small-left" data-slot="small-left" aria-hidden="true"></div>
+                    <div class="slot slot--small-right" data-slot="small-right" aria-hidden="true"></div>
+
+                    <!-- Current flows through the orange connectors
+                         (paths trace the exact connector centerlines). -->
+                    <svg
+                        class="charge-fx"
+                        id="charge-fx"
+                        viewBox="0 0 1920 1080"
+                        preserveAspectRatio="none"
+                        aria-hidden="true"
+                    >
+                        <!-- Green glow that hugs the connectors once charged -->
+                        <g class="charge-glow">
+                            <path d="M 653 560 L 759 406" />
+                            <path d="M 1264 560 L 1166 405" />
+                            <path d="M 838 636 L 1093 636" />
+                        </g>
+                        <!-- Travelling current pulses -->
+                        <g class="charge-flow">
+                            <path d="M 653 560 L 759 406" />
+                            <path d="M 1264 560 L 1166 405" />
+                            <path d="M 838 636 L 1093 636" />
+                        </g>
+                    </svg>
+
+                    <!-- Battery trays at the bottom -->
+                    <div class="tray tray--blue">
+                        <div class="tray__inner"></div>
+                        <div class="tray__deco tray__deco--top"><i></i><i></i><i></i></div>
+                        <div class="tray__deco tray__deco--bottom"><i></i><i></i><i></i></div>
+                        <div class="tray__deco tray__deco--left"><i></i><i></i><i></i></div>
+                        <div class="tray__deco tray__deco--right"><i></i><i></i><i></i></div>
+                    </div>
+                    <div class="tray tray--yellow">
+                        <div class="tray__inner"></div>
+                        <div class="tray__deco tray__deco--top"><i></i><i></i><i></i></div>
+                        <div class="tray__deco tray__deco--bottom"><i></i><i></i><i></i></div>
+                        <div class="tray__deco tray__deco--left"><i></i><i></i><i></i></div>
+                        <div class="tray__deco tray__deco--right"><i></i><i></i><i></i></div>
+                    </div>
+
+                    <!-- Batteries are injected here by js/batteries.js -->
+
                 </div>
-                <div class="tray tray--yellow">
-                    <div class="tray__inner"></div>
-                    <div class="tray__deco tray__deco--top"><i></i><i></i><i></i></div>
-                    <div class="tray__deco tray__deco--bottom"><i></i><i></i><i></i></div>
-                    <div class="tray__deco tray__deco--left"><i></i><i></i><i></i></div>
-                    <div class="tray__deco tray__deco--right"><i></i><i></i><i></i></div>
+
+                <!-- Question banner: opens on entry, types the prompt,
+                     holds, then closes back to just the mascot face. -->
+                <div class="question" id="question-2">
+                    <img
+                        class="question__template"
+                        src="assets/images/Question_template.webp"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <video
+                        class="question__avatar"
+                        src="assets/videos/bite_talking.mp4"
+                        muted
+                        loop
+                        autoplay
+                        playsinline
+                        preload="auto"
+                        aria-hidden="true"
+                    ></video>
+                    <p class="question__text" data-text="Drag the batteries in a small slots."></p>
                 </div>
-
-                <!-- Mascot avatar tab (top-left) -->
-                <img
-                    class="avatar"
-                    src="assets/images/screen2_avatar.png"
-                    alt=""
-                    aria-hidden="true"
-                />
-
-                <!-- Batteries are injected here by js/batteries.js -->
 
             </section>
 

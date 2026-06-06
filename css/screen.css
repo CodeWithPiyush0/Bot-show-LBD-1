@@ -127,10 +127,38 @@
     top: 4.167%;
     width: 97.135%;
     z-index: 10;
+}
 
-    /* Intro: the banner pops in from the left (where the mascot is) */
+.question__template {
+    width: 100%;
+    height: auto;
+}
+
+/* Talking mascot video overlaid on the template's avatar face.
+   Sits inside the badge frame; the template image provides the
+   surrounding border. */
+.question__avatar {
+    position: absolute;
+    left: 0.8%;
+    top: 9%;
+    width: 7.2%;
+    height: 77%;
+    object-fit: cover;
+    object-position: center 32%;
+    border-radius: 0.9cqw;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Screen 1 intro (scoped — Screen 2 drives its own open/close).
+   The banner pops in from the left (mascot), then unrolls open. */
+.screen--1 .question {
     transform-origin: left center;
     animation: questionPop 0.35s ease both;
+}
+
+.screen--1 .question__template {
+    animation: templateUnroll 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
 }
 
 @keyframes questionPop {
@@ -142,15 +170,6 @@
         opacity: 1;
         transform: scale(1);
     }
-}
-
-.question__template {
-    width: 100%;
-    height: auto;
-
-    /* Intro: start showing only the mascot tab, then unroll open
-       to the right to reveal the full template. */
-    animation: templateUnroll 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
 }
 
 @keyframes templateUnroll {

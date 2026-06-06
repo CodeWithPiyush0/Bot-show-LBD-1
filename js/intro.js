@@ -10,11 +10,14 @@
 
     const TYPE_SPEED = 45; // ms per character
 
-    function typewriter(el, text, speed) {
+    function typewriter(el, text, speed, onDone) {
         el.textContent = "";
         let i = 0;
         (function tick() {
-            if (i >= text.length) return;
+            if (i >= text.length) {
+                if (onDone) onDone();
+                return;
+            }
             el.textContent += text.charAt(i);
             i += 1;
             window.setTimeout(tick, speed);
@@ -47,4 +50,51 @@
     }
 
     document.addEventListener("DOMContentLoaded", runIntro);
+
+    /* ---- Screen 2 intro ----
+       Opens the banner, types the prompt, holds (placeholder for the
+       VO), then closes back to just the mascot face. The gameplay
+       content is kept compact while the banner is open. */
+    const HOLD_AFTER_TEXT = 3500; // ms to wait after typing (VO placeholder)
+
+    function playScreen2Intro() {
+        const content = document.getElementById("s2-content");
+        const q = document.getElementById("question-2");
+        if (!q) return;
+        const textEl = q.querySelector(".question__text");
+        const full = textEl.getAttribute("data-text") || "";
+
+        // Lock dragging and start compact + closed.
+        if (window.Batteries) window.Batteries.setEnabled(false);
+        if (content) content.classList.add("is-compact");
+        q.classList.remove("is-open");
+        textEl.textContent = "";
+
+        // Open the banner, then type once it has unrolled.
+        window.setTimeout(function () {
+            q.classList.add("is-open");
+            window.setTimeout(function () {
+                typewriter(textEl, full, TYPE_SPEED, function () {
+                    window.setTimeout(closeScreen2Intro, HOLD_AFTER_TEXT);
+                });
+            }, 650); // after the unroll transition
+        }, 150);
+
+        function closeScreen2Intro() {
+            q.classList.remove("is-open"); // collapse to the mascot face
+            textEl.textContent = "";
+            if (content) content.classList.remove("is-compact"); // grow to normal
+            // After it has grown back, demonstrate the drag with a ghost
+            // (3 times), then enable dragging.
+            window.setTimeout(function () {
+                if (window.Batteries && window.Batteries.playHint) {
+                    window.Batteries.playHint();
+                } else if (window.Batteries) {
+                    window.Batteries.setEnabled(true);
+                }
+            }, 600);
+        }
+    }
+
+    window.Screen2Intro = { play: playScreen2Intro };
 })();

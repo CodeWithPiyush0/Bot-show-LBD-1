@@ -58,24 +58,34 @@
         0 0 1.5cqw rgba(255, 168, 64, 0.5);
 }
 
-/* Top slot glows green once charged */
-.slot--big.is-charged {
-    background: radial-gradient(
-        ellipse at center,
-        rgba(70, 255, 140, 0.18),
-        rgba(70, 255, 140, 0.04)
-    );
-    animation: greenPulse 1.4s ease-in-out infinite alternate;
+/* Top slot charged glow.
+   Overlays the standalone slot art (matches the panel's big slot)
+   and casts a green drop-shadow that follows the slot's exact
+   rounded shape. The glow pulses by fading the overlay's opacity,
+   so the underlying orange slot stays put (smooth, no box-shadow). */
+.slot-glow--big {
+    position: absolute;
+    left: 36.354%; /* 698 / 1920 */
+    top: 11.667%; /* 126 / 1080 */
+    width: 27.891%; /* 535.5 / 1920 */
+    height: auto;
+    z-index: 6; /* above the panel/slots, below the batteries */
+    pointer-events: none;
+    opacity: 0;
+    filter: drop-shadow(0 0 0.9cqw rgba(70, 255, 140, 0.95))
+        drop-shadow(0 0 2cqw rgba(70, 255, 140, 0.65));
 }
 
-@keyframes greenPulse {
+.slot-glow--big.is-charged {
+    animation: slotGlowPulse 1.3s ease-in-out infinite alternate;
+}
+
+@keyframes slotGlowPulse {
     from {
-        box-shadow: inset 0 0 1.6cqw rgba(70, 255, 140, 0.45),
-            0 0 1.6cqw rgba(70, 255, 140, 0.45);
+        opacity: 0.45;
     }
     to {
-        box-shadow: inset 0 0 3.2cqw rgba(70, 255, 140, 0.75),
-            0 0 3.2cqw rgba(70, 255, 140, 0.85);
+        opacity: 1;
     }
 }
 
@@ -272,12 +282,38 @@
     -webkit-user-drag: none;
 }
 
-/* ---------- Mascot avatar tab ---------- */
-.avatar {
+/* Ghost group used for the drag hint */
+.battery-group.is-ghost {
+    pointer-events: none;
+    z-index: 90;
+    opacity: 0;
+    filter: drop-shadow(0 0 0.6cqw rgba(120, 200, 255, 0.7));
+}
+
+/* ---------- Gameplay content wrapper ----------
+   Holds the panel, slots, connectors and trays. Scaled down a touch
+   while the question banner is open, then grows back to normal. */
+.s2-content {
     position: absolute;
-    left: 1.458%;
-    top: 4.167%;
-    width: 8.854%;
-    height: auto;
-    z-index: 5;
+    inset: 0;
+    transform-origin: 50% 50%;
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* While the banner is open: shrink a touch AND shift down, so the
+   panel clears the banner with a gap above it. */
+.s2-content.is-compact {
+    transform: translateY(10%) scale(0.85);
+}
+
+/* ---------- Question banner (Screen 2) ----------
+   Reuses the cream template. Starts closed (mascot only); JS toggles
+   `.is-open` to unroll it and types the prompt, then closes it. */
+.screen--2 .question__template {
+    clip-path: inset(0 91.2% 0 0); /* closed: only the mascot face */
+    transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.screen--2 .question.is-open .question__template {
+    clip-path: inset(0 0 0 0); /* open: full banner */
 }

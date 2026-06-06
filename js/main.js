@@ -31,10 +31,11 @@
                 if (screen2) screen2.classList.add("is-entering");
             }, 380);
 
-            // Clean up once Screen 2 has fully settled.
+            // Clean up once Screen 2 has fully settled, then play its intro.
             window.setTimeout(function () {
                 if (screen2) screen2.classList.remove("is-entering");
                 screen1.classList.remove("is-zooming");
+                if (window.Screen2Intro) window.Screen2Intro.play();
             }, 1200);
         }
 
@@ -53,6 +54,7 @@
         const hash = window.location.hash.replace("#", "");
         if (hash === "2" || hash === "screen-2") {
             window.GameNav.show("screen-2");
+            if (window.Screen2Intro) window.Screen2Intro.play();
         }
 
         console.log("Bot Show: ready.");
