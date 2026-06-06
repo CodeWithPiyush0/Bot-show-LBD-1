@@ -96,5 +96,21 @@
         }
     }
 
-    window.Screen2Intro = { play: playScreen2Intro };
+    /* Open the Screen 2 banner and type an arbitrary message, leaving
+       it open (used for the "fully charged" finale). */
+    function showScreen2Message(text) {
+        const q = document.getElementById("question-2");
+        if (!q) return;
+        const textEl = q.querySelector(".question__text");
+        textEl.textContent = "";
+        q.classList.add("is-open");
+        window.setTimeout(function () {
+            typewriter(textEl, text, TYPE_SPEED);
+        }, 650); // after the unroll transition
+    }
+
+    window.Screen2Intro = {
+        play: playScreen2Intro,
+        showMessage: showScreen2Message,
+    };
 })();

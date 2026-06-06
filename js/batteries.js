@@ -72,7 +72,7 @@
         GROUPS.forEach((g) => {
             // Create a permanent 20% opacity ghost in the tray
             const ghostGroup = document.createElement("div");
-            ghostGroup.className = "battery-group battery-group--" + g.color;
+            ghostGroup.className = "battery-group battery-group--" + g.color + " tray-ghost";
             ghostGroup.style.opacity = "0.2";
             ghostGroup.style.pointerEvents = "none";
             ghostGroup.style.zIndex = "5";
@@ -254,6 +254,41 @@
             const panelBig = document.querySelector(".panel--big");
             if (panelBig) panelBig.classList.add("is-green");
         }, 2000);
+
+        // 4) finale: trays slide away, the board moves down to fill the
+        //    gap, and the banner announces the bot is fully charged.
+        global.setTimeout(fullyCharged, 3600);
+    }
+
+    /* ---- finale: bot fully charged ---- */
+    function fullyCharged() {
+        // Fade out the trays and their placeholder ghosts.
+        const fadeOut = document.querySelectorAll(
+            "#s2-content .tray, #s2-content .tray-ghost"
+        );
+        fadeOut.forEach(function (el) {
+            el.style.transition = "opacity 0.5s ease";
+            el.style.opacity = "0";
+            el.style.pointerEvents = "none";
+        });
+        // Once faded, fully hide them so nothing lingers.
+        global.setTimeout(function () {
+            fadeOut.forEach(function (el) {
+                el.style.display = "none";
+            });
+        }, 550);
+
+        // Slide the whole board down to fill the bottom gap.
+        global.setTimeout(function () {
+            if (contentEl) contentEl.classList.add("is-charged-final");
+        }, 250);
+
+        // Once it has settled, open the banner with the message.
+        global.setTimeout(function () {
+            if (window.Screen2Intro && window.Screen2Intro.showMessage) {
+                window.Screen2Intro.showMessage("The bot is fully charged.");
+            }
+        }, 900);
     }
 
     /* ---- ghost hint: demonstrate the drag a few times ---- */

@@ -334,6 +334,12 @@
     transform: translateY(10%) scale(0.85);
 }
 
+/* Finale (bot fully charged): the trays are gone, so the board slides
+   down to fill the bottom and leave room for the banner up top. */
+.s2-content.is-charged-final {
+    transform: translateY(15%);
+}
+
 /* ---------- Question banner (Screen 2) ----------
    Reuses the cream template. Starts closed (mascot only); JS toggles
    `.is-open` to unroll it and types the prompt, then closes it. */

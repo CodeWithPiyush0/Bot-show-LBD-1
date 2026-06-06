@@ -214,6 +214,21 @@ Background = dark radial gradient. Structure:
   underneath stays put. (This replaced an earlier boxy box-shadow that looked bad.)
 - After charging, dragging is locked (`charged = true`).
 
+### "Fully charged" finale (`fullyCharged()` in `batteries.js`, ~3.6s after charge starts)
+Once the batteries are in the big slot and it's glowing green, the finale plays
+(all animated, sequenced):
+1. **Battery trays + their placeholder ghosts fade out** (`.tray`, `.tray-ghost`),
+   then are `display:none`'d so nothing lingers.
+2. **The board slides down** to fill the now-empty bottom — `.s2-content.is-charged-final`
+   = `transform: translateY(15%)` (everything moves together, stays aligned).
+3. **The banner re-opens** and types **"The bot is fully charged."** via
+   `Screen2Intro.showMessage(text)` (opens, types, stays open).
+> NOTE: the codebase has user edits around the charge sequence — e.g. the panel
+> turns green via `.panel.is-green { filter: hue-rotate(110deg) }`, batteries do a
+> FLIP-style travel into the big slot with low-opacity ghost trails, and there are
+> `.panel--small-left/right/big` clip overlays. The `.tray-ghost` class on the
+> permanent 20%-opacity tray placeholders is what the finale fades out.
+
 ### Screen 2 intro flow (the full on-enter sequence)
 zoom inside → `.s2-content.is-compact` (content shrinks **and shifts down** so the
 banner has a clear gap above the panel: `transform: translateY(10%) scale(0.85)`) →
@@ -257,6 +272,7 @@ Batteries.init()                        // auto-runs on DOMContentLoaded
 Batteries.setEnabled(bool)              // gate drag interaction
 Batteries.playHint()                    // run the 3× ghost drag demo, then enable
 Screen2Intro.play()                     // open banner → type → hold → close → hint
+Screen2Intro.showMessage(text)          // open banner, type `text`, leave open (finale message)
 ```
 
 Key tunables:
@@ -303,7 +319,8 @@ Convert to CSS: `left% = x/1920*100`, `top% = y/1080*100`, `width% = w/1920*100`
 
 - **VO:** swap `HOLD_AFTER_TEXT` (3500ms) for the voice-over audio's `ended` event
   when audio is provided, so banners stay open exactly as long as the VO.
-- **After charging:** nothing happens yet — decide on a success state / next screen.
+- **After charging:** the "fully charged" finale now plays (trays out, board slides
+  down, banner says "The bot is fully charged."). Could chain to a next screen from here.
 - **Ghost hint** currently only demos blue→small-left; could also demo yellow→small-right.
 - **Bottom slots** don't get the green SVG glow (only the top slot does) — by request,
   but could be extended.
