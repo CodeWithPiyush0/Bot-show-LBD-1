@@ -51,7 +51,10 @@
 
 /* ---------- Screens ----------
    Each screen fills the stage and is stacked. Only the active one
-   is visible; switching fades between them. */
+   is visible; switching fades between them.
+   Inactive screens stay painted (opacity 0, not visibility:hidden)
+   so they are already rasterized before a transition — this avoids
+   a paint stall the moment a screen is shown. */
 .screen {
     position: absolute;
     inset: 0;
@@ -59,16 +62,14 @@
     height: 100%;
 
     opacity: 0;
-    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+    transition: opacity 0.35s ease;
+    backface-visibility: hidden;
 }
 
 .screen.is-active {
     opacity: 1;
-    visibility: visible;
     pointer-events: auto;
-    transition: opacity 0.35s ease;
 }
 
 /* Per-screen backgrounds */
@@ -82,4 +83,52 @@
 .screen--2 {
     /* Inside of the bot — dark interior */
     background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+}
+
+/* ---------- Transition: zoom into the orange bot's chest ----------
+   Both screens zoom about the SAME point (the chest battery icon).
+   Screen 2 begins at the exact scale Screen 1 has reached at the
+   hand-off (~2x), so the crossfade is seamless: the camera keeps
+   flying in while the bot dissolves into the interior, which then
+   settles to rest. Only transform/opacity animate (GPU-composited,
+   no blur, modest scale) so there is no rasterization hitch. */
+.screen--1.is-zooming {
+    transform-origin: 49.6% 73%; /* the chest battery icon */
+    animation: zoomIntoBot 0.75s cubic-bezier(0.42, 0, 1, 1) forwards;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+@keyframes zoomIntoBot {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    60% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4.2);
+        opacity: 0;
+    }
+}
+
+.screen--2.is-entering {
+    transform-origin: 49.6% 73%; /* same focal point as the zoom */
+    animation: enterInsideBot 0.72s cubic-bezier(0, 0, 0.2, 1);
+    will-change: transform, opacity;
+}
+
+@keyframes enterInsideBot {
+    0% {
+        transform: scale(2);
+        opacity: 0;
+    }
+    40% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
