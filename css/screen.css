@@ -1,0 +1,90 @@
+/* ===========================================================
+   screen.css
+   First screen: spotlight, the three bots, and the question banner.
+   All positions/sizes are expressed relative to the 1920 x 1080
+   stage, so they scale together with the screen.
+   =========================================================== */
+
+/* ---------- Spotlight ----------
+   Full-height beam (650 x 1080) centered on the orange bot.
+   Sits above the background but behind the bots. */
+.spotlight {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: auto;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ---------- Bots ----------
+   Shared: anchored to the floor (bottom), sized by height so the
+   aspect ratio is preserved, centered on their own left position. */
+.bot {
+    position: absolute;
+    width: auto;
+    z-index: 2;
+    cursor: pointer;
+    transform: translateX(-50%);
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+/* Left — purple shadow bot (tall, slightly back) */
+.bot--purple {
+    left: 18%;
+    bottom: 8.5%;
+    height: 56%;
+}
+
+/* Center — orange bot (largest, brought forward = main focus) */
+.bot--orange {
+    left: 49.5%;
+    bottom: 5%;
+    height: 60%;
+    z-index: 3; /* in front so it reads as the focal bot */
+}
+
+/* Right — white & blue bot (smallest, further back) */
+.bot--white-blue {
+    left: 81.5%;
+    bottom: 13%;
+    height: 46%;
+}
+
+/* Subtle feedback for the tappable bots */
+.bot:hover {
+    transform: translateX(-50%) scale(1.03);
+}
+
+/* ---------- Question banner ----------
+   Full-width template (1866 x 145) pinned near the top. */
+.question {
+    position: absolute;
+    top: 2.2%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 97.2%; /* 1866 / 1920 */
+    z-index: 5;
+}
+
+.question__template {
+    width: 100%;
+    height: auto;
+}
+
+/* Text overlaid on the cream bar, after the bot avatar on the left */
+.question__text {
+    position: absolute;
+    top: 50%;
+    left: 9%; /* clears the embedded bot avatar */
+    transform: translateY(-50%);
+
+    margin: 0;
+    color: #3a2b1c;
+    font-weight: 700;
+    font-size: 2cqw; /* scales with the stage width */
+    line-height: 1;
+    white-space: nowrap;
+}

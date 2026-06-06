@@ -1,0 +1,54 @@
+/* ===========================================================
+   main.css
+   Core layout & the game background screen
+   =========================================================== */
+
+:root {
+    /* Reference design frame (Figma): 1920 x 1080 (16:9) */
+    --design-width: 1920;
+    --design-height: 1080;
+
+    /* Background asset */
+    --bg-image: url("../assets/images/BG.png");
+
+    /* Letterbox fill — sampled from the BG.png left/right edges */
+    --letterbox-color: #5a3624;
+}
+
+/* Outer wrapper fills the viewport and centers the 16:9 stage.
+   Any space left/right (or top/bottom) is filled with the
+   background's edge color instead of black. */
+.game {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* respects mobile browser chrome where supported */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--letterbox-color);
+    overflow: hidden;
+}
+
+/* The game stage: a fixed 16:9 box scaled to the largest size
+   that fits the viewport. All game elements live inside it and
+   are positioned relative to the 1920 x 1080 design frame. */
+.game__screen {
+    position: relative;
+    aspect-ratio: var(--design-width) / var(--design-height);
+
+    /* Largest 16:9 box that fits the viewport:
+       limited by width on tall screens, by height on wide screens. */
+    width: min(100vw, calc(100dvh * var(--design-width) / var(--design-height)));
+    max-height: 100dvh;
+
+    background-image: var(--bg-image);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+
+    /* Make this the sizing container so child elements can scale with
+       the stage using container-query units (cqw/cqh) — keeps the whole
+       screen responsive as a single unit. */
+    container-type: size;
+    container-name: stage;
+}
