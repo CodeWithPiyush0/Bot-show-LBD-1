@@ -16,6 +16,31 @@
     width: 95.539%;
     height: auto;
     z-index: 1;
+    transition: filter 0.4s ease;
+}
+
+.panel.is-green {
+    filter: hue-rotate(110deg);
+}
+
+.panel--small-left {
+    clip-path: inset(65% 56% 13% 19.5%);
+    z-index: 5;
+}
+
+.panel--small-right {
+    clip-path: inset(65% 19% 13% 56.5%);
+    z-index: 5;
+}
+
+.panel--big {
+    clip-path: inset(10% 34% 52% 35%);
+    z-index: 5;
+    transition: filter 0.4s ease;
+}
+
+.panel--big.is-green {
+    filter: hue-rotate(110deg);
 }
 
 /* ---------- Slot drop-zones ----------
@@ -33,7 +58,10 @@
     top: 11.667%;
     width: 27.891%;
     height: 26.343%;
+    border-radius: 1.77cqw;
 }
+
+
 
 /* Small left — Figma 163:341: x=411 y=556 w=431 h=163 */
 .slot--small-left {

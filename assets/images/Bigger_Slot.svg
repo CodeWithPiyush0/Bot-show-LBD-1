@@ -4,7 +4,7 @@
 <rect x="7" y="7" width="521" height="270" rx="44" stroke="#5F5E5E" stroke-width="12"/>
 <rect x="19" y="19" width="497" height="246" rx="34" fill="#D9D9D9"/>
 <rect x="19" y="19" width="497" height="246" rx="34" fill="url(#paint1_radial_163_223)"/>
-<rect x="19" y="19" width="497" height="246" rx="34" stroke="#FF8A00" stroke-width="4"/>
+<rect x="19" y="19" width="497" height="246" rx="34" stroke="#46FF8C" stroke-width="4"/>
 <g filter="url(#filter1_i_163_223)">
 <path d="M214.5 0H319.75L338.25 21.5H196L214.5 0Z" fill="#696968"/>
 </g>
@@ -16,9 +16,9 @@
 <g filter="url(#filter3_i_163_223)">
 <path d="M234.854 6L299.552 5.5L303 9.75L297.321 16H237.287L231 9.75L234.854 6Z" fill="#312F2A"/>
 </g>
-<rect x="242.25" y="8.5" width="15" height="5" rx="1" fill="#FF8A00"/>
-<rect x="260.25" y="8.5" width="14.5" height="5" rx="1" fill="#FF8A00"/>
-<rect x="277.75" y="8.5" width="15" height="5" rx="1" fill="#FF8A00"/>
+<rect x="242.25" y="8.5" width="15" height="5" rx="1" fill="#46FF8C"/>
+<rect x="260.25" y="8.5" width="14.5" height="5" rx="1" fill="#46FF8C"/>
+<rect x="277.75" y="8.5" width="15" height="5" rx="1" fill="#46FF8C"/>
 <g filter="url(#filter4_i_163_223)">
 <circle cx="317.75" cy="9.75" r="2.25" fill="#D9D9D9"/>
 </g>
@@ -38,9 +38,9 @@
 <g filter="url(#filter8_i_163_223)">
 <path d="M234.854 278.5L299.552 279L303 274.75L297.321 268.5H237.287L231 274.75L234.854 278.5Z" fill="#312F2A"/>
 </g>
-<rect width="15" height="5" rx="1" transform="matrix(1 0 0 -1 242.25 276)" fill="#FF8A00"/>
-<rect width="14.5" height="5" rx="1" transform="matrix(1 0 0 -1 260.25 276)" fill="#FF8A00"/>
-<rect width="15" height="5" rx="1" transform="matrix(1 0 0 -1 277.75 276)" fill="#FF8A00"/>
+<rect width="15" height="5" rx="1" transform="matrix(1 0 0 -1 242.25 276)" fill="#46FF8C"/>
+<rect width="14.5" height="5" rx="1" transform="matrix(1 0 0 -1 260.25 276)" fill="#46FF8C"/>
+<rect width="15" height="5" rx="1" transform="matrix(1 0 0 -1 277.75 276)" fill="#46FF8C"/>
 <g filter="url(#filter9_i_163_223)">
 <circle cx="2.25" cy="2.25" r="2.25" transform="matrix(1 0 0 -1 315.5 277)" fill="#D9D9D9"/>
 </g>
@@ -60,9 +60,9 @@
 <g filter="url(#filter13_i_163_223)">
 <path d="M6 118.226L5.5 166.892L9.75 169.485L16 165.214V120.056L9.75 115.327L6 118.226Z" fill="#312F2A"/>
 </g>
-<rect width="11.283" height="5" rx="1" transform="matrix(0 1 1 0 8.5 123.789)" fill="#FF8A00"/>
-<rect width="10.9069" height="5" rx="1" transform="matrix(0 1 1 0 8.5 137.329)" fill="#FF8A00"/>
-<rect width="11.283" height="5" rx="1" transform="matrix(0 1 1 0 8.5 150.492)" fill="#FF8A00"/>
+<rect width="11.283" height="5" rx="1" transform="matrix(0 1 1 0 8.5 123.789)" fill="#46FF8C"/>
+<rect width="10.9069" height="5" rx="1" transform="matrix(0 1 1 0 8.5 137.329)" fill="#46FF8C"/>
+<rect width="11.283" height="5" rx="1" transform="matrix(0 1 1 0 8.5 150.492)" fill="#46FF8C"/>
 <g filter="url(#filter14_i_163_223)">
 <circle cx="1.95141" cy="1.95141" r="1.95141" transform="matrix(0 1 1 0 7.79883 178.629)" fill="#D9D9D9"/>
 </g>
@@ -82,9 +82,9 @@
 <g filter="url(#filter18_i_163_223)">
 <path d="M529.5 118.226L530 166.892L525.75 169.485L519.5 165.214V120.056L525.75 115.327L529.5 118.226Z" fill="#312F2A"/>
 </g>
-<rect x="527" y="123.789" width="11.283" height="5" rx="1" transform="rotate(90 527 123.789)" fill="#FF8A00"/>
-<rect x="527" y="137.329" width="10.9069" height="5" rx="1" transform="rotate(90 527 137.329)" fill="#FF8A00"/>
-<rect x="527" y="150.492" width="11.283" height="5" rx="1" transform="rotate(90 527 150.492)" fill="#FF8A00"/>
+<rect x="527" y="123.789" width="11.283" height="5" rx="1" transform="rotate(90 527 123.789)" fill="#46FF8C"/>
+<rect x="527" y="137.329" width="10.9069" height="5" rx="1" transform="rotate(90 527 137.329)" fill="#46FF8C"/>
+<rect x="527" y="150.492" width="11.283" height="5" rx="1" transform="rotate(90 527 150.492)" fill="#46FF8C"/>
 <g filter="url(#filter19_i_163_223)">
 <circle cx="525.75" cy="180.58" r="1.95141" transform="rotate(90 525.75 180.58)" fill="#D9D9D9"/>
 </g>
@@ -295,11 +295,11 @@
 <feBlend mode="normal" in2="shape" result="effect1_innerShadow_163_223"/>
 </filter>
 <radialGradient id="paint0_radial_163_223" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(271.302 142.35) scale(348.139 184.254)">
-<stop stop-color="#323231"/>
+<stop stop-color="#125026"/>
 <stop offset="1"/>
 </radialGradient>
 <radialGradient id="paint1_radial_163_223" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(271.074 142.31) scale(327.238 163.346)">
-<stop stop-color="#323231"/>
+<stop stop-color="#125026"/>
 <stop offset="1"/>
 </radialGradient>
 </defs>

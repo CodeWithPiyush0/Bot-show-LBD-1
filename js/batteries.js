@@ -70,6 +70,25 @@
 
     function createGroups(screen) {
         GROUPS.forEach((g) => {
+            // Create a permanent 20% opacity ghost in the tray
+            const ghostGroup = document.createElement("div");
+            ghostGroup.className = "battery-group battery-group--" + g.color;
+            ghostGroup.style.opacity = "0.2";
+            ghostGroup.style.pointerEvents = "none";
+            ghostGroup.style.zIndex = "5";
+            for (let i = 0; i < g.count; i++) {
+                const bat = document.createElement("img");
+                bat.className = "battery battery--" + g.color;
+                bat.src = "assets/images/" + g.color + "_battery.png";
+                bat.alt = "";
+                bat.draggable = false;
+                ghostGroup.appendChild(bat);
+            }
+            ghostGroup.style.left = pctX(g.cx);
+            ghostGroup.style.top = pctY(g.cy);
+            setTransform(ghostGroup, 1);
+            (contentEl || screen).appendChild(ghostGroup);
+
             const group = document.createElement("div");
             group.className = "battery-group battery-group--" + g.color;
             group.dataset.color = g.color;
@@ -129,36 +148,126 @@
         return slotOccupant["small-left"] && slotOccupant["small-right"];
     }
 
-    function moveGroupToBig(group) {
+    function moveGroupToBig(group, delay) {
+        const prevSlot = group.dataset.location;
+        let startRects = [];
+        for (let i = 0; i < group.children.length; i++) {
+            startRects.push(group.children[i].getBoundingClientRect());
+        }
+
+        if (prevSlot && prevSlot !== "tray" && SLOTS[prevSlot]) {
+            const slotData = SLOTS[prevSlot];
+            const ghost = document.createElement("div");
+            ghost.className = "battery-group battery-group--" + group.dataset.color;
+            ghost.style.opacity = "0.2";
+            ghost.style.pointerEvents = "none";
+            ghost.style.zIndex = "5";
+            for (let i = 0; i < group.children.length; i++) {
+                const bat = document.createElement("img");
+                bat.className = "battery battery--" + group.dataset.color;
+                bat.src = "assets/images/" + group.dataset.color + "_battery.png";
+                bat.alt = "";
+                bat.draggable = false;
+                ghost.appendChild(bat);
+            }
+            ghost.style.left = pctX(slotData.x + slotData.w / 2);
+            ghost.style.top = pctY(slotData.y + slotData.h / 2);
+            setTransform(ghost, PLACED_SCALE);
+            contentEl.appendChild(ghost);
+        }
+
         freeSlotOf(group);
         group.dataset.location = "big";
+        group.style.transition = "none";
         group.style.left = pctX(BIG_CX);
         group.style.top = pctY(BIG_ROW[group.dataset.color] || 268);
         setTransform(group, PLACED_SCALE);
+
+        for (let i = 0; i < group.children.length; i++) {
+            group.children[i].style.opacity = "0";
+            group.children[i].style.transition = "opacity 0.2s ease";
+        }
+
+        global.requestAnimationFrame(() => {
+            let endRects = [];
+            for (let i = 0; i < group.children.length; i++) {
+                endRects.push(group.children[i].getBoundingClientRect());
+            }
+
+            for (let i = 0; i < group.children.length; i++) {
+                const bat = document.createElement("img");
+                bat.className = "battery battery--" + group.dataset.color;
+                bat.src = "assets/images/" + group.dataset.color + "_battery.png";
+                bat.style.position = "fixed";
+                bat.style.left = startRects[i].left + "px";
+                bat.style.top = startRects[i].top + "px";
+                bat.style.width = startRects[i].width + "px";
+                bat.style.height = startRects[i].height + "px";
+                bat.style.zIndex = "100";
+                bat.style.transition = "left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)";
+                document.body.appendChild(bat);
+
+                global.setTimeout(() => {
+                    bat.style.left = endRects[i].left + "px";
+                    bat.style.top = endRects[i].top + "px";
+                    
+                    global.setTimeout(() => {
+                        bat.remove();
+                        group.children[i].style.opacity = "1";
+                    }, 600);
+                }, delay + i * 150);
+            }
+        });
     }
 
     function startCharge() {
         charged = true;
+        abortHint();
         const groups = [slotOccupant["small-left"], slotOccupant["small-right"]];
 
-        // 1) current starts flowing up the traces
-        if (chargeFx) chargeFx.classList.add("is-active");
+        if (bigGlow) bigGlow.classList.remove("is-charged");
+        if (chargeFx) {
+            chargeFx.style.display = "block";
+            void chargeFx.offsetWidth;
+            chargeFx.classList.add("is-flowing");
+            chargeFx.classList.add("is-active");
+        }
 
-        // 2) batteries travel up into the top slot
+        // 1) move batteries up
         global.setTimeout(function () {
-            groups.forEach(function (g) {
-                if (g) moveGroupToBig(g);
-            });
-        }, 500);
+            let delay = 0;
+            for (let id of ["small-left", "small-right"]) {
+                const group = slotOccupant[id];
+                if (group) {
+                    moveGroupToBig(group, delay);
+                    delay += group.children.length * 150;
+                }
+            }
+        }, 200);
 
-        // 3) top slot glows green, current settles to green
+        // 3) top slot glows green, current settles to green, panel turns green
         global.setTimeout(function () {
             if (bigGlow) bigGlow.classList.add("is-charged");
             if (chargeFx) chargeFx.classList.add("is-green");
-        }, 1400);
+            const panel = document.querySelector(".panel");
+            if (panel) panel.classList.add("is-green");
+            const panelBig = document.querySelector(".panel--big");
+            if (panelBig) panelBig.classList.add("is-green");
+        }, 2000);
     }
 
     /* ---- ghost hint: demonstrate the drag a few times ---- */
+    let hintActive = false;
+    let hintGhost = null;
+
+    function abortHint() {
+        hintActive = false;
+        if (hintGhost) {
+            hintGhost.remove();
+            hintGhost = null;
+        }
+    }
+
     function buildGhost(color, count, cx, cy) {
         const g = document.createElement("div");
         g.className = "battery-group battery-group--" + color + " is-ghost";
@@ -181,15 +290,16 @@
             enabled = true;
             return;
         }
-        enabled = false;
+        enabled = true; // allow dragging during hint
+        hintActive = true;
         const fromX = GROUPS[0].cx; // blue tray centre
         const fromY = GROUPS[0].cy;
         const slot = SLOTS["small-left"];
         const toX = slot.x + slot.w / 2;
         const toY = slot.y + slot.h / 2;
 
-        const ghost = buildGhost("blue", GROUPS[0].count, fromX, fromY);
-        contentEl.appendChild(ghost);
+        hintGhost = buildGhost("blue", GROUPS[0].count, fromX, fromY);
+        contentEl.appendChild(hintGhost);
 
         const MOVE = 1000;
         const HOLD = 250;
@@ -199,36 +309,38 @@
         let n = 0;
 
         function cycle() {
+            if (!hintActive) return;
             if (n >= 3) {
-                ghost.remove();
-                enabled = true;
+                abortHint();
                 return;
             }
             n += 1;
 
             // reset to the tray (no transition)
-            ghost.style.transition = "none";
-            ghost.style.left = pctX(fromX);
-            ghost.style.top = pctY(fromY);
-            setTransform(ghost, 1);
-            ghost.style.opacity = "0";
-            void ghost.offsetWidth; // force reflow so the reset applies
+            hintGhost.style.transition = "none";
+            hintGhost.style.left = pctX(fromX);
+            hintGhost.style.top = pctY(fromY);
+            setTransform(hintGhost, 1);
+            hintGhost.style.opacity = "0";
+            void hintGhost.offsetWidth; // force reflow so the reset applies
 
             // fade in and glide to the slot
-            ghost.style.transition =
+            hintGhost.style.transition =
                 "left " + MOVE + "ms ease, top " + MOVE + "ms ease, transform " +
                 MOVE + "ms ease, opacity 250ms ease";
             window.requestAnimationFrame(function () {
-                ghost.style.opacity = "0.75";
-                ghost.style.left = pctX(toX);
-                ghost.style.top = pctY(toY);
-                setTransform(ghost, PLACED_SCALE);
+                if (!hintActive) return;
+                hintGhost.style.opacity = "0.3";
+                hintGhost.style.left = pctX(toX);
+                hintGhost.style.top = pctY(toY);
+                setTransform(hintGhost, PLACED_SCALE);
             });
 
             // fade out at the slot
             window.setTimeout(function () {
-                ghost.style.transition = "opacity " + FADE + "ms ease";
-                ghost.style.opacity = "0";
+                if (!hintActive) return;
+                hintGhost.style.transition = "opacity " + FADE + "ms ease";
+                hintGhost.style.opacity = "0";
             }, MOVE + HOLD);
 
             window.setTimeout(cycle, CYCLE);
@@ -269,6 +381,7 @@
         let dragging = false;
 
         group.addEventListener("pointerdown", (e) => {
+            if (hintActive) abortHint();
             if (charged || !enabled) return; // locked after charging / during intro
             e.preventDefault();
             dragging = true;
