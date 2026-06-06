@@ -1,0 +1,39 @@
+/* ===========================================================
+   screen4.css
+   Screen 4 — the concept screen: "These 2 parts make this whole."
+   The two small slots (the parts) and the big slot (the whole) are
+   all filled with batteries. A scripted animation (js/concept.js)
+   highlights the parts, then the whole.
+   =========================================================== */
+
+.screen--4 {
+    /* same dark interior as Screen 2 */
+    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+}
+
+.s4-content {
+    position: absolute;
+    inset: 0;
+}
+
+/* Banner open/close (same as Screen 2, scoped to Screen 4) */
+.screen--4 .question__template {
+    clip-path: inset(0 91.2% 0 0); /* closed: mascot only */
+    transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen--4 .question.is-open .question__template {
+    clip-path: inset(0 0 0 0); /* open */
+}
+
+/* Battery emphasis states (scoped so Screen 2 is unaffected) */
+.screen--4 .battery {
+    transition: opacity 0.4s ease, filter 0.35s ease;
+}
+
+.screen--4 .battery.is-dim {
+    opacity: 0.2;
+}
+
+.screen--4 .battery.is-glow {
+    filter: drop-shadow(0 0 0.7cqw rgba(180, 230, 255, 0.95)) brightness(1.22);
+}

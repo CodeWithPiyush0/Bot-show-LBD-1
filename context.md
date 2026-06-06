@@ -38,12 +38,15 @@ LBD-1/
 │   ├── main.css            # stage, letterbox, screen system, zoom transition
 │   ├── screen.css          # Screen 1 (bots, spotlight, floor, question banner + intro) + shared .question/.question__avatar
 │   ├── screen2.css         # Screen 2 (panel, slots, trays, batteries, charge fx, glow, content scaling)
+│   ├── screen3.css         # Screen 3 (charged bot celebration)
+│   ├── screen4.css         # Screen 4 (concept: 2 parts make a whole)
 │   └── responsive.css      # breakpoint stubs (mostly empty — see §4)
 ├── js/
 │   ├── navigation.js       # GameNav.show(screenId) — screen switching
 │   ├── intro.js            # Screen 1 intro + Screen 2 intro (typewriter, banner open/close)
-│   ├── batteries.js        # Screen 2 drag-drop, charge sequence, ghost hint
-│   └── main.js             # entry: orange-bot click → zoom transition; Esc/#hash helpers
+│   ├── batteries.js        # Screen 2 drag-drop, charge sequence, ghost hint, fully-charged finale
+│   ├── concept.js          # Screen 4 (part/whole teaching animation)
+│   └── main.js             # entry: orange-bot click → zoom in; exitBot (zoom out); Esc/#hash helpers
 └── assets/
     ├── images/             # see §9
     └── videos/
@@ -223,6 +226,10 @@ Once the batteries are in the big slot and it's glowing green, the finale plays
    = `transform: translateY(15%)` (everything moves together, stays aligned).
 3. **The banner re-opens** and types **"The bot is fully charged."** via
    `Screen2Intro.showMessage(text)` (opens, types, stays open).
+4. **~5.9s after the finale starts**, it transitions to **Screen 3** via `GameFx.exitBot()`
+   — the **reverse** of the enter-zoom: we pull back OUT of the chest (same 49.6%/73%
+   focal point), the interior recedes, and the whole charged bot is revealed shrinking
+   from a chest close-up to normal size (`zoomOutOfBot` + `revealBot` in `main.css`).
 > NOTE: the codebase has user edits around the charge sequence — e.g. the panel
 > turns green via `.panel.is-green { filter: hue-rotate(110deg) }`, batteries do a
 > FLIP-style travel into the big slot with low-opacity ghost trails, and there are
@@ -235,6 +242,35 @@ banner has a clear gap above the panel: `transform: translateY(10%) scale(0.85)`
 banner opens + types prompt → holds 3.5s → banner closes to mascot + content grows
 back to normal (smooth) → **ghost hint** demonstrates the drag **3×** (a translucent
 blue group glides tray→small-left slot, `.is-ghost`) → dragging enabled.
+
+---
+
+## 8b. Screen 3 — the bot celebrates (`screen3.css`)
+
+The end screen, shown after the finale. Same room background as Screen 1
+(`var(--bg-image)` = BG.webp) + the `spotlight`, with the **charged bot centered**:
+`.charged-bot` wraps `orange_bot_charged.webp` (placeholder — **swap for a dancing
+video later**). It does a gentle CSS "dance" loop (`botDance`: bob + sway, pivot at
+feet) while `.screen--3.is-active`. Markup is a `<section class="screen screen--3"
+id="screen-3">` inside the stage; reached via `GameNav.show("screen-3")`.
+
+---
+
+## 8c. Screen 4 — concept "2 parts make a whole" (`screen4.css` + `concept.js`)
+
+Reached ~3s after Screen 3 appears (the bot dances, then `GameNav.show("screen-4")`).
+Dark interior bg + the panel + batteries in all three slots:
+- **small-left** = 4 blue (part 1), **small-right** = 6 yellow (part 2),
+- **big** = 4 blue (top row) + 6 yellow (bottom row) = the whole.
+`concept.js` builds the battery groups (display-only, `SCALE 0.82`) and plays a
+two-phase animation synced to the banner prompt **"These 2 parts make this whole."**:
+- **Phase A ("These 2 parts")**: the big-slot batteries dim to 20% (`.battery.is-dim`);
+  the small-slot batteries light up **one at a time** (`.battery.is-glow`, staggered).
+- **Phase B ("make this whole.")**: small batteries dim; big batteries go full opacity +
+  glow, and the big slot glows green (`.slot-glow--big.is-charged`).
+Phase timings are **placeholders for the VO** (`GLOW_STAGGER`, `PHASE_GAP` in concept.js).
+Battery emphasis classes are scoped `.screen--4 .battery{.is-dim,.is-glow}` so Screen 2
+is unaffected. Deep-link: `index.html#4`.
 
 ---
 
@@ -273,6 +309,8 @@ Batteries.setEnabled(bool)              // gate drag interaction
 Batteries.playHint()                    // run the 3× ghost drag demo, then enable
 Screen2Intro.play()                     // open banner → type → hold → close → hint
 Screen2Intro.showMessage(text)          // open banner, type `text`, leave open (finale message)
+GameFx.exitBot()                        // Screen 2 -> 3 reverse (zoom-out) transition (4.2x mirror)
+ConceptScreen.play()                    // Screen 4 part/whole teaching animation
 ```
 
 Key tunables:

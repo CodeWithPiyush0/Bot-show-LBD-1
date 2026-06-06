@@ -132,3 +132,45 @@
         opacity: 1;
     }
 }
+
+/* ---------- Transition: zoom OUT of the bot (Screen 2 -> 3) ----------
+   The reverse of the zoom-in. We pull back from the chest: the interior
+   recedes and the whole charged bot is revealed, shrinking from a
+   chest-close-up to its normal size. Same chest focal point. */
+.screen--2.is-zooming-out {
+    transform-origin: 49.6% 73%; /* the chest */
+    animation: zoomOutOfBot 0.55s cubic-bezier(0.42, 0, 1, 1) forwards;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+@keyframes zoomOutOfBot {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+.screen--3.is-revealing {
+    transform-origin: 49.6% 73%; /* same focal point */
+    animation: revealBot 0.8s cubic-bezier(0, 0, 0.2, 1);
+    will-change: transform, opacity;
+}
+
+@keyframes revealBot {
+    0% {
+        transform: scale(4.2);
+        opacity: 0;
+    }
+    35% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

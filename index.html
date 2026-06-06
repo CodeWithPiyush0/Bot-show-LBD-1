@@ -25,6 +25,8 @@
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/screen.css" />
     <link rel="stylesheet" href="css/screen2.css" />
+    <link rel="stylesheet" href="css/screen3.css" />
+    <link rel="stylesheet" href="css/screen4.css" />
     <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
@@ -207,11 +209,78 @@
 
             </section>
 
+            <!-- ===== SCREEN 3 - the charged bot celebrates ===== -->
+            <section class="screen screen--3" id="screen-3" data-screen="3">
+
+                <!-- Spotlight on the bot -->
+                <img
+                    class="spotlight"
+                    src="assets/images/spotlight.svg"
+                    alt=""
+                    aria-hidden="true"
+                />
+
+                <!-- Fully-charged bot (static image placeholder; swap for a
+                     dancing video later). -->
+                <div class="charged-bot">
+                    <img
+                        src="assets/images/orange_bot_charged.webp"
+                        alt="The bot, fully charged"
+                    />
+                </div>
+
+            </section>
+
+            <!-- ===== SCREEN 4 - concept: 2 parts make a whole ===== -->
+            <section class="screen screen--4" id="screen-4" data-screen="4">
+
+                <div class="s4-content" id="s4-content">
+                    <!-- Circuit-board panel -->
+                    <img
+                        class="panel"
+                        src="assets/images/battery_slots.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <!-- Green glow for the big (whole) slot -->
+                    <img
+                        class="slot-glow slot-glow--big"
+                        src="assets/images/Bigger_Slot.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <!-- Batteries injected by js/concept.js -->
+                </div>
+
+                <!-- Concept prompt banner -->
+                <div class="question" id="question-4">
+                    <img
+                        class="question__template"
+                        src="assets/images/Question_template.webp"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <video
+                        class="question__avatar"
+                        src="assets/videos/bite_talking.mp4"
+                        muted
+                        loop
+                        autoplay
+                        playsinline
+                        preload="auto"
+                        aria-hidden="true"
+                    ></video>
+                    <p class="question__text" data-text="These 2 parts make this whole."></p>
+                </div>
+
+            </section>
+
         </div>
     </main>
 
     <!-- Scripts -->
     <script src="js/navigation.js" defer></script>
+    <script src="js/concept.js" defer></script>
     <script src="js/intro.js" defer></script>
     <script src="js/batteries.js" defer></script>
     <script src="js/main.js" defer></script>

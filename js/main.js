@@ -43,6 +43,27 @@
             orangeBot.addEventListener("click", enterBot);
         }
 
+        // Screen 2 -> 3: the reverse of enterBot. We pull back OUT of the
+        // bot's chest to reveal the whole (charged) bot on Screen 3.
+        const screen3 = document.getElementById("screen-3");
+
+        function exitBot() {
+            if (!screen2 || screen2.classList.contains("is-zooming-out")) return;
+            screen2.classList.add("is-zooming-out");
+
+            window.setTimeout(function () {
+                window.GameNav.show("screen-3");
+                if (screen3) screen3.classList.add("is-revealing");
+            }, 150);
+
+            window.setTimeout(function () {
+                if (screen3) screen3.classList.remove("is-revealing");
+                screen2.classList.remove("is-zooming-out");
+            }, 1300);
+        }
+
+        window.GameFx = { exitBot: exitBot };
+
         // Dev convenience: press Escape to return to Screen 1.
         document.addEventListener("keydown", function (e) {
             if (e.key === "Escape") {
@@ -55,6 +76,10 @@
         if (hash === "2" || hash === "screen-2") {
             window.GameNav.show("screen-2");
             if (window.Screen2Intro) window.Screen2Intro.play();
+        }
+        if (hash === "4" || hash === "screen-4") {
+            window.GameNav.show("screen-4");
+            if (window.ConceptScreen) window.ConceptScreen.play();
         }
 
         console.log("Bot Show: ready.");
