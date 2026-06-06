@@ -13,6 +13,13 @@
         rel="stylesheet"
     />
 
+    <!-- Preload critical Screen 1 images for faster first paint -->
+    <link rel="preload" as="image" href="assets/images/BG.webp" />
+    <link rel="preload" as="image" href="assets/images/orange_bot.webp" />
+    <link rel="preload" as="image" href="assets/images/Sahdow_Purple_Bot.webp" />
+    <link rel="preload" as="image" href="assets/images/White_blue_bot.webp" />
+    <link rel="preload" as="image" href="assets/images/Question_template.webp" />
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/reset.css" />
     <link rel="stylesheet" href="css/main.css" />
@@ -41,30 +48,34 @@
             <!-- The three bots -->
             <img
                 class="bot bot--purple"
-                src="assets/images/Sahdow_Purple_Bot.svg"
+                src="assets/images/Sahdow_Purple_Bot.webp"
                 alt="Purple bot"
                 data-bot="purple"
+                decoding="async"
             />
             <img
                 class="bot bot--orange"
-                src="assets/images/orange_bot.svg"
+                src="assets/images/orange_bot.webp"
                 alt="Orange bot"
                 data-bot="orange"
+                decoding="async"
             />
             <img
                 class="bot bot--white-blue"
-                src="assets/images/White_blue_bot.svg"
+                src="assets/images/White_blue_bot.webp"
                 alt="White and blue bot"
                 data-bot="white-blue"
+                decoding="async"
             />
 
             <!-- Question banner at the top -->
             <div class="question">
                 <img
                     class="question__template"
-                    src="assets/images/Question_template.svg"
+                    src="assets/images/Question_template.webp"
                     alt=""
                     aria-hidden="true"
+                    decoding="async"
                 />
                 <p class="question__text">Tap the bot to fix its batteries.</p>
             </div>
