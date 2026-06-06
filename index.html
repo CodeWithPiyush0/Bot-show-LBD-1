@@ -24,66 +24,114 @@
     <link rel="stylesheet" href="css/reset.css" />
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/screen.css" />
+    <link rel="stylesheet" href="css/screen2.css" />
     <link rel="stylesheet" href="css/responsive.css" />
 </head>
 <body>
     <!-- Game container: keeps the background and all game elements -->
     <main class="game" id="game">
-        <div class="game__screen" id="screen">
+        <div class="game__screen" id="stage">
 
-            <!-- Spotlight beam focused on the center (orange) bot -->
-            <img
-                class="spotlight"
-                src="assets/images/spotlight.svg"
-                alt=""
-                aria-hidden="true"
-            />
+            <!-- ============================================================
+                 SCREEN 1 — choose the bot
+                 ============================================================ -->
+            <section class="screen screen--1 is-active" id="screen-1" data-screen="1">
 
-            <!-- Floor shadows & warm glow (recreated from Figma ellipses) -->
-            <div class="floor floor--shadow floor--purple" aria-hidden="true"></div>
-            <div class="floor floor--shadow floor--white" aria-hidden="true"></div>
-            <div class="floor floor--shadow floor--orange" aria-hidden="true"></div>
-            <div class="floor floor--glow" aria-hidden="true"></div>
-
-            <!-- The three bots -->
-            <img
-                class="bot bot--purple"
-                src="assets/images/Sahdow_Purple_Bot.webp"
-                alt="Purple bot"
-                data-bot="purple"
-                decoding="async"
-            />
-            <img
-                class="bot bot--orange"
-                src="assets/images/orange_bot.webp"
-                alt="Orange bot"
-                data-bot="orange"
-                decoding="async"
-            />
-            <img
-                class="bot bot--white-blue"
-                src="assets/images/White_blue_bot.webp"
-                alt="White and blue bot"
-                data-bot="white-blue"
-                decoding="async"
-            />
-
-            <!-- Question banner at the top -->
-            <div class="question">
+                <!-- Spotlight beam focused on the center (orange) bot -->
                 <img
-                    class="question__template"
-                    src="assets/images/Question_template.webp"
+                    class="spotlight"
+                    src="assets/images/spotlight.svg"
+                    alt=""
+                    aria-hidden="true"
+                />
+
+                <!-- Floor shadows & warm glow (recreated from Figma ellipses) -->
+                <div class="floor floor--shadow floor--purple" aria-hidden="true"></div>
+                <div class="floor floor--shadow floor--white" aria-hidden="true"></div>
+                <div class="floor floor--shadow floor--orange" aria-hidden="true"></div>
+                <div class="floor floor--glow" aria-hidden="true"></div>
+
+                <!-- The three bots -->
+                <img
+                    class="bot bot--purple"
+                    src="assets/images/Sahdow_Purple_Bot.webp"
+                    alt="Purple bot"
+                    data-bot="purple"
+                    decoding="async"
+                />
+                <img
+                    class="bot bot--orange"
+                    src="assets/images/orange_bot.webp"
+                    alt="Orange bot"
+                    data-bot="orange"
+                    decoding="async"
+                />
+                <img
+                    class="bot bot--white-blue"
+                    src="assets/images/White_blue_bot.webp"
+                    alt="White and blue bot"
+                    data-bot="white-blue"
+                    decoding="async"
+                />
+
+                <!-- Question banner at the top -->
+                <div class="question">
+                    <img
+                        class="question__template"
+                        src="assets/images/Question_template.webp"
+                        alt=""
+                        aria-hidden="true"
+                        decoding="async"
+                    />
+                    <p class="question__text">Tap the bot to fix its batteries.</p>
+                </div>
+
+            </section>
+
+            <!-- ============================================================
+                 SCREEN 2 — inside the bot (place the batteries)
+                 ============================================================ -->
+            <section class="screen screen--2" id="screen-2" data-screen="2">
+
+                <!-- Circuit-board panel (border + slots + connectors) -->
+                <img
+                    class="panel"
+                    src="assets/images/battery_slots.svg"
                     alt=""
                     aria-hidden="true"
                     decoding="async"
                 />
-                <p class="question__text">Tap the bot to fix its batteries.</p>
-            </div>
+
+                <!-- Battery trays at the bottom -->
+                <img
+                    class="tray tray--blue"
+                    src="assets/images/Blue_tray.svg"
+                    alt="Blue batteries tray"
+                    decoding="async"
+                />
+                <img
+                    class="tray tray--yellow"
+                    src="assets/images/Yellow_tray.svg"
+                    alt="Yellow batteries tray"
+                    decoding="async"
+                />
+
+                <!-- Mascot avatar tab (top-left) -->
+                <img
+                    class="avatar"
+                    src="assets/images/screen2_avatar.png"
+                    alt=""
+                    aria-hidden="true"
+                    decoding="async"
+                />
+
+            </section>
 
         </div>
     </main>
 
     <!-- Scripts -->
+    <script src="js/navigation.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 </html>

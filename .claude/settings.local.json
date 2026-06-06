@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(file assets/images/BG.png)",
-      "Bash(python -c \"from PIL import Image; print\\(Image.open\\('assets/images/BG.png'\\).size\\)\")"
+      "Bash(python -c \"from PIL import Image; print\\(Image.open\\('assets/images/BG.png'\\).size\\)\")",
+      "mcp__claude_ai_Figma__get_metadata",
+      "Bash(node -e 'const d=JSON.parse\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\(process.argv[1],'\\\\''utf8'\\\\''\\)\\); const t=d.map\\(x=>x.text\\).join\\('\\\\''\\\\n'\\\\''\\); const re=/<frame id=\"\\([^\"]+\\)\" name=\"\\([^\"]+\\)\" x=\"\\([^\"]+\\)\" y=\"\\([^\"]+\\)\" width=\"\\([^\"]+\\)\" height=\"\\([^\"]+\\)\"/g; let m; while\\(\\(m=re.exec\\(t\\)\\)\\){ if\\(parseFloat\\(m[5]\\)>1000 && parseFloat\\(m[6]\\)>700\\) console.log\\(m[1], '\\\\''|'\\\\'', m[2], '\\\\''| x='\\\\''+Math.round\\(m[3]\\), '\\\\''y='\\\\''+Math.round\\(m[4]\\), '\\\\''w='\\\\''+Math.round\\(m[5]\\), '\\\\''h='\\\\''+Math.round\\(m[6]\\)\\); }' 'C:\\\\Users\\\\ASUS\\\\.claude\\\\projects\\\\f--CG-Game-Bot-show-LBD-1\\\\707619d8-3a7a-41fa-aa56-83f8cd50144f\\\\tool-results\\\\mcp-claude_ai_Figma-get_metadata-1780728701196.txt')"
     ]
   }
 }

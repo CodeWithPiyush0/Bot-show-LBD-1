@@ -1,0 +1,50 @@
+/* ===========================================================
+   screen2.css
+   Screen 2 — inside the bot. The circuit-board panel with
+   slots and the two battery trays at the bottom.
+   Coordinates are 1:1 from Figma "Screen 2", expressed as a
+   percentage of the 1920 x 1080 stage.
+   =========================================================== */
+
+/* ---------- Circuit-board panel ----------
+   Figma "Main container": x=43 y=40 w=1834.36 h=786
+   (battery_slots.svg already contains the border, slots,
+   connectors and decorators). */
+.panel {
+    position: absolute;
+    left: 2.240%; /* 43 / 1920 */
+    top: 3.704%; /* 40 / 1080 */
+    width: 95.539%; /* 1834.36 / 1920 */
+    height: auto;
+    z-index: 1;
+}
+
+/* ---------- Battery trays ----------
+   Figma "Batteries_tray": x=181 y=860 w=1558 h=177.
+   Each tray is 651.05 wide; the yellow tray starts 906.95 in. */
+.tray {
+    position: absolute;
+    top: 79.630%; /* 860 / 1080 */
+    width: 33.909%; /* 651.05 / 1920 */
+    height: auto;
+    z-index: 2;
+}
+
+.tray--blue {
+    left: 9.427%; /* 181 / 1920 */
+}
+
+.tray--yellow {
+    left: 56.664%; /* (181 + 906.95) / 1920 */
+}
+
+/* ---------- Mascot avatar tab ----------
+   Figma "Question_template" avatar: x=28 y=45, ~170 wide. */
+.avatar {
+    position: absolute;
+    left: 1.458%; /* 28 / 1920 */
+    top: 4.167%; /* 45 / 1080 */
+    width: 8.854%; /* 170 / 1920 */
+    height: auto;
+    z-index: 5;
+}

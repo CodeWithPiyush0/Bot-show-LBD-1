@@ -40,15 +40,46 @@
        limited by width on tall screens, by height on wide screens. */
     width: min(100vw, calc(100dvh * var(--design-width) / var(--design-height)));
     max-height: 100dvh;
-
-    background-image: var(--bg-image);
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
+    overflow: hidden;
 
     /* Make this the sizing container so child elements can scale with
        the stage using container-query units (cqw/cqh) — keeps the whole
        screen responsive as a single unit. */
     container-type: size;
     container-name: stage;
+}
+
+/* ---------- Screens ----------
+   Each screen fills the stage and is stacked. Only the active one
+   is visible; switching fades between them. */
+.screen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.screen.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.35s ease;
+}
+
+/* Per-screen backgrounds */
+.screen--1 {
+    background-image: var(--bg-image);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+.screen--2 {
+    /* Inside of the bot — dark interior */
+    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
 }

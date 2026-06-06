@@ -1,21 +1,35 @@
 /* ===========================================================
    main.js
    Entry point for the Bot Show activity game.
-   We'll wire up game elements here as they get added.
+   Wires up screen interactions.
    =========================================================== */
 
 (function () {
     "use strict";
 
     function init() {
-        const screen = document.getElementById("screen");
-        if (!screen) {
-            console.warn("Game screen element not found.");
+        const stage = document.getElementById("stage");
+        if (!stage) {
+            console.warn("Game stage element not found.");
             return;
         }
 
-        // Game screen is ready. Elements will be initialized here.
-        console.log("Bot Show: background screen ready.");
+        // Screen 1: tapping the orange bot opens its interior (Screen 2).
+        const orangeBot = document.querySelector(".bot--orange");
+        if (orangeBot) {
+            orangeBot.addEventListener("click", function () {
+                window.GameNav.show("screen-2");
+            });
+        }
+
+        // Dev convenience: press Escape to return to Screen 1.
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                window.GameNav.show("screen-1");
+            }
+        });
+
+        console.log("Bot Show: ready.");
     }
 
     document.addEventListener("DOMContentLoaded", init);
