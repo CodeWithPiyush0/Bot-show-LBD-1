@@ -13,12 +13,8 @@
         rel="stylesheet"
     />
 
-    <!-- Preload critical Screen 1 images for faster first paint -->
-    <link rel="preload" as="image" href="assets/images/BG.webp" />
-    <link rel="preload" as="image" href="assets/images/orange_bot.webp" />
-    <link rel="preload" as="image" href="assets/images/Sahdow_Purple_Bot.webp" />
-    <link rel="preload" as="image" href="assets/images/White_blue_bot.webp" />
-    <link rel="preload" as="image" href="assets/images/Question_template.webp" />
+    <!-- Preload the start-screen image (the actual first paint) -->
+    <link rel="preload" as="image" href="assets/images/Pre_LBD.webp" />
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/reset.css" />
@@ -35,8 +31,13 @@
     <main class="game" id="game">
         <div class="game__screen" id="stage">
 
+            <!-- ===== PRE-LBD - start screen ===== -->
+            <section class="screen screen--pre is-active" id="screen-pre" data-screen="pre">
+                <button class="play-btn" id="play-btn" type="button">Let's Play</button>
+            </section>
+
             <!-- ===== SCREEN 1 - choose the bot ===== -->
-            <section class="screen screen--1 is-active" id="screen-1" data-screen="1">
+            <section class="screen screen--1" id="screen-1" data-screen="1">
 
                 <!-- Spotlight beam focused on the center (orange) bot -->
                 <img

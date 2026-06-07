@@ -14,6 +14,15 @@
             return;
         }
 
+        // Pre-LBD start screen: "Let's Play" begins the game.
+        const playBtn = document.getElementById("play-btn");
+        if (playBtn) {
+            playBtn.addEventListener("click", function () {
+                window.GameNav.show("screen-1");
+                if (window.Screen1Intro) window.Screen1Intro.play();
+            });
+        }
+
         // Screen 1: tapping the orange bot zooms into it, then Screen 2
         // emerges from inside the bot.
         const orangeBot = document.querySelector(".bot--orange");

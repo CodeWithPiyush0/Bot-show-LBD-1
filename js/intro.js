@@ -24,10 +24,19 @@
         })();
     }
 
-    function runIntro() {
-        const template = document.querySelector(".question__template");
-        const textEl = document.querySelector(".question__text");
+    // Plays the Screen 1 intro on demand (called when "Let's Play" is
+    // tapped), so the mascot-unroll + typing run when the screen appears.
+    function playScreen1Intro() {
+        const screen1 = document.getElementById("screen-1");
+        if (!screen1) return;
+        const template = screen1.querySelector(".question__template");
+        const textEl = screen1.querySelector(".question__text");
         if (!textEl) return;
+
+        // (re)start the CSS intro animations
+        screen1.classList.remove("is-intro");
+        void screen1.offsetWidth; // reflow so the animation can restart
+        screen1.classList.add("is-intro");
 
         const full = textEl.getAttribute("data-text") || "";
         textEl.textContent = "";
@@ -39,17 +48,15 @@
             typewriter(textEl, full, TYPE_SPEED);
         };
 
-        // Start typing once the template has finished unrolling.
         if (template) {
             template.addEventListener("animationend", startTyping, { once: true });
-            // Fallback in case animationend doesn't fire.
-            window.setTimeout(startTyping, 1200);
+            window.setTimeout(startTyping, 1200); // fallback
         } else {
             startTyping();
         }
     }
 
-    document.addEventListener("DOMContentLoaded", runIntro);
+    window.Screen1Intro = { play: playScreen1Intro };
 
     /* ---- Screen 2 intro ----
        Opens the banner, types the prompt, holds (placeholder for the

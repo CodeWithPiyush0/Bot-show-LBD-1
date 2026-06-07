@@ -63,8 +63,10 @@ LBD-1/
 
 ## 3. The stage & responsive system (`main.css`)
 
-- `.game` fills the viewport, background = letterbox fill `#5a3624` (sampled from
-  the BG.webp left/right edges, so bars blend with the art).
+- `.game` fills the viewport; the letterbox fill (bars outside the 16:9 stage) is set
+  **per active screen** by `navigation.js` (a `LETTERBOX` map): purple `#0a0130` for the
+  Pre-LBD splash, brown `#5a3624` for room screens (1/3/5/7), dark `#0b0b0c` for the
+  interior screens (2/4/6/8) — so the bars blend with each screen's edges.
 - `.game__screen` (id `stage`) is a **fixed 16:9 box** sized to the largest that
   fits: `width: min(100vw, 100dvh * 1920/1080)`. It is **not** CSS-scaled — it
   renders at real pixels, so **1 viewport px == 1 stage px** (important for drag math).
@@ -90,6 +92,17 @@ empty breakpoint stubs for future per-device tweaks (none needed so far).
 - **Deep links:** `index.html#2` (or `#screen-2`) opens Screen 2 directly and plays
   its intro — handy for testing/sharing.
 - **Esc** returns to Screen 1 (dev convenience, in `main.js`).
+
+---
+
+## 4b. Pre-LBD — start screen (`screen--pre`, `main.css`)
+
+The **first** screen on load (`is-active`). Full-screen `Pre_LBD.webp` splash
+("FIX-A-BOT" title + the two bots + battery) with a **"Let's Play"** button
+(`.play-btn`, `#play-btn`) on the floor. Clicking it (`main.js`) → `GameNav.show("screen-1")`
++ `Screen1Intro.play()`. Because of this, Screen 1's intro is **on-demand** now:
+its CSS animations are scoped to `.screen--1.is-intro` and the typewriter runs from
+`Screen1Intro.play()` (NOT on page load).
 
 ---
 

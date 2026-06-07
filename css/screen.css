@@ -150,14 +150,14 @@
     z-index: 1;
 }
 
-/* Screen 1 intro (scoped — Screen 2 drives its own open/close).
+/* Screen 1 intro (plays when `.is-intro` is added on "Let's Play").
    The banner pops in from the left (mascot), then unrolls open. */
-.screen--1 .question {
+.screen--1.is-intro .question {
     transform-origin: left center;
     animation: questionPop 0.35s ease both;
 }
 
-.screen--1 .question__template {
+.screen--1.is-intro .question__template {
     animation: templateUnroll 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
 }
 

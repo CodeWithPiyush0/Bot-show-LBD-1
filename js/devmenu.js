@@ -13,7 +13,8 @@
     // Each entry: label + the action that shows/sets up that screen.
     // (Reuses the same entry points the deep-links / flow use.)
     const SCREENS = [
-        { label: "1 · Choose bot (P1)", go: function () { nav("screen-1"); } },
+        { label: "0 · Start (Pre-LBD)", go: function () { nav("screen-pre"); } },
+        { label: "1 · Choose bot (P1)", go: function () { nav("screen-1"); call(global.Screen1Intro, "play"); } },
         { label: "2 · Charge puzzle", go: function () { nav("screen-2"); call(global.Screen2Intro, "play"); } },
         { label: "3 · Charged bot", go: function () { nav("screen-3"); } },
         { label: "4 · Concept (parts → whole)", go: function () { nav("screen-4"); call(global.ConceptScreen, "play"); } },
@@ -52,6 +53,12 @@
         ".devmenu__panel button:hover{background:rgba(255,255,255,.10);}",
         ".devmenu__sep{color:#667;font-size:11px;padding:8px 10px 2px;pointer-events:none;}",
         ".devmenu__hint{color:#778;font-size:10px;padding:8px 10px 2px;border-top:1px solid rgba(255,255,255,.1);margin-top:6px;}",
+        ".devmenu__tip{position:fixed;top:18px;right:62px;z-index:99999;background:rgba(20,20,24,.92);",
+        "color:#eee;font-family:system-ui,Arial,sans-serif;font-size:12px;padding:6px 10px;border-radius:7px;",
+        "white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s ease;box-shadow:0 2px 8px rgba(0,0,0,.4);}",
+        ".devmenu__tip::after{content:'';position:absolute;top:11px;right:-5px;width:10px;height:10px;",
+        "background:rgba(20,20,24,.92);transform:rotate(45deg);}",
+        ".devmenu__toggle:hover + .devmenu__tip,.devmenu__tip.is-show{opacity:1;}",
     ].join("");
 
     function build() {
@@ -62,8 +69,12 @@
         const toggle = document.createElement("button");
         toggle.className = "devmenu__toggle";
         toggle.type = "button";
-        toggle.title = "Dev: jump to screen";
+        toggle.title = "Use this to jump to any screen";
         toggle.textContent = "☰"; // ☰
+
+        const tip = document.createElement("div");
+        tip.className = "devmenu__tip";
+        tip.textContent = "Use this to jump to any screen";
 
         const panel = document.createElement("div");
         panel.className = "devmenu__panel";
@@ -101,7 +112,14 @@
         });
 
         document.body.appendChild(toggle);
+        document.body.appendChild(tip);
         document.body.appendChild(panel);
+
+        // Briefly reveal the tooltip on load so it's discoverable.
+        tip.classList.add("is-show");
+        window.setTimeout(function () {
+            tip.classList.remove("is-show");
+        }, 3000);
     }
 
     document.addEventListener("DOMContentLoaded", build);

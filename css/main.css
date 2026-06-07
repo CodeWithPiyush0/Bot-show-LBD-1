@@ -85,6 +85,51 @@
     background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
 }
 
+/* ---------- Pre-LBD start screen ---------- */
+.screen--pre {
+    background-image: url("../assets/images/Pre_LBD.webp");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+/* "Let's Play" button on the floor area */
+.play-btn {
+    position: absolute;
+    left: 50%;
+    bottom: 8%;
+    transform: translateX(-50%);
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 700;
+    font-size: 3cqw;
+    letter-spacing: 0.04em;
+    color: #fff;
+    padding: 0.9cqw 4cqw;
+    border: 0.28cqw solid #ffffff;
+    border-radius: 3cqw;
+    background: linear-gradient(#ffc24d, #ff8a00);
+    box-shadow: 0 0.6cqw 0 #c96a00, 0 1cqw 1.6cqw rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    text-shadow: 0 0.15cqw 0.2cqw rgba(0, 0, 0, 0.3);
+    animation: playPulse 1.3s ease-in-out infinite;
+}
+.play-btn:hover {
+    filter: brightness(1.06);
+}
+.play-btn:active {
+    box-shadow: 0 0.2cqw 0 #c96a00, 0 0.4cqw 0.8cqw rgba(0, 0, 0, 0.45);
+}
+
+@keyframes playPulse {
+    0%,
+    100% {
+        transform: translateX(-50%) scale(1);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.06);
+    }
+}
+
 /* ---------- Transition: zoom into the orange bot's chest ----------
    Both screens zoom about the SAME point (the chest battery icon).
    Screen 2 begins at the exact scale Screen 1 has reached at the
