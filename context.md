@@ -324,6 +324,18 @@ Timings are VO-placeholders. **No new assets needed** (uses existing webp).
 
 ## 9. Assets (`assets/images/`)
 
+**Load performance:** initial payload was trimmed from ~2.9 MB to ~0.5 MB on first
+paint:
+- The avatar video `bite_talking.mp4` was re-encoded 1.3 MB → ~63 KB (it shows at ~110px).
+- `battery_slots*.svg` panels → `.webp` (~280K → ~60K each).
+- **Deferred loading:** heavy images that never appear on Screen 1 (Part-2 bots, panels,
+  slot art) use `data-src` instead of `src`; `main.js` swaps them to `src` on
+  `window.load` (after first paint). So Screen 1 shows fast and the rest streams in.
+- **Unused source files** (the original `.svg`/`BG.png`, trays, etc.) were moved to a
+  top-level `_source/` folder — exclude it from deploy. `assets/` is now ~1.5 MB.
+  NOTE: `blue_battery.png`/`yellow_battery.png` are referenced **dynamically** in JS
+  (`color + "_battery.png"`) — keep them even though static scans flag them as unused.
+
 **Performance history (important):** the original "SVG" bot/banner files were huge
 **raster images wrapped in SVG** (Screen 1 alone was ~8.7MB and loaded slowly when
 deployed). They were re-encoded to **WebP** at display resolution (~95% smaller).
@@ -337,11 +349,11 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 | ✅ | `Sahdow_Purple_Bot.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots |
 | ✅ | `White_purple_bot.webp` (overcharged) / `White_purple_bot_charged.webp` (fixed) | Part 2 centre bot |
 | ✅ | `purple_bot.webp` / `orange_bot_charged.webp` | Part 2 Screen 5 side bots |
-| ✅ | `battery_slots.svg` | **true vector** — Screen 2 panel (kept as SVG) |
+| ✅ | `battery_slots.webp` / `battery_slots_white.webp` | panels — converted from SVG (~280K→~60K each) for load speed |
 | ✅ | `Bigger_Slot.svg` | **true vector** — big-slot green-glow overlay |
 | ✅ | `spotlight.svg` | true vector (1KB) |
 | ✅ | `blue_battery.png` / `yellow_battery.png` | 62×100 transparent battery art |
-| ✅ | `bite_talking.mp4` | live mascot avatar video (in `assets/videos/`) |
+| ✅ | `bite_talking.mp4` | live mascot avatar video — re-encoded small (384px, ~63K) since it shows at ~110px |
 | ⚠️ unused | `screen2_avatar.png` | old static avatar; replaced by the video |
 | ⚠️ unused | `Blue_tray.svg` / `Yellow_tray.svg` | trays are now CSS (had batteries baked in) |
 | ⚠️ unused | `slots.svg`, `Smaller_Slot.svg`, `Closed_Question_template.*`, `*_charged.*`, all original `.svg`/`BG.png` | not referenced (kept for future / source) |

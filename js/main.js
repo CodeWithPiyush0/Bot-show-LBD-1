@@ -101,4 +101,21 @@
     }
 
     document.addEventListener("DOMContentLoaded", init);
+
+    // Load the deferred (non-Screen-1) images right after the first paint,
+    // so Screen 1 shows fast while the rest streams in the background.
+    function loadDeferred() {
+        document.querySelectorAll("img[data-src]").forEach(function (img) {
+            img.src = img.getAttribute("data-src");
+            img.removeAttribute("data-src");
+        });
+    }
+    if (document.readyState === "complete") {
+        loadDeferred();
+    } else {
+        window.addEventListener("load", function () {
+            window.setTimeout(loadDeferred, 150);
+        });
+    }
 })();
+
