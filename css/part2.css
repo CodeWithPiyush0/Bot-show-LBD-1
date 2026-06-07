@@ -100,10 +100,8 @@
 .s6-content {
     position: absolute;
     inset: 0;
+    transform: translateY(15%);
     transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.s6-content.is-compact {
-    transform: translateY(10%) scale(0.85);
 }
 .screen--6 .question__template {
     clip-path: inset(0 91.2% 0 0);
@@ -111,6 +109,34 @@
 }
 .screen--6 .question.is-open .question__template {
     clip-path: inset(0 0 0 0);
+}
+.screen--6 .slot-glow--big {
+    opacity: 1;
+    animation: slotGlowPulse 1.3s ease-in-out infinite alternate;
+    transition: filter 0.6s ease;
+}
+.screen--6 .slot-glow--big.is-red {
+    filter: drop-shadow(0 0 0.9cqw rgba(255, 59, 59, 0.95)) drop-shadow(0 0 2cqw rgba(255, 59, 59, 0.65));
+}
+.screen--6 .panel--big {
+    transition: filter 0.6s ease;
+}
+.screen--6 .panel--big.is-red {
+    filter: none;
+}
+.screen--6 .slot-glow--big.is-yellow {
+    filter: hue-rotate(55deg) drop-shadow(0 0 0.9cqw rgba(255, 235, 59, 0.95)) drop-shadow(0 0 2cqw rgba(255, 235, 59, 0.65));
+}
+.screen--6 .panel--big.is-yellow {
+    filter: hue-rotate(55deg);
+}
+.screen--6 .slot-glow--big.is-green,
+.screen--8 .slot-glow--big.is-green {
+    filter: hue-rotate(143deg) drop-shadow(0 0 0.9cqw rgba(70, 255, 140, 0.95)) drop-shadow(0 0 2cqw rgba(70, 255, 140, 0.65));
+}
+.screen--6 .panel--big.is-green,
+.screen--8 .panel--big.is-green {
+    filter: hue-rotate(143deg);
 }
 
 /* ---------- Screen 7 — the fixed bot celebrates ---------- */

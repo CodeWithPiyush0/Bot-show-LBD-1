@@ -256,10 +256,10 @@
                 setTransform(el, PLACED_SCALE);
             });
         }
+        
+        updateBigSlotState();
 
-        // Shrink the board while the banner is open (so it clears the
-        // banner), then close the banner and enable dragging.
-        s6.classList.add("is-compact");
+        // Keep the board at full size the whole time.
         const q = byId("question-6");
         const textEl = q.querySelector(".question__text");
         // Show only the actionable instruction so dragging starts soon.
@@ -269,13 +269,7 @@
             textEl.getAttribute("data-text2"),
             null,
             function () {
-                global.setTimeout(function () {
-                    q.classList.remove("is-open"); // close to mascot
-                    s6.classList.remove("is-compact"); // grow back
-                    global.setTimeout(function () {
-                        splitEnabled = true; // dragging available
-                    }, 600);
-                }, 600);
+                splitEnabled = true; // dragging available
             }
         );
     }
@@ -298,6 +292,30 @@
         });
     }
 
+    function updateBigSlotState() {
+        const bigGlow = document.querySelector(".screen--6 .slot-glow--big");
+        const panelBig = document.querySelector(".screen--6 .panel--big");
+        if (!bigGlow || !panelBig) return;
+        
+        let removedCount = 0;
+        if (slotOccupant["small-left"]) removedCount++;
+        if (slotOccupant["small-right"]) removedCount++;
+
+        bigGlow.classList.remove("is-red", "is-yellow", "is-green");
+        panelBig.classList.remove("is-red", "is-yellow", "is-green");
+
+        if (removedCount === 0) {
+            bigGlow.classList.add("is-red");
+            panelBig.classList.add("is-red");
+        } else if (removedCount === 1) {
+            bigGlow.classList.add("is-yellow");
+            panelBig.classList.add("is-yellow");
+        } else if (removedCount === 2) {
+            bigGlow.classList.add("is-green");
+            panelBig.classList.add("is-green");
+        }
+    }
+
     function freeSlotOf(group) {
         const prev = group.dataset.location;
         if (prev && slotOccupant[prev] === group) slotOccupant[prev] = null;
@@ -309,6 +327,7 @@
         group.style.left = pctX(parseFloat(group.dataset.homeX));
         group.style.top = pctY(parseFloat(group.dataset.homeY));
         setTransform(group, PLACED_SCALE);
+        updateBigSlotState();
     }
 
     function placeInSlot(group, id) {
@@ -320,6 +339,7 @@
         group.style.left = pctX(r.x + r.w / 2);
         group.style.top = pctY(r.y + r.h / 2);
         setTransform(group, PLACED_SCALE);
+        updateBigSlotState();
 
         if (slotOccupant["small-left"] && slotOccupant["small-right"] && !fixed) {
             onFixed();
