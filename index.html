@@ -315,23 +315,28 @@
             <!-- ===== SCREEN 5 - overcharged bots intro ===== -->
             <section class="screen screen--5" id="screen-5" data-screen="5">
 
-                <img class="spotlight" src="assets/images/spotlight.svg" alt="" aria-hidden="true" />
+                <!-- The scene (bots + spotlight). Wrapped so the "little
+                     zoom" can scale it without scaling the banner. -->
+                <div class="s5-stage" id="s5-stage">
+                    <img class="spotlight" src="assets/images/spotlight.svg" alt="" aria-hidden="true" />
 
-                <div class="floor floor--shadow floor--purple" aria-hidden="true"></div>
-                <div class="floor floor--shadow floor--white" aria-hidden="true"></div>
-                <div class="floor floor--shadow floor--orange" aria-hidden="true"></div>
-                <div class="floor floor--glow" aria-hidden="true"></div>
+                    <div class="floor floor--shadow floor--purple" aria-hidden="true"></div>
+                    <div class="floor floor--shadow floor--white" aria-hidden="true"></div>
+                    <div class="floor floor--shadow floor--orange" aria-hidden="true"></div>
+                    <div class="floor floor--glow" aria-hidden="true"></div>
 
-                <img class="bot bot--oc-left" src="assets/images/Sahdow_Purple_Bot.webp" alt="Overcharged purple bot" />
-                <img class="bot bot--oc-center" src="assets/images/White_purple_bot.webp" alt="Overcharged bot" data-bot="center" />
-                <img class="bot bot--oc-right" src="assets/images/White_blue_bot.webp" alt="Overcharged bot" />
+                    <img class="bot bot--oc-left" src="assets/images/purple_bot.webp" alt="Overcharged purple bot" />
+                    <img class="bot bot--oc-center" src="assets/images/White_purple_bot.webp" alt="Overcharged bot" data-bot="center" />
+                    <img class="bot bot--oc-right" src="assets/images/orange_bot_charged.webp" alt="Orange bot" />
+                </div>
 
                 <div class="question" id="question-5">
                     <img class="question__template" src="assets/images/Question_template.webp" alt="" aria-hidden="true" />
                     <video class="question__avatar" src="assets/videos/bite_talking.mp4" muted loop autoplay playsinline preload="auto" aria-hidden="true"></video>
                     <p class="question__text"
                         data-text="Oh no! A few bots have overcharged."
-                        data-text2="Let's start fixing this bot."></p>
+                        data-text2="Let's start fixing this bot."
+                        data-text3="Let us split its batteries."></p>
                 </div>
 
             </section>

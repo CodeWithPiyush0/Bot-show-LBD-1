@@ -117,17 +117,53 @@
 
     /* ---------- Screen 5: overcharged intro ---------- */
     function startIntro() {
+        const screen5 = byId("screen-5");
+        const stage5 = byId("s5-stage");
         const q = byId("question-5");
-        if (!q) return;
+        if (!q || !screen5) return;
+        const textEl = q.querySelector(".question__text");
+        const msg1 = textEl.getAttribute("data-text");
+        const msg2 = textEl.getAttribute("data-text2");
+        const msg3 = textEl.getAttribute("data-text3");
+
         centerTapEnabled = false;
-        openBanner(
-            q,
-            q.querySelector(".question__text").getAttribute("data-text"),
-            q.querySelector(".question__text").getAttribute("data-text2"),
-            function () {
-                centerTapEnabled = true; // allow tapping the centre bot
-            }
-        );
+        // reset to Phase A state
+        screen5.classList.remove("is-spotlit");
+        if (stage5) stage5.classList.remove("is-focusing");
+        sideBots().forEach(function (b) {
+            b.classList.remove("is-gone");
+        });
+        q.classList.remove("is-open");
+        textEl.textContent = "";
+
+        // Phase A: all bots equally lit; type "Oh no! ..."
+        global.setTimeout(function () {
+            q.classList.add("is-open");
+            global.setTimeout(function () {
+                typewriter(textEl, msg1, TYPE, function () {
+                    global.setTimeout(phaseB, 1400);
+                });
+            }, 650);
+        }, 150);
+
+        // Phase B: spotlight on the centre, sides darken; "Let's start fixing this bot."
+        function phaseB() {
+            screen5.classList.add("is-spotlit");
+            typewriter(textEl, msg2, TYPE, function () {
+                global.setTimeout(phaseC, 1400);
+            });
+        }
+
+        // Phase C: remove the side bots, zoom in a little; "Let us split its batteries."
+        function phaseC() {
+            sideBots().forEach(function (b) {
+                b.classList.add("is-gone");
+            });
+            if (stage5) stage5.classList.add("is-focusing");
+            typewriter(textEl, msg3, TYPE, function () {
+                centerTapEnabled = true; // now the bot can be tapped
+            });
+        }
 
         const center = document.querySelector(".bot--oc-center");
         if (center && !center.dataset.wired) {
@@ -135,9 +171,39 @@
             center.addEventListener("click", function () {
                 if (!centerTapEnabled) return;
                 centerTapEnabled = false;
-                zoomInto("screen-5", "screen-6", startSplit);
+                enterFromFocus();
             });
         }
+    }
+
+    function sideBots() {
+        return Array.prototype.slice.call(
+            document.querySelectorAll(".bot--oc-left, .bot--oc-right")
+        );
+    }
+
+    // Continue the little zoom all the way into the bot, then Screen 6.
+    function enterFromFocus() {
+        const stage5 = byId("s5-stage");
+        const s6 = byId("screen-6");
+        stage5.style.transition = "transform 0.6s cubic-bezier(0.42, 0, 1, 1)";
+        stage5.style.transform = "scale(4.5)";
+        global.setTimeout(function () {
+            global.GameNav.show("screen-6"); // screen-5 fades out
+            s6.classList.add("is-entering");
+            startSplit();
+        }, 300);
+        global.setTimeout(function () {
+            s6.classList.remove("is-entering");
+            // reset screen-5 for a possible replay
+            stage5.style.transition = "";
+            stage5.style.transform = "";
+            stage5.classList.remove("is-focusing");
+            byId("screen-5").classList.remove("is-spotlit");
+            sideBots().forEach(function (b) {
+                b.classList.remove("is-gone");
+            });
+        }, 1100);
     }
 
     /* ---------- Screen 6: split the batteries ---------- */

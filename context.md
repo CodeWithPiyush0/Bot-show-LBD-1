@@ -291,11 +291,20 @@ child **splits** the whole into two parts. Starts **automatically** after Part O
 Screen 4 concept finishes (`concept.js` → `GameNav.show("screen-5")` + `Part2.startIntro()`).
 
 Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
-- **Screen 5** (`screen--5`, intro): room bg + spotlight + 3 bots; the **centre**
-  overcharged bot = `White_purple_bot.webp` (dizzy, red `!`). Banner types
-  "Oh no! A few bots have overcharged." → "Let's start fixing this bot." → tapping the
-  centre bot **zooms in** (`Part2` `zoomInto`, white/purple chest origin 50.5%/70%) to Screen 6.
-  (Side bots reuse Part-1 art — swap for dedicated overcharged art if desired.)
+- **Screen 5** (`screen--5`, intro): room bg + 3 bots in a `.s5-stage` wrapper
+  (left `purple_bot.webp`, centre overcharged `White_purple_bot.webp`, right
+  `orange_bot_charged.webp`). Three-phase choreography (in `Part2.startIntro`):
+  **A** all bots equally lit (spotlight hidden) — "Oh no! A few bots have overcharged.";
+  **B** spotlight fades in on centre + sides darken (`.screen--5.is-spotlit`) — "Let's
+  start fixing this bot."; **C** side bots fade out (`.is-gone`) + the scene zooms in a
+  little (`.s5-stage.is-focusing` scale 1.4, origin 50.7%/70%) — "Let us split its
+  batteries." Tapping the centre bot (`enterFromFocus`) continues that zoom into Screen 6.
+  The banner (sibling of `.s5-stage`) is NOT scaled by the little zoom.
+  - The **spotlight sweeps** onto the centre bot like a real stage light: it pivots at
+    its top (`transform-origin:50% 0`) from `rotate(-20deg)` → `0`, fading in fast so the
+    movement reads.
+  - The purple (left) bot's "!" overcharge mark is baked into `purple_bot.webp`
+    (528×621 source). The center bot's mark is likewise part of `White_purple_bot.webp`.
 - **Screen 6** (`screen--6`, split puzzle): the **big slot starts FULL** (blue row +
   yellow row, green `panel--big is-green`); small slots empty. Banner prompts "Drag the
   batteries to the small slots." then closes; the player drags each group **big → small**.
@@ -326,6 +335,8 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 | ✅ | `BG.webp` | Screen 1 background (was BG.png 1.8MB → 41KB) |
 | ✅ | `Question_template.webp` | cream banner + mascot badge (both screens) |
 | ✅ | `Sahdow_Purple_Bot.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots |
+| ✅ | `White_purple_bot.webp` (overcharged) / `White_purple_bot_charged.webp` (fixed) | Part 2 centre bot |
+| ✅ | `purple_bot.webp` / `orange_bot_charged.webp` | Part 2 Screen 5 side bots |
 | ✅ | `battery_slots.svg` | **true vector** — Screen 2 panel (kept as SVG) |
 | ✅ | `Bigger_Slot.svg` | **true vector** — big-slot green-glow overlay |
 | ✅ | `spotlight.svg` | true vector (1KB) |

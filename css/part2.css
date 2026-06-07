@@ -17,9 +17,9 @@
 
 /* Three bots; the white/purple one (centre) is the overcharged one to fix */
 .bot--oc-left {
-    left: 7.135%;
+    left: 5.85%; /* keep the body centred after the wider canvas */
     top: 31.111%;
-    width: 24.896%;
+    width: 27.5%; /* new art is 528x621 (wider) — match the old display height so feet stay on the floor */
 }
 .bot--oc-center {
     left: 38.698%; /* 743 / 1920 */
@@ -40,6 +40,57 @@
 }
 .screen--5 .question.is-open .question__template {
     clip-path: inset(0 0 0 0);
+}
+
+/* ----- Screen 5 intro choreography -----
+   Phase A: all bots equally lit (spotlight hidden).
+   Phase B: spotlight fades in on the centre bot, sides darken.
+   Phase C: sides removed; the scene zooms in a little on the centre. */
+.s5-stage {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50.7% 70%; /* the centre bot's chest */
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Spotlight: starts off, then sweeps onto the centre bot like a real
+   stage light (pivots at the top — the light source). */
+.screen--5 .spotlight {
+    opacity: 0;
+    transform: translateX(-50%) rotate(-20deg);
+    transform-origin: 50% 0%;
+    /* fade in quickly so the sweep itself is visible */
+    transition: opacity 0.35s ease,
+        transform 1.2s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.screen--5.is-spotlit .spotlight {
+    opacity: 1;
+    transform: translateX(-50%) rotate(0deg);
+}
+
+/* (The purple bot's "!" overcharge mark is now baked into purple_bot.webp.) */
+
+/* side bots dim under the spotlight, then fade out */
+.screen--5 .bot--oc-left,
+.screen--5 .bot--oc-right {
+    transition: filter 0.5s ease, opacity 0.5s ease;
+}
+.screen--5.is-spotlit .bot--oc-left,
+.screen--5.is-spotlit .bot--oc-right {
+    filter: brightness(0.4);
+}
+.bot--oc-left.is-gone,
+.bot--oc-right.is-gone {
+    opacity: 0 !important;
+}
+
+/* phase C: fade the side contact shadows + zoom the scene in a little */
+.s5-stage.is-focusing .floor--shadow {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+.s5-stage.is-focusing {
+    transform: scale(1.4);
 }
 
 /* ---------- Screen 6 — split puzzle ---------- */
