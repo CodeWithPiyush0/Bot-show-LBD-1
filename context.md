@@ -377,6 +377,16 @@ Convert to CSS: `left% = x/1920*100`, `top% = y/1080*100`, `width% = w/1920*100`
 
 ---
 
+## 11b. Dev menu (TEMPORARY)
+
+`js/devmenu.js` adds a ☰ hamburger (top-right) that opens a list to jump to any
+screen (Part 1 & 2) and trigger its animation — for testing without playing through.
+Self-contained (injects its own CSS/DOM). **Remove for production:** delete the file
+and its `<script src="js/devmenu.js">` tag in index.html. Reload for a clean state
+(jumps don't cancel a previous screen's pending timers).
+
+---
+
 ## 12. Previewing / testing
 
 - Just open `index.html` in a browser.
