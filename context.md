@@ -152,9 +152,10 @@ Used on **both** screens (any template with dialogue). Markup:
 - **Screen 2**: class-driven, controlled by `intro.js` `playScreen2Intro()`:
   - `.screen--2 .question__template` is clipped closed (mascot only) by default;
     adding `.is-open` transitions clip-path to fully open (and removing it closes).
-  - Sequence: open → type **"Drag the batteries in a small slots."** → **hold
-    `HOLD_AFTER_TEXT = 3500`ms** (placeholder for VO) → close back to just the mascot.
-  - **VO TODO:** replace the 3500ms hold with the audio's `ended` event when VO exists.
+  - Sequence: open → type **"Drag the batteries in a small slots."** → **brief hold
+    `HOLD_AFTER_TEXT = 600`ms** → close to just the mascot → ghost hint (non-blocking;
+    dragging is already enabled). Kept short so the player can drag almost immediately.
+  - **VO TODO:** replace the 600ms hold with the audio's `ended` event when VO exists.
 
 ---
 
@@ -226,7 +227,8 @@ Once the batteries are in the big slot and it's glowing green, the finale plays
    = `transform: translateY(15%)` (everything moves together, stays aligned).
 3. **The banner re-opens** and types **"The bot is fully charged."** via
    `Screen2Intro.showMessage(text)` (opens, types, stays open).
-4. **~5.9s after the finale starts**, it transitions to **Screen 3** via `GameFx.exitBot()`
+4. **~3.2s after the finale starts** (a brief beat after the message — tune with VO),
+   it transitions to **Screen 3** via `GameFx.exitBot()`
    — the **reverse** of the enter-zoom: we pull back OUT of the chest (same 49.6%/73%
    focal point), the interior recedes, and the whole charged bot is revealed shrinking
    from a chest close-up to normal size (`zoomOutOfBot` + `revealBot` in `main.css`).
@@ -259,18 +261,24 @@ id="screen-3">` inside the stage; reached via `GameNav.show("screen-3")`.
 ## 8c. Screen 4 — concept "2 parts make a whole" (`screen4.css` + `concept.js`)
 
 Reached ~3s after Screen 3 appears (the bot dances, then `GameNav.show("screen-4")`).
-Dark interior bg + the panel + batteries in all three slots:
+Uses the **charged (green) panel** look from Screen 2's end state — same layered
+panel imgs (`panel is-green` + `panel--small-left/right` orange overlays +
+`panel--big is-green`) — and `.s4-content { transform: translateY(14%) }` nudges the
+board down so the whole panel clears the banner and is fully visible.
+Dark interior bg + batteries in all three slots:
 - **small-left** = 4 blue (part 1), **small-right** = 6 yellow (part 2),
 - **big** = 4 blue (top row) + 6 yellow (bottom row) = the whole.
 `concept.js` builds the battery groups (display-only, `SCALE 0.82`) and plays a
 two-phase animation synced to the banner prompt **"These 2 parts make this whole."**:
-- **Phase A ("These 2 parts")**: the big-slot batteries dim to 20% (`.battery.is-dim`);
-  the small-slot batteries light up **one at a time** (`.battery.is-glow`, staggered).
-- **Phase B ("make this whole.")**: small batteries dim; big batteries go full opacity +
-  glow, and the big slot glows green (`.slot-glow--big.is-charged`).
-Phase timings are **placeholders for the VO** (`GLOW_STAGGER`, `PHASE_GAP` in concept.js).
-Battery emphasis classes are scoped `.screen--4 .battery{.is-dim,.is-glow}` so Screen 2
-is unaffected. Deep-link: `index.html#4`.
+- **Phase A ("These 2 parts")**: starts as the prompt begins typing; the big-slot
+  batteries dim to 20% (`.battery.is-dim`); the two **part SLOTS glow one by one**
+  (`.slot-glow--small-left` then `--small-right`, `SLOT_GLOW_STAGGER` apart;
+  Smaller_Slot.svg overlays). The batteries themselves do NOT glow.
+- **Phase B ("make this whole.")**: the part-slot glows turn off + their batteries dim;
+  the big-slot batteries go full opacity and the big slot glows green
+  (`.slot-glow--big.is-charged`).
+Phase timings are **placeholders for the VO** (`SLOT_GLOW_STAGGER`, `PHASE_GAP` in concept.js).
+`.screen--4 .battery.is-dim` is scoped so Screen 2 is unaffected. Deep-link: `index.html#4`.
 
 ---
 

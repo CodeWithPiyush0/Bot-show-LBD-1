@@ -31,12 +31,14 @@
     ];
 
     const TYPE_SPEED = 45;
-    const GLOW_STAGGER = 220; // ms between each part battery lighting up
-    const PHASE_GAP = 900; // pause after the parts before the whole
+    const SLOT_GLOW_STAGGER = 600; // ms between the two part slots lighting up
+    const PHASE_GAP = 1800; // pause after the parts before the whole
 
     let built = false;
     let contentEl = null;
     let bigGlow = null;
+    let glowSmallLeft = null;
+    let glowSmallRight = null;
     const smallBats = [];
     const bigBats = [];
     const timers = [];
@@ -84,6 +86,8 @@
         contentEl = document.getElementById("s4-content");
         if (!contentEl) return;
         bigGlow = document.querySelector("#screen-4 .slot-glow--big");
+        glowSmallLeft = document.querySelector("#screen-4 .slot-glow--small-left");
+        glowSmallRight = document.querySelector("#screen-4 .slot-glow--small-right");
         LAYOUT.forEach(function (g) {
             const made = makeGroup(g);
             contentEl.appendChild(made.el);
@@ -97,37 +101,46 @@
 
     function resetState() {
         smallBats.forEach(function (b) {
-            b.classList.remove("is-dim", "is-glow");
+            b.classList.remove("is-dim");
         });
         bigBats.forEach(function (b) {
-            b.classList.remove("is-glow");
             b.classList.add("is-dim");
         });
         if (bigGlow) bigGlow.classList.remove("is-charged");
+        if (glowSmallLeft) glowSmallLeft.classList.remove("is-charged");
+        if (glowSmallRight) glowSmallRight.classList.remove("is-charged");
     }
 
     function phaseParts() {
-        // whole dims, parts light up one at a time
+        // The whole dims; the part SLOTS glow one after another.
         bigBats.forEach(function (b) {
             b.classList.add("is-dim");
-            b.classList.remove("is-glow");
         });
-        smallBats.forEach(function (b, i) {
+        smallBats.forEach(function (b) {
             b.classList.remove("is-dim");
-            later(function () {
-                b.classList.add("is-glow");
-            }, i * GLOW_STAGGER);
         });
+        if (bigGlow) bigGlow.classList.remove("is-charged");
+        if (glowSmallLeft) {
+            later(function () {
+                glowSmallLeft.classList.add("is-charged");
+            }, 0);
+        }
+        if (glowSmallRight) {
+            later(function () {
+                glowSmallRight.classList.add("is-charged");
+            }, SLOT_GLOW_STAGGER);
+        }
     }
 
     function phaseWhole() {
+        // The parts dim (slot glow off); the whole lights up and glows.
+        if (glowSmallLeft) glowSmallLeft.classList.remove("is-charged");
+        if (glowSmallRight) glowSmallRight.classList.remove("is-charged");
         smallBats.forEach(function (b) {
             b.classList.add("is-dim");
-            b.classList.remove("is-glow");
         });
         bigBats.forEach(function (b) {
             b.classList.remove("is-dim");
-            b.classList.add("is-glow");
         });
         if (bigGlow) bigGlow.classList.add("is-charged");
     }
@@ -145,20 +158,20 @@
         if (q) q.classList.remove("is-open");
         if (textEl) textEl.textContent = "";
 
-        // Open the banner and type the prompt.
+        // Open the banner, then type the prompt. The phases start when
+        // the text begins, so the glow lines up with "These 2 parts".
         later(function () {
             if (q) q.classList.add("is-open");
             later(function () {
                 if (textEl) typewriter(textEl, full, TYPE_SPEED);
-            }, 650);
+
+                // Phase A — "These 2 parts": part slots glow one by one.
+                phaseParts();
+
+                // Phase B — "make this whole.": the whole lights up.
+                later(phaseWhole, SLOT_GLOW_STAGGER + PHASE_GAP);
+            }, 650); // after the banner unrolls
         }, 150);
-
-        // Phase A — "These 2 parts": parts glow one by one.
-        later(phaseParts, 250);
-
-        // Phase B — "make this whole.": the whole lights up.
-        const phaseBAt = 250 + smallBats.length * GLOW_STAGGER + PHASE_GAP;
-        later(phaseWhole, phaseBAt);
     }
 
     global.ConceptScreen = { play: play };

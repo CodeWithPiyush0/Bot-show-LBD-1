@@ -235,9 +235,30 @@
             <section class="screen screen--4" id="screen-4" data-screen="4">
 
                 <div class="s4-content" id="s4-content">
-                    <!-- Circuit-board panel -->
+                    <!-- Charged (green) circuit-board panel, same layering
+                         as Screen 2's charged end state. Base panel is green;
+                         the small-slot overlays keep the parts' slots orange;
+                         the big-slot overlay is green (the whole). -->
                     <img
-                        class="panel"
+                        class="panel is-green"
+                        src="assets/images/battery_slots.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <img
+                        class="panel panel--small-left"
+                        src="assets/images/battery_slots.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <img
+                        class="panel panel--small-right"
+                        src="assets/images/battery_slots.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <img
+                        class="panel panel--big is-green"
                         src="assets/images/battery_slots.svg"
                         alt=""
                         aria-hidden="true"
@@ -246,6 +267,19 @@
                     <img
                         class="slot-glow slot-glow--big"
                         src="assets/images/Bigger_Slot.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <!-- Glow overlays for the small (part) slots -->
+                    <img
+                        class="slot-glow slot-glow--small-left"
+                        src="assets/images/Smaller_Slot.svg"
+                        alt=""
+                        aria-hidden="true"
+                    />
+                    <img
+                        class="slot-glow slot-glow--small-right"
+                        src="assets/images/Smaller_Slot.svg"
                         alt=""
                         aria-hidden="true"
                     />

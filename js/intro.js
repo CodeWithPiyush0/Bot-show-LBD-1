@@ -55,7 +55,7 @@
        Opens the banner, types the prompt, holds (placeholder for the
        VO), then closes back to just the mascot face. The gameplay
        content is kept compact while the banner is open. */
-    const HOLD_AFTER_TEXT = 3500; // ms to wait after typing (VO placeholder)
+    const HOLD_AFTER_TEXT = 600; // brief beat after typing, then close so dragging is available
 
     function playScreen2Intro() {
         const content = document.getElementById("s2-content");

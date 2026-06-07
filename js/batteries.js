@@ -290,22 +290,22 @@
             }
         }, 900);
 
-        // After the message has been read, zoom back OUT of the bot to
-        // reveal it celebrating (Screen 3).
+        // Shortly after the message, zoom back OUT of the bot to reveal
+        // it celebrating (Screen 3). (Brief beat; tune with the VO later.)
         global.setTimeout(function () {
             if (window.GameFx && window.GameFx.exitBot) {
                 window.GameFx.exitBot();
             } else if (window.GameNav) {
                 window.GameNav.show("screen-3");
             }
-        }, 5900);
+        }, 3200);
 
         // The bot dances ~3s, then move on to the concept screen.
-        // (5900 zoom-out start + ~1300 settle + 3000 dance)
+        // (3200 zoom-out start + ~1300 settle + 3000 dance)
         global.setTimeout(function () {
             if (window.GameNav) window.GameNav.show("screen-4");
             if (window.ConceptScreen) window.ConceptScreen.play();
-        }, 10200);
+        }, 7500);
     }
 
     /* ---- ghost hint: demonstrate the drag a few times ---- */
