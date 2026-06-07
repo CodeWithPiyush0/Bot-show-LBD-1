@@ -1,0 +1,402 @@
+/* ===========================================================
+   part2.js
+   Part Two — fixing overcharged bots by SPLITTING the whole into
+   two parts (the inverse of Part One).
+     Screen 5: overcharged bots intro -> tap centre bot -> zoom in
+     Screen 6: big slot starts full; drag the two groups OUT into
+               the small slots; when both are filled the bot is fixed
+     Screen 7: the fixed bot celebrates
+     Screen 8: concept "This whole is made of these 2 parts"
+   Reuses the shared geometry/components from Part One.
+   =========================================================== */
+
+(function (global) {
+    "use strict";
+
+    const DESIGN_W = 1920;
+    const DESIGN_H = 1080;
+    const PLACED_SCALE = 0.82;
+    const TYPE = 45;
+
+    // The two groups start as the two rows of the (full) big slot.
+    const BIG_CX = 965.5;
+    const GROUPS = [
+        { color: "blue", count: 4, cx: 965.5, cy: 217 },
+        { color: "yellow", count: 6, cx: 965.5, cy: 319 },
+    ];
+
+    // Inner recesses for placing groups when dropped.
+    const SLOTS = {
+        "small-left": { x: 423, y: 568, w: 407, h: 139 },
+        "small-right": { x: 1103, y: 567, w: 407, h: 139 },
+    };
+    const DROPPABLE = ["small-left", "small-right"];
+
+    const pctX = (px) => (px / DESIGN_W) * 100 + "%";
+    const pctY = (px) => (px / DESIGN_H) * 100 + "%";
+    const byId = (id) => document.getElementById(id);
+
+    let stage = null;
+    let s6 = null;
+    let centerTapEnabled = false;
+    let splitEnabled = false;
+    let fixed = false;
+    const slotOccupant = {};
+    const slotEls = {};
+
+    /* ---------- shared helpers ---------- */
+    function typewriter(el, text, speed, onDone) {
+        el.textContent = "";
+        let i = 0;
+        (function tick() {
+            if (i >= text.length) {
+                if (onDone) onDone();
+                return;
+            }
+            el.textContent += text.charAt(i);
+            i += 1;
+            global.setTimeout(tick, speed);
+        })();
+    }
+
+    function setTransform(el, scale) {
+        el.style.transform = "translate(-50%, -50%) scale(" + scale + ")";
+    }
+
+    // Open a banner and type a message (optionally a 2nd one), leaving it open.
+    function openBanner(q, msg1, msg2, onDone) {
+        const textEl = q.querySelector(".question__text");
+        q.classList.remove("is-open");
+        textEl.textContent = "";
+        global.setTimeout(function () {
+            q.classList.add("is-open");
+            global.setTimeout(function () {
+                typewriter(textEl, msg1, TYPE, function () {
+                    if (msg2) {
+                        global.setTimeout(function () {
+                            typewriter(textEl, msg2, TYPE, onDone);
+                        }, 1600);
+                    } else if (onDone) {
+                        onDone();
+                    }
+                });
+            }, 650);
+        }, 150);
+    }
+
+    /* ---------- generic zoom transitions (reuse main.css keyframes) ---------- */
+    function zoomInto(fromId, toId, onDone) {
+        const from = byId(fromId);
+        const to = byId(toId);
+        from.classList.add("is-zooming");
+        global.setTimeout(function () {
+            global.GameNav.show(toId);
+            to.classList.add("is-entering");
+        }, 380);
+        global.setTimeout(function () {
+            to.classList.remove("is-entering");
+            from.classList.remove("is-zooming");
+            if (onDone) onDone();
+        }, 1200);
+    }
+
+    function zoomOutTo(fromId, toId, onDone) {
+        const from = byId(fromId);
+        const to = byId(toId);
+        from.classList.add("is-zooming-out");
+        global.setTimeout(function () {
+            global.GameNav.show(toId);
+            to.classList.add("is-revealing");
+        }, 150);
+        global.setTimeout(function () {
+            to.classList.remove("is-revealing");
+            from.classList.remove("is-zooming-out");
+            if (onDone) onDone();
+        }, 1300);
+    }
+
+    /* ---------- Screen 5: overcharged intro ---------- */
+    function startIntro() {
+        const q = byId("question-5");
+        if (!q) return;
+        centerTapEnabled = false;
+        openBanner(
+            q,
+            q.querySelector(".question__text").getAttribute("data-text"),
+            q.querySelector(".question__text").getAttribute("data-text2"),
+            function () {
+                centerTapEnabled = true; // allow tapping the centre bot
+            }
+        );
+
+        const center = document.querySelector(".bot--oc-center");
+        if (center && !center.dataset.wired) {
+            center.dataset.wired = "1";
+            center.addEventListener("click", function () {
+                if (!centerTapEnabled) return;
+                centerTapEnabled = false;
+                zoomInto("screen-5", "screen-6", startSplit);
+            });
+        }
+    }
+
+    /* ---------- Screen 6: split the batteries ---------- */
+    function makeGroup(g) {
+        const el = document.createElement("div");
+        el.className = "battery-group battery-group--" + g.color;
+        el.dataset.color = g.color;
+        el.dataset.homeX = g.cx;
+        el.dataset.homeY = g.cy;
+        el.dataset.location = "big";
+        for (let i = 0; i < g.count; i++) {
+            const b = document.createElement("img");
+            b.className = "battery battery--" + g.color;
+            b.src = "assets/images/" + g.color + "_battery.png";
+            b.alt = "";
+            b.draggable = false;
+            el.appendChild(b);
+        }
+        el.style.left = pctX(g.cx);
+        el.style.top = pctY(g.cy);
+        setTransform(el, PLACED_SCALE);
+        return el;
+    }
+
+    function startSplit() {
+        stage = byId("stage");
+        s6 = byId("s6-content");
+        if (!s6) return;
+        fixed = false;
+        splitEnabled = false;
+
+        DROPPABLE.forEach(function (id) {
+            slotOccupant[id] = null;
+            slotEls[id] = s6.querySelector(".slot--" + id);
+        });
+
+        // Build the two groups inside the (full) big slot, if not already,
+        // and (re)set them to their home rows.
+        if (!s6.querySelector(".battery-group")) {
+            GROUPS.forEach(function (g) {
+                const el = makeGroup(g);
+                s6.appendChild(el);
+                attachDrag(el);
+            });
+        } else {
+            s6.querySelectorAll(".battery-group").forEach(function (el) {
+                el.dataset.location = "big";
+                el.style.left = pctX(parseFloat(el.dataset.homeX));
+                el.style.top = pctY(parseFloat(el.dataset.homeY));
+                setTransform(el, PLACED_SCALE);
+            });
+        }
+
+        // Shrink the board while the banner is open (so it clears the
+        // banner), then close the banner and enable dragging.
+        s6.classList.add("is-compact");
+        const q = byId("question-6");
+        const textEl = q.querySelector(".question__text");
+        // Show only the actionable instruction so dragging starts soon.
+        // ("Let us split its batteries." is the zoom-in/VO line.)
+        openBanner(
+            q,
+            textEl.getAttribute("data-text2"),
+            null,
+            function () {
+                global.setTimeout(function () {
+                    q.classList.remove("is-open"); // close to mascot
+                    s6.classList.remove("is-compact"); // grow back
+                    global.setTimeout(function () {
+                        splitEnabled = true; // dragging available
+                    }, 600);
+                }, 600);
+            }
+        );
+    }
+
+    function slotAtPoint(x, y) {
+        for (let i = 0; i < DROPPABLE.length; i++) {
+            const el = slotEls[DROPPABLE[i]];
+            if (!el) continue;
+            const r = el.getBoundingClientRect();
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                return DROPPABLE[i];
+            }
+        }
+        return null;
+    }
+
+    function clearHover() {
+        DROPPABLE.forEach(function (id) {
+            if (slotEls[id]) slotEls[id].classList.remove("is-hover");
+        });
+    }
+
+    function freeSlotOf(group) {
+        const prev = group.dataset.location;
+        if (prev && slotOccupant[prev] === group) slotOccupant[prev] = null;
+    }
+
+    function sendHome(group) {
+        freeSlotOf(group);
+        group.dataset.location = "big";
+        group.style.left = pctX(parseFloat(group.dataset.homeX));
+        group.style.top = pctY(parseFloat(group.dataset.homeY));
+        setTransform(group, PLACED_SCALE);
+    }
+
+    function placeInSlot(group, id) {
+        freeSlotOf(group);
+        if (slotOccupant[id] && slotOccupant[id] !== group) sendHome(slotOccupant[id]);
+        slotOccupant[id] = group;
+        group.dataset.location = id;
+        const r = SLOTS[id];
+        group.style.left = pctX(r.x + r.w / 2);
+        group.style.top = pctY(r.y + r.h / 2);
+        setTransform(group, PLACED_SCALE);
+
+        if (slotOccupant["small-left"] && slotOccupant["small-right"] && !fixed) {
+            onFixed();
+        }
+    }
+
+    function attachDrag(group) {
+        let startX = 0;
+        let startY = 0;
+        let baseLeft = 0;
+        let baseTop = 0;
+        let rect = null;
+        let dragging = false;
+
+        group.addEventListener("pointerdown", function (e) {
+            if (!splitEnabled || fixed) return;
+            e.preventDefault();
+            dragging = true;
+            rect = stage.getBoundingClientRect();
+            startX = e.clientX;
+            startY = e.clientY;
+            baseLeft = parseFloat(group.style.left);
+            baseTop = parseFloat(group.style.top);
+            group.classList.add("is-dragging");
+            group.setPointerCapture(e.pointerId);
+        });
+        group.addEventListener("pointermove", function (e) {
+            if (!dragging) return;
+            group.style.left = baseLeft + ((e.clientX - startX) / rect.width) * 100 + "%";
+            group.style.top = baseTop + ((e.clientY - startY) / rect.height) * 100 + "%";
+            clearHover();
+            const id = slotAtPoint(e.clientX, e.clientY);
+            if (id) slotEls[id].classList.add("is-hover");
+        });
+        function end(e) {
+            if (!dragging) return;
+            dragging = false;
+            group.classList.remove("is-dragging");
+            clearHover();
+            const id = slotAtPoint(e.clientX, e.clientY);
+            if (id) placeInSlot(group, id);
+            else sendHome(group);
+        }
+        group.addEventListener("pointerup", end);
+        group.addEventListener("pointercancel", end);
+    }
+
+    function onFixed() {
+        fixed = true;
+        splitEnabled = false;
+        const q = byId("question-6");
+        // announce, then zoom out to the celebrating bot
+        openBanner(q, "This bot is fixed.", null, null);
+        global.setTimeout(function () {
+            zoomOutTo("screen-6", "screen-7", function () {
+                // dance ~3s, then the concept screen
+                global.setTimeout(function () {
+                    global.GameNav.show("screen-8");
+                    playConcept2();
+                }, 3000);
+            });
+        }, 2200);
+    }
+
+    /* ---------- Screen 8: concept "a whole is made of 2 parts" ---------- */
+    const C_LAYOUT = [
+        { color: "blue", count: 4, cx: 626.5, cy: 637.5, where: "small" },
+        { color: "yellow", count: 6, cx: 1306.5, cy: 636.5, where: "small" },
+        { color: "blue", count: 4, cx: 965.5, cy: 217, where: "big" },
+        { color: "yellow", count: 6, cx: 965.5, cy: 319, where: "big" },
+    ];
+    let c2Built = false;
+    const c2Small = [];
+    const c2Big = [];
+    let c2BigGlow = null;
+    let c2GlowL = null;
+    let c2GlowR = null;
+
+    function buildConcept2() {
+        const content = byId("s8-content");
+        if (!content) return;
+        c2BigGlow = document.querySelector("#screen-8 .slot-glow--big");
+        c2GlowL = document.querySelector("#screen-8 .slot-glow--small-left");
+        c2GlowR = document.querySelector("#screen-8 .slot-glow--small-right");
+        C_LAYOUT.forEach(function (g) {
+            const el = makeGroup({ color: g.color, count: g.count, cx: g.cx, cy: g.cy });
+            el.dataset.location = "";
+            content.appendChild(el);
+            const arr = g.where === "big" ? c2Big : c2Small;
+            for (let i = 0; i < el.children.length; i++) arr.push(el.children[i]);
+        });
+        c2Built = true;
+    }
+
+    function playConcept2() {
+        if (!c2Built) buildConcept2();
+        const q = byId("question-8");
+        const textEl = q ? q.querySelector(".question__text") : null;
+        const full = textEl ? textEl.getAttribute("data-text") || "" : "";
+
+        // reset: parts dim, whole full (inverse of Part One)
+        c2Small.forEach(function (b) {
+            b.classList.add("is-dim");
+        });
+        c2Big.forEach(function (b) {
+            b.classList.remove("is-dim");
+        });
+        if (c2BigGlow) c2BigGlow.classList.remove("is-charged");
+        if (c2GlowL) c2GlowL.classList.remove("is-charged");
+        if (c2GlowR) c2GlowR.classList.remove("is-charged");
+
+        if (q) q.classList.remove("is-open");
+        if (textEl) textEl.textContent = "";
+
+        global.setTimeout(function () {
+            if (q) q.classList.add("is-open");
+            global.setTimeout(function () {
+                if (textEl) typewriter(textEl, full, TYPE);
+
+                // Phase A — "This whole": the whole (big slot) glows.
+                if (c2BigGlow) c2BigGlow.classList.add("is-charged");
+
+                // Phase B — "...is made of these 2 parts": parts light up one by one.
+                global.setTimeout(function () {
+                    if (c2BigGlow) c2BigGlow.classList.remove("is-charged");
+                    c2Big.forEach(function (b) {
+                        b.classList.add("is-dim");
+                    });
+                    c2Small.forEach(function (b) {
+                        b.classList.remove("is-dim");
+                    });
+                    if (c2GlowL) c2GlowL.classList.add("is-charged");
+                    global.setTimeout(function () {
+                        if (c2GlowR) c2GlowR.classList.add("is-charged");
+                    }, 600);
+                }, 2400);
+            }, 650);
+        }, 150);
+    }
+
+    global.Part2 = {
+        startIntro: startIntro,
+        startSplit: startSplit,
+        playConcept2: playConcept2,
+    };
+})(window);

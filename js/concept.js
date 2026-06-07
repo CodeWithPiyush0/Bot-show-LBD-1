@@ -169,7 +169,14 @@
                 phaseParts();
 
                 // Phase B — "make this whole.": the whole lights up.
-                later(phaseWhole, SLOT_GLOW_STAGGER + PHASE_GAP);
+                const phaseBAt = SLOT_GLOW_STAGGER + PHASE_GAP;
+                later(phaseWhole, phaseBAt);
+
+                // Part One complete -> automatically start Part Two.
+                later(function () {
+                    if (global.GameNav) global.GameNav.show("screen-5");
+                    if (global.Part2) global.Part2.startIntro();
+                }, phaseBAt + 3000);
             }, 650); // after the banner unrolls
         }, 150);
     }

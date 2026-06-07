@@ -40,12 +40,14 @@ LBD-1/
 │   ├── screen2.css         # Screen 2 (panel, slots, trays, batteries, charge fx, glow, content scaling)
 │   ├── screen3.css         # Screen 3 (charged bot celebration)
 │   ├── screen4.css         # Screen 4 (concept: 2 parts make a whole)
+│   ├── part2.css           # PART TWO screens 5-8 (overcharged/split)
 │   └── responsive.css      # breakpoint stubs (mostly empty — see §4)
 ├── js/
 │   ├── navigation.js       # GameNav.show(screenId) — screen switching
 │   ├── intro.js            # Screen 1 intro + Screen 2 intro (typewriter, banner open/close)
 │   ├── batteries.js        # Screen 2 drag-drop, charge sequence, ghost hint, fully-charged finale
-│   ├── concept.js          # Screen 4 (part/whole teaching animation)
+│   ├── concept.js          # Screen 4 (part/whole teaching animation) + auto-start Part 2
+│   ├── part2.js            # PART TWO: intro, split puzzle, celebrate, concept (Screens 5-8)
 │   └── main.js             # entry: orange-bot click → zoom in; exitBot (zoom out); Esc/#hash helpers
 └── assets/
     ├── images/             # see §9
@@ -279,6 +281,35 @@ two-phase animation synced to the banner prompt **"These 2 parts make this whole
   (`.slot-glow--big.is-charged`).
 Phase timings are **placeholders for the VO** (`SLOT_GLOW_STAGGER`, `PHASE_GAP` in concept.js).
 `.screen--4 .battery.is-dim` is scoped so Screen 2 is unaffected. Deep-link: `index.html#4`.
+
+---
+
+## 8d. PART TWO — fixing overcharged bots (`part2.css` + `part2.js`)
+
+The inverse of Part One: bots are **overcharged** (the whole is too full), and the
+child **splits** the whole into two parts. Starts **automatically** after Part One's
+Screen 4 concept finishes (`concept.js` → `GameNav.show("screen-5")` + `Part2.startIntro()`).
+
+Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
+- **Screen 5** (`screen--5`, intro): room bg + spotlight + 3 bots; the **centre**
+  overcharged bot = `White_purple_bot.webp` (dizzy, red `!`). Banner types
+  "Oh no! A few bots have overcharged." → "Let's start fixing this bot." → tapping the
+  centre bot **zooms in** (`Part2` `zoomInto`, white/purple chest origin 50.5%/70%) to Screen 6.
+  (Side bots reuse Part-1 art — swap for dedicated overcharged art if desired.)
+- **Screen 6** (`screen--6`, split puzzle): the **big slot starts FULL** (blue row +
+  yellow row, green `panel--big is-green`); small slots empty. Banner prompts "Drag the
+  batteries to the small slots." then closes; the player drags each group **big → small**.
+  When **both small slots are filled**, `onFixed()` shows "This bot is fixed." then
+  **zooms OUT** to Screen 7. (Same drag pattern as Part 1, reversed direction.)
+- **Screen 7** (`screen--7`, celebrate): `White_purple_bot_charged.webp` dances under
+  the spotlight (reuses `.charged-bot`/`botDance`). After ~3s → Screen 8.
+- **Screen 8** (`screen--8`, concept): "This whole is made of these 2 parts." — the
+  **inverse** of Screen 4: Phase A "This whole" → big slot glows; Phase B "…2 parts" →
+  the two part slots glow one by one. Reuses `.s4-content`, glows, battery layout.
+
+All Part-2 logic is in `part2.js` (`Part2.startIntro/startSplit/playConcept2`), styles in
+`part2.css` (scoped `.screen--5/6/7/8`, reusing all shared components + the zoom keyframes).
+Timings are VO-placeholders. **No new assets needed** (uses existing webp).
 
 ---
 

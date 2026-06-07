@@ -1,0 +1,119 @@
+/* ===========================================================
+   part2.css
+   Part Two — fixing overcharged bots (split a whole into parts).
+   Mirrors Part One; reuses the shared components (.bot, .spotlight,
+   .floor, .question, .battery*, .panel*, .slot*, .slot-glow*,
+   .charged-bot) and the zoom keyframes from main.css.
+   Screens: 5 (intro) · 6 (split puzzle) · 7 (celebrate) · 8 (concept)
+   =========================================================== */
+
+/* ---------- Screen 5 — overcharged bots intro ---------- */
+.screen--5 {
+    background-image: var(--bg-image);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+/* Three bots; the white/purple one (centre) is the overcharged one to fix */
+.bot--oc-left {
+    left: 7.135%;
+    top: 31.111%;
+    width: 24.896%;
+}
+.bot--oc-center {
+    left: 38.698%; /* 743 / 1920 */
+    top: 34.259%; /* 370 / 1080 */
+    width: 24.01%; /* 461 / 1920 */
+    z-index: 6;
+}
+.bot--oc-right {
+    left: 67.81%; /* 1302 / 1920 */
+    top: 38.611%;
+    width: 21.114%; /* 405 / 1920 */
+}
+
+/* Banner opens/closes (class-driven, like the other screens) */
+.screen--5 .question__template {
+    clip-path: inset(0 91.2% 0 0);
+    transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen--5 .question.is-open .question__template {
+    clip-path: inset(0 0 0 0);
+}
+
+/* ---------- Screen 6 — split puzzle ---------- */
+.screen--6 {
+    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+}
+.s6-content {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.s6-content.is-compact {
+    transform: translateY(10%) scale(0.85);
+}
+.screen--6 .question__template {
+    clip-path: inset(0 91.2% 0 0);
+    transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen--6 .question.is-open .question__template {
+    clip-path: inset(0 0 0 0);
+}
+
+/* ---------- Screen 7 — the fixed bot celebrates ---------- */
+.screen--7 {
+    background-image: var(--bg-image);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+.screen--7.is-active .charged-bot img {
+    animation: botDance 1.25s ease-in-out infinite;
+}
+
+/* ---------- Screen 8 — concept: a whole is made of 2 parts ---------- */
+.screen--8 {
+    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+}
+.screen--8 .question__template {
+    clip-path: inset(0 91.2% 0 0);
+    transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen--8 .question.is-open .question__template {
+    clip-path: inset(0 0 0 0);
+}
+.screen--8 .battery {
+    transition: opacity 0.4s ease;
+}
+.screen--8 .battery.is-dim {
+    opacity: 0.2;
+}
+.screen--8 .slot-glow.is-charged {
+    animation: slotGlowPulse 1.3s ease-in-out infinite alternate;
+}
+
+/* ---------- Part 2 zoom transitions (white/purple bot's chest) ---------- */
+.screen--5.is-zooming {
+    transform-origin: 50.5% 70%;
+    animation: zoomIntoBot 0.75s cubic-bezier(0.42, 0, 1, 1) forwards;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+.screen--6.is-entering {
+    transform-origin: 50.5% 70%;
+    animation: enterInsideBot 0.72s cubic-bezier(0, 0, 0.2, 1);
+    will-change: transform, opacity;
+}
+.screen--6.is-zooming-out {
+    transform-origin: 50.5% 70%;
+    animation: zoomOutOfBot 0.55s cubic-bezier(0.42, 0, 1, 1) forwards;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+.screen--7.is-revealing {
+    transform-origin: 50.5% 70%;
+    animation: revealBot 0.8s cubic-bezier(0, 0, 0.2, 1);
+    will-change: transform, opacity;
+}

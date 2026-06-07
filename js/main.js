@@ -81,6 +81,21 @@
             window.GameNav.show("screen-4");
             if (window.ConceptScreen) window.ConceptScreen.play();
         }
+        if (hash === "5") {
+            window.GameNav.show("screen-5");
+            if (window.Part2) window.Part2.startIntro();
+        }
+        if (hash === "6") {
+            window.GameNav.show("screen-6");
+            if (window.Part2) window.Part2.startSplit();
+        }
+        if (hash === "7") {
+            window.GameNav.show("screen-7");
+        }
+        if (hash === "8") {
+            window.GameNav.show("screen-8");
+            if (window.Part2) window.Part2.playConcept2();
+        }
 
         console.log("Bot Show: ready.");
     }
