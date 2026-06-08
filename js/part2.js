@@ -126,6 +126,16 @@
         const msg2 = textEl.getAttribute("data-text2");
         const msg3 = textEl.getAttribute("data-text3");
 
+        // Set center bot blue color filter for Level 2
+        const centerBot = document.querySelector(".bot--oc-center");
+        if (centerBot) {
+            if (window.currentLevel === 2) {
+                centerBot.classList.add("hue-blue");
+            } else {
+                centerBot.classList.remove("hue-blue");
+            }
+        }
+
         centerTapEnabled = false;
         // reset to Phase A state
         screen5.classList.remove("is-spotlit");
@@ -240,22 +250,20 @@
             slotEls[id] = s6.querySelector(".slot--" + id);
         });
 
-        // Build the two groups inside the (full) big slot, if not already,
-        // and (re)set them to their home rows.
-        if (!s6.querySelector(".battery-group")) {
-            GROUPS.forEach(function (g) {
-                const el = makeGroup(g);
-                s6.appendChild(el);
-                attachDrag(el);
-            });
-        } else {
-            s6.querySelectorAll(".battery-group").forEach(function (el) {
-                el.dataset.location = "big";
-                el.style.left = pctX(parseFloat(el.dataset.homeX));
-                el.style.top = pctY(parseFloat(el.dataset.homeY));
-                setTransform(el, PLACED_SCALE);
-            });
-        }
+        // Clear existing groups first to handle level switching / replays
+        const oldGroups = s6.querySelectorAll(".battery-group");
+        oldGroups.forEach(el => el.remove());
+
+        // Adjust counts dynamically based on level
+        GROUPS[0].count = (window.currentLevel === 2) ? 5 : 4;
+        GROUPS[1].count = 6; // Always 6 yellow
+
+        // Rebuild the battery groups
+        GROUPS.forEach(function (g) {
+            const el = makeGroup(g);
+            s6.appendChild(el);
+            attachDrag(el);
+        });
         
         updateBigSlotState();
 
@@ -390,6 +398,17 @@
     function onFixed() {
         fixed = true;
         splitEnabled = false;
+
+        // Apply blue color filter to the fixed celebrating bot in Screen 7 for Level 2
+        const s7Bot = document.querySelector("#screen-7 .charged-bot img");
+        if (s7Bot) {
+            if (window.currentLevel === 2) {
+                s7Bot.classList.add("hue-blue");
+            } else {
+                s7Bot.classList.remove("hue-blue");
+            }
+        }
+
         const q = byId("question-6");
         // announce, then zoom out to the celebrating bot
         openBanner(q, "This bot is fixed.", null, null);
@@ -424,6 +443,18 @@
         c2BigGlow = document.querySelector("#screen-8 .slot-glow--big");
         c2GlowL = document.querySelector("#screen-8 .slot-glow--small-left");
         c2GlowR = document.querySelector("#screen-8 .slot-glow--small-right");
+
+        // Clear existing groups
+        const oldGroups = content.querySelectorAll(".battery-group");
+        oldGroups.forEach(el => el.remove());
+        c2Small.length = 0;
+        c2Big.length = 0;
+
+        // Set counts based on level
+        const countBlue = (window.currentLevel === 2) ? 5 : 4;
+        C_LAYOUT[0].count = countBlue; // small-left
+        C_LAYOUT[2].count = countBlue; // big top row
+
         C_LAYOUT.forEach(function (g) {
             const el = makeGroup({ color: g.color, count: g.count, cx: g.cx, cy: g.cy });
             el.dataset.location = "";
@@ -435,7 +466,7 @@
     }
 
     function playConcept2() {
-        if (!c2Built) buildConcept2();
+        buildConcept2();
         const q = byId("question-8");
         const textEl = q ? q.querySelector(".question__text") : null;
         const full = textEl ? textEl.getAttribute("data-text") || "" : "";
@@ -476,6 +507,11 @@
                         if (c2GlowR) c2GlowR.classList.add("is-charged");
                     }, 600);
                 }, 2400);
+
+                // Transition to Level 2 / Completion Screen after teaching completes
+                global.setTimeout(function () {
+                    if (global.showLevelTransition) global.showLevelTransition();
+                }, 6500);
             }, 650);
         }, 150);
     }
@@ -485,4 +521,7 @@
         startSplit: startSplit,
         playConcept2: playConcept2,
     };
+    document.addEventListener("DOMContentLoaded", function () {
+        // Run any deferred init
+    });
 })(window);

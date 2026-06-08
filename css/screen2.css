@@ -351,3 +351,42 @@
 .screen--2 .question.is-open .question__template {
     clip-path: inset(0 0 0 0); /* open: full banner */
 }
+
+/* ===========================================================
+   Level 2 Interior Overrides (Purple Theme)
+   =========================================================== */
+
+/* Hue rotate panels to purple (240deg maps orange to purple) */
+.level-2 .panel,
+.level-2 .panel--small-left,
+.level-2 .panel--small-right,
+.level-2 .panel--big {
+    filter: hue-rotate(240deg);
+}
+
+/* Keep success green state overriding purple */
+.level-2 .panel.is-green,
+.level-2 .panel--big.is-green {
+    filter: hue-rotate(110deg) !important;
+}
+
+/* Purple flow pulses and wire glow */
+.level-2 .charge-flow {
+    filter: drop-shadow(0 0 5px #d28cff);
+}
+.level-2 .charge-flow path {
+    stroke: #f5e6ff;
+}
+
+/* Keep success green glow and flows overriding purple */
+.level-2 .charge-fx.is-green .charge-glow {
+    opacity: 1;
+    filter: drop-shadow(0 0 9px #4dffa0) !important;
+}
+.level-2 .charge-fx.is-green .charge-flow {
+    filter: drop-shadow(0 0 5px #6dffa6) !important;
+}
+.level-2 .charge-fx.is-green .charge-flow path {
+    stroke: #e6fff0 !important;
+}
+

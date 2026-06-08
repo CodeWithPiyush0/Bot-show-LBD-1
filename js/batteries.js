@@ -245,12 +245,10 @@
             }
         }, 200);
 
-        // 3) top slot glows green, current settles to green, panel turns green
+        // 3) top slot glows green, current settles to green, only big slot portion turns green
         global.setTimeout(function () {
             if (bigGlow) bigGlow.classList.add("is-charged");
             if (chargeFx) chargeFx.classList.add("is-green");
-            const panel = document.querySelector(".panel");
-            if (panel) panel.classList.add("is-green");
             const panelBig = document.querySelector(".panel--big");
             if (panelBig) panelBig.classList.add("is-green");
         }, 2000);
@@ -477,6 +475,52 @@
         group.addEventListener("pointercancel", endDrag);
     }
 
+    function setupBatteries() {
+        if (!contentEl) return;
+
+        // Clear existing groups and ghosts
+        const oldGroups = contentEl.querySelectorAll(".battery-group, .tray-ghost");
+        oldGroups.forEach(el => el.remove());
+
+        // Set counts based on level
+        GROUPS[0].count = (window.currentLevel === 2) ? 6 : 4;
+        GROUPS[1].count = 6; // Always 6 yellow
+
+        // Reset slot occupancies
+        DROPPABLE.forEach((id) => {
+            slotOccupant[id] = null;
+        });
+        slotOccupant["big"] = null;
+
+        // Recreate the groups and ghosts
+        createGroups(contentEl);
+
+        // Reset state variables
+        charged = false;
+        enabled = false;
+
+        // Reset elements class lists
+        contentEl.classList.remove("is-charged-final");
+        const panel = document.querySelector(".panel");
+        if (panel) panel.classList.remove("is-green");
+        const panelBig = document.querySelector(".panel--big");
+        if (panelBig) panelBig.classList.remove("is-green");
+        if (bigGlow) bigGlow.classList.remove("is-charged");
+        if (chargeFx) {
+            chargeFx.classList.remove("is-flowing", "is-active", "is-green");
+            chargeFx.style.display = "none";
+        }
+
+        // Reset tray and ghost styles
+        const trays = contentEl.querySelectorAll(".tray");
+        trays.forEach(tray => {
+            tray.style.opacity = "";
+            tray.style.display = "";
+            tray.style.pointerEvents = "";
+            tray.style.transition = "";
+        });
+    }
+
     function init() {
         stage = document.getElementById("stage");
         const screen = document.getElementById("screen-2");
@@ -492,11 +536,12 @@
             slotOccupant[id] = null;
         });
 
-        createGroups(screen);
+        setupBatteries();
     }
 
     global.Batteries = {
         init: init,
+        setup: setupBatteries,
         setEnabled: function (v) {
             enabled = !!v;
         },

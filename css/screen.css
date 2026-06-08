@@ -197,3 +197,55 @@
     line-height: 1;
     white-space: nowrap;
 }
+
+/* ===========================================================
+   Level 2 Overrides
+   =========================================================== */
+
+/* Swap bot positions: Purple in center (active), Orange on left (completed) */
+.level-2 .bot--purple {
+    left: 37.5%;
+    top: 31.111%;
+    width: 24.896%;
+    z-index: 6;
+}
+
+.level-2 .bot--orange {
+    left: 7.9%;
+    top: 39.074%;
+    width: 23.408%;
+    z-index: 5;
+    cursor: default; /* already fixed */
+}
+.level-2 .bot--orange:hover {
+    transform: none; /* disable hover scale for fixed bot */
+}
+
+/* Swap floor shadows */
+.level-2 .floor--purple {
+    left: 41.3%;
+    top: 89.907%;
+    width: 17.4%;
+}
+
+.level-2 .floor--orange {
+    left: 10.885%;
+    top: 83.148%;
+    width: 16.667%;
+}
+
+/* Purple floor glow under centered Purple bot */
+.level-2 .floor--glow {
+    background: radial-gradient(
+        ellipse at center,
+        rgba(215, 120, 255, 0.55) 0%,
+        rgba(155, 50, 255, 0.28) 45%,
+        rgba(120, 30, 255, 0) 75%
+    );
+}
+
+/* Purple bot zoom-into origin (chest battery icon) */
+.level-2 .screen--1.is-zooming {
+    transform-origin: 50% 64.5% !important;
+}
+

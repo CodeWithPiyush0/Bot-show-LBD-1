@@ -20,6 +20,7 @@
         "screen-4": "#0b0b0c",
         "screen-6": "#0b0b0c",
         "screen-8": "#0b0b0c",
+        "screen-transition": "#05010a",
     };
     const DEFAULT_LETTERBOX = "#5a3624";
 

@@ -14,16 +14,30 @@
     // (Reuses the same entry points the deep-links / flow use.)
     const SCREENS = [
         { label: "0 · Start (Pre-LBD)", go: function () { nav("screen-pre"); } },
-        { label: "1 · Choose bot (P1)", go: function () { nav("screen-1"); call(global.Screen1Intro, "play"); } },
-        { label: "2 · Charge puzzle", go: function () { nav("screen-2"); call(global.Screen2Intro, "play"); } },
-        { label: "3 · Charged bot", go: function () { nav("screen-3"); } },
-        { label: "4 · Concept (parts → whole)", go: function () { nav("screen-4"); call(global.ConceptScreen, "play"); } },
-        { label: "— Part 2 —", go: null },
-        { label: "5 · Overcharged intro", go: function () { nav("screen-5"); call(global.Part2, "startIntro"); } },
-        { label: "6 · Split puzzle", go: function () { nav("screen-6"); call(global.Part2, "startSplit"); } },
-        { label: "7 · Fixed bot", go: function () { nav("screen-7"); } },
-        { label: "8 · Concept (whole → parts)", go: function () { nav("screen-8"); call(global.Part2, "playConcept2"); } },
+        { label: "L1 -> L2 Transition", go: function () { nav("screen-transition"); if (global.showLevelTransition) global.showLevelTransition(); } },
+        { label: "— Level 1 (Tutorial) —", go: null },
+        { label: "1 · Choose bot", go: function () { setLvl(1); nav("screen-1"); call(global.Screen1Intro, "play"); } },
+        { label: "2 · Charge puzzle", go: function () { setLvl(1); nav("screen-2"); call(global.Screen2Intro, "play"); } },
+        { label: "3 · Charged bot", go: function () { setLvl(1); nav("screen-3"); } },
+        { label: "4 · Concept (P1)", go: function () { setLvl(1); nav("screen-4"); call(global.ConceptScreen, "play"); } },
+        { label: "5 · Overcharged intro", go: function () { setLvl(1); nav("screen-5"); call(global.Part2, "startIntro"); } },
+        { label: "6 · Split puzzle", go: function () { setLvl(1); nav("screen-6"); call(global.Part2, "startSplit"); } },
+        { label: "7 · Fixed bot", go: function () { setLvl(1); nav("screen-7"); } },
+        { label: "8 · Concept (P2)", go: function () { setLvl(1); nav("screen-8"); call(global.Part2, "playConcept2"); } },
+        { label: "— Level 2 (Real Game) —", go: null },
+        { label: "1 · Choose bot", go: function () { setLvl(2); nav("screen-1"); call(global.Screen1Intro, "play"); } },
+        { label: "2 · Charge puzzle", go: function () { setLvl(2); nav("screen-2"); call(global.Screen2Intro, "play"); } },
+        { label: "3 · Charged bot", go: function () { setLvl(2); nav("screen-3"); } },
+        { label: "4 · Concept (P1)", go: function () { setLvl(2); nav("screen-4"); call(global.ConceptScreen, "play"); } },
+        { label: "5 · Overcharged intro", go: function () { setLvl(2); nav("screen-5"); call(global.Part2, "startIntro"); } },
+        { label: "6 · Split puzzle", go: function () { setLvl(2); nav("screen-6"); call(global.Part2, "startSplit"); } },
+        { label: "7 · Fixed bot", go: function () { setLvl(2); nav("screen-7"); } },
+        { label: "8 · Concept (P2)", go: function () { setLvl(2); nav("screen-8"); call(global.Part2, "playConcept2"); } },
     ];
+
+    function setLvl(lvl) {
+        if (global.setupLevel) global.setupLevel(lvl);
+    }
 
     function nav(id) {
         if (global.GameNav) global.GameNav.show(id);

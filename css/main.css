@@ -112,6 +112,7 @@
     cursor: pointer;
     text-shadow: 0 0.15cqw 0.2cqw rgba(0, 0, 0, 0.3);
     animation: playPulse 1.3s ease-in-out infinite;
+    transition: transform 0.2s ease, filter 0.2s ease;
 }
 .play-btn:hover {
     filter: brightness(1.06);
@@ -127,6 +128,83 @@
     }
     50% {
         transform: translateX(-50%) scale(1.06);
+    }
+}
+
+/* ---------- Level Transition Screen ---------- */
+.screen--transition {
+    background: radial-gradient(ellipse at 50% 42%, #140526 0%, #05010a 82%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+.transition-card {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 0.2cqw solid rgba(255, 255, 255, 0.08);
+    border-radius: 2.5cqw;
+    padding: 4cqw 6cqw;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 2cqw 4cqw rgba(0, 0, 0, 0.6);
+    width: 60cqw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2cqw;
+    animation: cardEntrance 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(4%);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.transition-title {
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 700;
+    font-size: 5cqw;
+    color: #e09cff;
+    text-shadow: 0 0 2cqw rgba(224, 156, 255, 0.6);
+    margin: 0;
+}
+
+.transition-subtitle {
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 500;
+    font-size: 2.5cqw;
+    color: #ffffff;
+    opacity: 0.9;
+    margin: 0 0 1cqw 0;
+}
+
+.play-btn--transition {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    animation: transitionPulse 1.3s ease-in-out infinite;
+    background: linear-gradient(#d875ff, #8a14db);
+    box-shadow: 0 0.6cqw 0 #61099e, 0 1cqw 1.6cqw rgba(0, 0, 0, 0.45);
+}
+.play-btn--transition:active {
+    box-shadow: 0 0.2cqw 0 #61099e, 0 0.4cqw 0.8cqw rgba(0, 0, 0, 0.45);
+}
+
+@keyframes transitionPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
     }
 }
 

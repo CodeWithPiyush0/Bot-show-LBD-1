@@ -194,3 +194,49 @@
     animation: revealBot 0.8s cubic-bezier(0, 0, 0.2, 1);
     will-change: transform, opacity;
 }
+
+/* Blue hue shift filter for Level 2 overcharged / celebrating bots */
+.hue-blue {
+    filter: hue-rotate(-60deg) !important;
+}
+
+/* Gray/white panel filters to turn orange connectors white in Part 2 */
+.screen--6 .panel,
+.screen--6 .panel--small-left,
+.screen--6 .panel--small-right,
+.screen--8 .panel,
+.screen--8 .panel--small-left,
+.screen--8 .panel--small-right {
+    filter: grayscale(1) brightness(1.4);
+}
+
+/* White slot highlight for splitting puzzle (since White Bot is selected) */
+.screen--6 .slot.is-hover {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: inset 0 0 0 0.2cqw rgba(255, 255, 255, 0.85) !important,
+        0 0 1.5cqw rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Purple slot highlight for Level 2 (since Purple Bot is selected) */
+.level-2 .slot.is-hover {
+    background-color: rgba(210, 120, 255, 0.12) !important;
+    box-shadow: inset 0 0 0 0.2cqw rgba(210, 120, 255, 0.85) !important,
+        0 0 1.5cqw rgba(210, 120, 255, 0.55) !important;
+}
+
+/* Force slot shadow transitions to resolve to white (Screen 6) or purple (Level 2) instead of orange */
+.screen--6 .slot {
+    box-shadow: inset 0 0 0 0.2cqw rgba(255, 255, 255, 0),
+        0 0 1.5cqw rgba(255, 255, 255, 0);
+}
+
+.level-2 .slot {
+    box-shadow: inset 0 0 0 0.2cqw rgba(210, 120, 255, 0),
+        0 0 1.5cqw rgba(210, 120, 255, 0);
+}
+
+/* White slot glow overlays for Screen 8 concept teaching */
+.screen--8 .slot-glow--small-left,
+.screen--8 .slot-glow--small-right {
+    filter: grayscale(1) brightness(1.5) drop-shadow(0 0 0.9cqw rgba(255, 255, 255, 0.95)) drop-shadow(0 0 2cqw rgba(255, 255, 255, 0.65)) !important;
+}

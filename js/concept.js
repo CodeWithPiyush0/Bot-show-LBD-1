@@ -88,6 +88,18 @@
         bigGlow = document.querySelector("#screen-4 .slot-glow--big");
         glowSmallLeft = document.querySelector("#screen-4 .slot-glow--small-left");
         glowSmallRight = document.querySelector("#screen-4 .slot-glow--small-right");
+
+        // Clear existing groups
+        const oldGroups = contentEl.querySelectorAll(".battery-group");
+        oldGroups.forEach(el => el.remove());
+        smallBats.length = 0;
+        bigBats.length = 0;
+
+        // Adjust counts dynamically based on current level
+        const countBlue = (window.currentLevel === 2) ? 6 : 4;
+        LAYOUT[0].count = countBlue; // small-left
+        LAYOUT[2].count = countBlue; // big top row
+
         LAYOUT.forEach(function (g) {
             const made = makeGroup(g);
             contentEl.appendChild(made.el);
@@ -146,7 +158,7 @@
     }
 
     function play() {
-        if (!built) build();
+        build();
         if (!contentEl) return;
         clearTimers();
 

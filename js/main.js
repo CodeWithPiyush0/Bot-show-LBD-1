@@ -7,6 +7,62 @@
 (function () {
     "use strict";
 
+    window.currentLevel = 1;
+
+    function setupLevel(level) {
+        window.currentLevel = level;
+        const game = document.getElementById("game");
+        const orangeBot = document.querySelector(".bot--orange");
+        const purpleBot = document.querySelector(".bot--purple");
+        const screen3Bot = document.querySelector("#screen-3 .charged-bot img");
+
+        if (level === 2) {
+            if (game) game.classList.add("level-2");
+            if (orangeBot) orangeBot.src = "assets/images/orange_bot_charged.webp";
+            if (purpleBot) purpleBot.src = "assets/images/Sahdow_Purple_Bot.webp";
+            if (screen3Bot) screen3Bot.src = "assets/images/purple_bot.webp";
+        } else {
+            if (game) game.classList.remove("level-2");
+            if (orangeBot) orangeBot.src = "assets/images/orange_bot.webp";
+            if (purpleBot) purpleBot.src = "assets/images/Sahdow_Purple_Bot.webp";
+            if (screen3Bot) screen3Bot.src = "assets/images/orange_bot_charged.webp";
+        }
+    }
+    window.setupLevel = setupLevel;
+
+    function showLevelTransition() {
+        const titleEl = document.getElementById("transition-title");
+        const subtitleEl = document.getElementById("transition-subtitle");
+        const btnEl = document.getElementById("next-level-btn");
+
+        // Hide next level button, transition runs automatically
+        if (btnEl) btnEl.style.display = "none";
+
+        if (window.currentLevel === 1) {
+            if (titleEl) titleEl.textContent = "Level 1 Completed!";
+            if (subtitleEl) subtitleEl.textContent = "Get ready for Level 2: the real challenge!";
+            
+            // Automatically launch Level 2 after 4 seconds
+            window.setTimeout(function () {
+                setupLevel(2);
+                window.GameNav.show("screen-1");
+                if (window.Screen1Intro) window.Screen1Intro.play();
+            }, 4000);
+        } else {
+            if (titleEl) titleEl.textContent = "All Bots Fixed!";
+            if (subtitleEl) subtitleEl.textContent = "Fantastic work! You completed the game.";
+            
+            // Automatically go back to start screen after 5.5 seconds
+            window.setTimeout(function () {
+                setupLevel(1);
+                window.GameNav.show("screen-pre");
+            }, 5500);
+        }
+
+        window.GameNav.show("screen-transition");
+    }
+    window.showLevelTransition = showLevelTransition;
+
     function init() {
         const stage = document.getElementById("stage");
         if (!stage) {
@@ -14,18 +70,35 @@
             return;
         }
 
-        // Pre-LBD start screen: "Let's Play" begins the game.
+        // Play button on Start Screen begins Level 1 (Tutorial)
         const playBtn = document.getElementById("play-btn");
         if (playBtn) {
             playBtn.addEventListener("click", function () {
+                setupLevel(1);
                 window.GameNav.show("screen-1");
                 if (window.Screen1Intro) window.Screen1Intro.play();
             });
         }
 
-        // Screen 1: tapping the orange bot zooms into it, then Screen 2
+        // Next level / Restart button on transition screen
+        const nextLevelBtn = document.getElementById("next-level-btn");
+        if (nextLevelBtn) {
+            nextLevelBtn.addEventListener("click", function () {
+                if (window.currentLevel === 1) {
+                    setupLevel(2);
+                    window.GameNav.show("screen-1");
+                    if (window.Screen1Intro) window.Screen1Intro.play();
+                } else {
+                    setupLevel(1);
+                    window.GameNav.show("screen-pre");
+                }
+            });
+        }
+
+        // Screen 1: tapping the active center bot zooms into it, then Screen 2
         // emerges from inside the bot.
         const orangeBot = document.querySelector(".bot--orange");
+        const purpleBot = document.querySelector(".bot--purple");
         const screen1 = document.getElementById("screen-1");
         const screen2 = document.getElementById("screen-2");
 
@@ -49,7 +122,14 @@
         }
 
         if (orangeBot) {
-            orangeBot.addEventListener("click", enterBot);
+            orangeBot.addEventListener("click", function () {
+                if (window.currentLevel === 1) enterBot();
+            });
+        }
+        if (purpleBot) {
+            purpleBot.addEventListener("click", function () {
+                if (window.currentLevel === 2) enterBot();
+            });
         }
 
         // Screen 2 -> 3: the reverse of enterBot. We pull back OUT of the

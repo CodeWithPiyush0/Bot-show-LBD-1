@@ -71,6 +71,9 @@
         const textEl = q.querySelector(".question__text");
         const full = textEl.getAttribute("data-text") || "";
 
+        // Initialize/reset batteries configuration for current level
+        if (window.Batteries && window.Batteries.setup) window.Batteries.setup();
+
         // Lock dragging and start compact + closed.
         if (window.Batteries) window.Batteries.setEnabled(false);
         if (content) content.classList.add("is-compact");
