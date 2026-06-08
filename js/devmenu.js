@@ -51,12 +51,12 @@
     }
 
     const CSS = [
-        ".devmenu__toggle{position:fixed;top:10px;right:10px;z-index:99999;width:42px;height:42px;",
+        ".devmenu__toggle{position:fixed;top:10px;left:10px;z-index:99999;width:42px;height:42px;",
         "border-radius:9px;border:1px solid rgba(255,255,255,.25);background:rgba(20,20,24,.82);",
         "color:#fff;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;",
         "justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.4);}",
         ".devmenu__toggle:hover{background:rgba(40,40,48,.92);}",
-        ".devmenu__panel{position:fixed;top:60px;right:10px;z-index:99999;width:230px;",
+        ".devmenu__panel{position:fixed;top:60px;left:10px;z-index:99999;width:230px;",
         "background:rgba(20,20,24,.94);border:1px solid rgba(255,255,255,.18);border-radius:10px;",
         "padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;font-family:system-ui,Arial,sans-serif;",
         "max-height:calc(100vh - 72px);overflow-y:auto;overscroll-behavior:contain;}",
@@ -71,10 +71,10 @@
         ".devmenu__panel button:hover{background:rgba(255,255,255,.10);}",
         ".devmenu__sep{color:#667;font-size:11px;padding:8px 10px 2px;pointer-events:none;}",
         ".devmenu__hint{color:#778;font-size:10px;padding:8px 10px 2px;border-top:1px solid rgba(255,255,255,.1);margin-top:6px;}",
-        ".devmenu__tip{position:fixed;top:18px;right:62px;z-index:99999;background:rgba(20,20,24,.92);",
+        ".devmenu__tip{position:fixed;top:18px;left:62px;z-index:99999;background:rgba(20,20,24,.92);",
         "color:#eee;font-family:system-ui,Arial,sans-serif;font-size:12px;padding:6px 10px;border-radius:7px;",
         "white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s ease;box-shadow:0 2px 8px rgba(0,0,0,.4);}",
-        ".devmenu__tip::after{content:'';position:absolute;top:11px;right:-5px;width:10px;height:10px;",
+        ".devmenu__tip::after{content:'';position:absolute;top:11px;left:-5px;width:10px;height:10px;",
         "background:rgba(20,20,24,.92);transform:rotate(45deg);}",
         ".devmenu__toggle:hover + .devmenu__tip,.devmenu__tip.is-show{opacity:1;}",
     ].join("");
