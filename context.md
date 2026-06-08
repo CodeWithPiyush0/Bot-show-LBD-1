@@ -98,15 +98,34 @@ empty breakpoint stubs for future per-device tweaks (none needed so far).
 ## 4b. Pre-LBD — start screen (`screen--pre`, `main.css`)
 
 The **first** screen on load (`is-active`). Full-screen `Pre_LBD.webp` splash
-("FIX-A-BOT" title + the two bots + battery) with a **"Let's Play"** button
+("FIX-A-BOT" title + the two bots + battery) with a **"Play"** button
 (`.play-btn`, `#play-btn`) on the floor. Clicking it (`main.js`) → `GameNav.show("screen-1")`
 + `Screen1Intro.play()`. Because of this, Screen 1's intro is **on-demand** now:
 its CSS animations are scoped to `.screen--1.is-intro` and the typewriter runs from
 `Screen1Intro.play()` (NOT on page load).
 
+**Level transition = theatre curtains.** `#curtains` (in `#stage`, styled in `main.css`)
+is two velvet curtain halves. `showLevelTransition()` (main.js) closes them over the
+finished level (showing "Level 1 Complete!" / "All Bots Fixed!"), swaps the screen
+behind them, then parts them to reveal the next level — matching the auditorium-stage
+theme. (The legacy `#screen-transition` card is no longer used.)
+
 ---
 
 ## 5. Screen 1 — choose the bot (`screen.css`)
+
+- **Stage spotlight (animated cue):** Screen 1 first shows ALL bots at normal lighting;
+  ~1s after it appears, `Screen1Intro.play()` adds `.is-lit` and the spotlight animates
+  on — the beam (`.screen--1 .spotlight`) sweeps onto the centre bot (pivots at the top)
+  and the dark radial vignette (`.screen--1::after`) fades in to push the side bots into
+  shadow. Both are `opacity:0`/off by default and transition on with `.is-lit`. Replays
+  reset `.is-lit` so the cue plays again each entry.
+- **Hover** is only on the focal/clickable bot — `.bot--orange:hover` (L1 centre) and
+  `.level-2 .bot--purple:hover` (L2 centre). `.bot` is `cursor:default`; only the focal
+  bot is `cursor:pointer`. Side bots have no hover/pointer.
+- **Levels:** L1 focal = orange (centre), L2 focal = purple (repositioned to centre via
+  `.level-2` rules); the other bots are the dimmed/side bots.
+
 
 Background = `BG.webp`. Contents:
 - **Spotlight** `spotlight.svg` — full-height beam centered on the orange bot, z1.

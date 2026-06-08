@@ -14,7 +14,7 @@
     // (Reuses the same entry points the deep-links / flow use.)
     const SCREENS = [
         { label: "0 · Start (Pre-LBD)", go: function () { nav("screen-pre"); } },
-        { label: "L1 -> L2 Transition", go: function () { nav("screen-transition"); if (global.showLevelTransition) global.showLevelTransition(); } },
+        { label: "Curtain Transition (test)", go: function () { setLvl(1); nav("screen-8"); if (global.showLevelTransition) global.showLevelTransition(); } },
         { label: "— Level 1 (Tutorial) —", go: null },
         { label: "1 · Choose bot", go: function () { setLvl(1); nav("screen-1"); call(global.Screen1Intro, "play"); } },
         { label: "2 · Charge puzzle", go: function () { setLvl(1); nav("screen-2"); call(global.Screen2Intro, "play"); } },

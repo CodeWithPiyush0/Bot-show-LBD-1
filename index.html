@@ -33,7 +33,7 @@
 
             <!-- ===== PRE-LBD - start screen ===== -->
             <section class="screen screen--pre is-active" id="screen-pre" data-screen="pre">
-                <button class="play-btn" id="play-btn" type="button">Let's Play</button>
+                <button class="play-btn" id="play-btn" type="button">Play</button>
             </section>
 
             <!-- ===== SCREEN 1 - choose the bot ===== -->
@@ -400,7 +400,8 @@
 
             </section>
 
-            <!-- ===== LEVEL TRANSITION SCREEN ===== -->
+            <!-- ===== LEVEL TRANSITION SCREEN (legacy card; the curtain
+                 overlay below is the actual transition) ===== -->
             <section class="screen screen--transition" id="screen-transition" data-screen="transition">
                 <div class="transition-card">
                     <h1 class="transition-title" id="transition-title">Level 1 Completed!</h1>
@@ -408,6 +409,17 @@
                     <button class="play-btn play-btn--transition" id="next-level-btn" type="button">Start Level 2</button>
                 </div>
             </section>
+
+            <!-- ===== Theatre CURTAIN transition (overlays the stage on
+                 level changes: closes, shows the message, then parts) ===== -->
+            <div class="curtains" id="curtains" aria-hidden="true">
+                <div class="curtain curtain--left"></div>
+                <div class="curtain curtain--right"></div>
+                <div class="curtain-text">
+                    <h1 class="curtain-title" id="curtain-title"></h1>
+                    <p class="curtain-sub" id="curtain-sub"></p>
+                </div>
+            </div>
 
         </div>
     </main>

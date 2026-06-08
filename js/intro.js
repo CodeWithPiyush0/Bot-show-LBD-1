@@ -35,8 +35,14 @@
 
         // (re)start the CSS intro animations
         screen1.classList.remove("is-intro");
+        screen1.classList.remove("is-lit"); // start with all bots normally lit
         void screen1.offsetWidth; // reflow so the animation can restart
         screen1.classList.add("is-intro");
+
+        // After a beat, bring the spotlight up onto the centre bot.
+        window.setTimeout(function () {
+            screen1.classList.add("is-lit");
+        }, 1000);
 
         const full = textEl.getAttribute("data-text") || "";
         textEl.textContent = "";

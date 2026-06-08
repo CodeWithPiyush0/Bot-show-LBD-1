@@ -30,36 +30,53 @@
     }
     window.setupLevel = setupLevel;
 
+    // Theatre-curtain level transition: close the curtains over the
+    // finished level, swap to the next behind them, then part to reveal it.
     function showLevelTransition() {
-        const titleEl = document.getElementById("transition-title");
-        const subtitleEl = document.getElementById("transition-subtitle");
-        const btnEl = document.getElementById("next-level-btn");
+        const finishing = window.currentLevel === 2; // L2 done -> whole game complete
+        const curtains = document.getElementById("curtains");
+        const titleEl = document.getElementById("curtain-title");
+        const subEl = document.getElementById("curtain-sub");
 
-        // Hide next level button, transition runs automatically
-        if (btnEl) btnEl.style.display = "none";
+        if (titleEl) titleEl.textContent = finishing ? "All Bots Fixed!" : "Level 1 Complete!";
+        if (subEl) {
+            subEl.textContent = finishing
+                ? "Fantastic work — you fixed every bot!"
+                : "Get ready for Level 2…";
+        }
 
-        if (window.currentLevel === 1) {
-            if (titleEl) titleEl.textContent = "Level 1 Completed!";
-            if (subtitleEl) subtitleEl.textContent = "Get ready for Level 2: the real challenge!";
-            
-            // Automatically launch Level 2 after 4 seconds
-            window.setTimeout(function () {
+        // Behind the closed curtains, set up the next level.
+        function swap() {
+            if (finishing) {
+                setupLevel(1);
+                window.GameNav.show("screen-pre");
+            } else {
                 setupLevel(2);
                 window.GameNav.show("screen-1");
                 if (window.Screen1Intro) window.Screen1Intro.play();
-            }, 4000);
-        } else {
-            if (titleEl) titleEl.textContent = "All Bots Fixed!";
-            if (subtitleEl) subtitleEl.textContent = "Fantastic work! You completed the game.";
-            
-            // Automatically go back to start screen after 5.5 seconds
-            window.setTimeout(function () {
-                setupLevel(1);
-                window.GameNav.show("screen-pre");
-            }, 5500);
+            }
         }
 
-        window.GameNav.show("screen-transition");
+        if (!curtains) {
+            swap();
+            return;
+        }
+
+        curtains.classList.add("is-active");
+        // close (next frame so the transition runs)
+        window.requestAnimationFrame(function () {
+            curtains.classList.add("is-closed");
+        });
+        // once closed, swap the level behind them
+        window.setTimeout(swap, 950);
+        // hold the message, then open the curtains
+        window.setTimeout(function () {
+            curtains.classList.remove("is-closed");
+        }, 2600);
+        // fully open -> stand down
+        window.setTimeout(function () {
+            curtains.classList.remove("is-active");
+        }, 3600);
     }
     window.showLevelTransition = showLevelTransition;
 

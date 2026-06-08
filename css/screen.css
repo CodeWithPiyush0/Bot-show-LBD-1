@@ -86,7 +86,7 @@
 .bot {
     position: absolute;
     height: auto;
-    cursor: pointer;
+    cursor: default; /* only the focal/clickable bot gets pointer + hover */
     z-index: 5;
     transition: transform 0.15s ease, filter 0.15s ease;
     transform-origin: bottom center;
@@ -99,12 +99,13 @@
     width: 24.896%;
 }
 
-/* Center — orange bot (focal): x=729.24 y=422 w=449.43 */
+/* Center — orange bot (focal/clickable in L1): x=729.24 y=422 w=449.43 */
 .bot--orange {
     left: 37.981%;
     top: 39.074%;
     width: 23.408%;
     z-index: 6; /* in front of the side bots */
+    cursor: pointer;
 }
 
 /* Right — white & blue bot: x=1327 y=417 w=356 */
@@ -114,9 +115,49 @@
     width: 18.542%;
 }
 
-/* Subtle feedback for the tappable bots */
-.bot:hover {
+/* Hover feedback only on the focal/clickable bot (orange in L1).
+   The L2 focal bot (purple) gets its own hover in the level-2 block. */
+.bot--orange:hover {
     transform: scale(1.03);
+}
+
+/* ---------- Stage spotlight (animated cue) ----------
+   Screen 1 first shows ALL bots at normal lighting; then `.is-lit` is
+   added (by Screen1Intro.play after a beat) and the spotlight animates
+   on — the beam sweeps onto the centre bot and the surround darkens,
+   like a real magic-show / stage spotlight. */
+.screen--1::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 7; /* above the bots (z5/6), below the question banner (z10) */
+    background: radial-gradient(
+        ellipse 34% 78% at 50% 50%,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0) 26%,
+        rgba(0, 0, 0, 0.55) 58%,
+        rgba(0, 0, 0, 0.85) 100%
+    );
+    opacity: 0; /* off: no darkening, all bots normally lit */
+    transition: opacity 0.85s ease;
+}
+.screen--1.is-lit::after {
+    opacity: 1; /* on: surround darkens */
+}
+
+/* Beam: hidden until the cue, then sweeps onto the centre bot (pivots at
+   the top, like a real stage light) and reads brighter. */
+.screen--1 .spotlight {
+    opacity: 0;
+    transform: translateX(-50%) rotate(-18deg);
+    transform-origin: 50% 0%;
+    filter: brightness(1.4) contrast(1.08) saturate(1.1);
+    transition: opacity 0.4s ease, transform 1s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.screen--1.is-lit .spotlight {
+    opacity: 1;
+    transform: translateX(-50%) rotate(0deg);
 }
 
 /* ---------- Question banner ----------
@@ -208,6 +249,10 @@
     top: 35.81%;
     width: 26.2%;
     z-index: 6;
+    cursor: pointer; /* focal/clickable in L2 */
+}
+.level-2 .bot--purple:hover {
+    transform: scale(1.03);
 }
 
 .level-2 .bot--orange {
