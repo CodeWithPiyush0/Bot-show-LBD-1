@@ -204,38 +204,40 @@
 
 /* Swap bot positions: Purple in center (active), Orange on left (completed) */
 .level-2 .bot--purple {
-    left: 37.5%;
-    top: 31.111%;
-    width: 24.896%;
+    left: 36.585%;
+    top: 35.81%;
+    width: 26.2%;
     z-index: 6;
 }
 
 .level-2 .bot--orange {
-    left: 7.9%;
-    top: 39.074%;
-    width: 23.408%;
+    left: 8.98%;
+    top: 38.611%;
+    width: 21.19%;
     z-index: 5;
     cursor: default; /* already fixed */
+    filter: brightness(0.7);
 }
 .level-2 .bot--orange:hover {
     transform: none; /* disable hover scale for fixed bot */
 }
 
-/* Swap floor shadows */
-.level-2 .floor--purple {
-    left: 41.3%;
+/* Swap floor shadows - scoped to Screen 1 so they don't leak into Screen 5 */
+.level-2 .screen--1 .floor--purple {
+    left: 40.961%;
     top: 89.907%;
-    width: 17.4%;
+    width: 17.448%;
 }
 
-.level-2 .floor--orange {
-    left: 10.885%;
+.level-2 .screen--1 .floor--orange {
+    left: 11.25%;
     top: 83.148%;
     width: 16.667%;
 }
 
-/* Purple floor glow under centered Purple bot */
-.level-2 .floor--glow {
+/* Purple floor glow under centered Purple bot - scoped to Screen 1 */
+.level-2 .screen--1 .floor--glow {
+    left: 34.477%;
     background: radial-gradient(
         ellipse at center,
         rgba(215, 120, 255, 0.55) 0%,
@@ -244,8 +246,12 @@
     );
 }
 
-/* Purple bot zoom-into origin (chest battery icon) */
-.level-2 .screen--1.is-zooming {
-    transform-origin: 50% 64.5% !important;
+/* Purple bot zoom transitions (chest battery icon) */
+.level-2 .screen--1.is-zooming,
+.level-2 .screen--2.is-entering,
+.level-2 .screen--2.is-zooming-out,
+.level-2 .screen--3.is-revealing {
+    transform-origin: 49.7% 67% !important;
 }
+
 

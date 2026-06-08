@@ -17,14 +17,14 @@
 
 /* Three bots; the white/purple one (centre) is the overcharged one to fix */
 .bot--oc-left {
-    left: 5.85%; /* keep the body centred after the wider canvas */
+    left: 7.135%;
     top: 31.111%;
-    width: 27.5%; /* new art is 528x621 (wider) — match the old display height so feet stay on the floor */
+    width: 24.896%;
 }
 .bot--oc-center {
-    left: 38.698%; /* 743 / 1920 */
-    top: 34.259%; /* 370 / 1080 */
-    width: 24.01%; /* 461 / 1920 */
+    left: 38.575%;
+    top: 39.074%;
+    width: 22.22%;
     z-index: 6;
 }
 .bot--oc-right {
@@ -49,8 +49,32 @@
 .s5-stage {
     position: absolute;
     inset: 0;
-    transform-origin: 50.7% 70%; /* the centre bot's chest */
+    transform-origin: 49.7% 70%; /* the centre bot's chest */
     transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Align floor shadows on Screen 5 to match the bots */
+.screen--5 .floor--white {
+    left: 41.356% !important;
+    top: 89.907% !important;
+    width: 16.667% !important;
+}
+.screen--5 .floor--orange {
+    left: 70.052% !important;
+    top: 83.148% !important;
+    width: 16.667% !important;
+}
+.screen--5 .floor--glow {
+    left: 34.477% !important;
+    top: 84.722% !important;
+    width: 30.417% !important;
+    height: 13.889% !important;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(230, 210, 255, 0.55) 0%,
+        rgba(180, 160, 255, 0.28) 45%,
+        rgba(140, 120, 255, 0) 75%
+    ) !important;
 }
 
 /* Spotlight: starts off, then sweeps onto the centre bot like a real
@@ -173,24 +197,24 @@
 
 /* ---------- Part 2 zoom transitions (white/purple bot's chest) ---------- */
 .screen--5.is-zooming {
-    transform-origin: 50.5% 70%;
+    transform-origin: 49.7% 70%;
     animation: zoomIntoBot 0.75s cubic-bezier(0.42, 0, 1, 1) forwards;
     pointer-events: none;
     will-change: transform, opacity;
 }
 .screen--6.is-entering {
-    transform-origin: 50.5% 70%;
+    transform-origin: 49.7% 70%;
     animation: enterInsideBot 0.72s cubic-bezier(0, 0, 0.2, 1);
     will-change: transform, opacity;
 }
 .screen--6.is-zooming-out {
-    transform-origin: 50.5% 70%;
+    transform-origin: 49.7% 70%;
     animation: zoomOutOfBot 0.55s cubic-bezier(0.42, 0, 1, 1) forwards;
     pointer-events: none;
     will-change: transform, opacity;
 }
 .screen--7.is-revealing {
-    transform-origin: 50.5% 70%;
+    transform-origin: 49.7% 70%;
     animation: revealBot 0.8s cubic-bezier(0, 0, 0.2, 1);
     will-change: transform, opacity;
 }

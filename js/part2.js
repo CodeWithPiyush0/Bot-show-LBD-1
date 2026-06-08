@@ -136,6 +136,16 @@
             }
         }
 
+        // Set left side bot to charged/fixed purple bot
+        const ocLeft = document.querySelector(".bot--oc-left");
+        if (ocLeft) {
+            if (window.currentLevel === 2) {
+                ocLeft.src = "assets/images/purple_bot_charged.webp";
+            } else {
+                ocLeft.src = "assets/images/Sahdow_Purple_Bot.webp";
+            }
+        }
+
         centerTapEnabled = false;
         // reset to Phase A state
         screen5.classList.remove("is-spotlit");
