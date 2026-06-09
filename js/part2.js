@@ -325,12 +325,15 @@
         if (removedCount === 0) {
             bigGlow.classList.add("is-red");
             panelBig.classList.add("is-red");
+            bigGlow.src = "assets/images/Bigger_Slot_Red.svg";
         } else if (removedCount === 1) {
             bigGlow.classList.add("is-yellow");
             panelBig.classList.add("is-yellow");
+            bigGlow.src = "assets/images/Bigger_Slot_Red.svg";
         } else if (removedCount === 2) {
-            bigGlow.classList.add("is-green");
-            panelBig.classList.add("is-green");
+            bigGlow.classList.add("is-normal");
+            panelBig.classList.add("is-normal");
+            bigGlow.src = "assets/images/Bigger_Slot_White.svg";
         }
     }
 

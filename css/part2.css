@@ -154,11 +154,17 @@
 .screen--6 .panel--big.is-yellow {
     filter: hue-rotate(55deg);
 }
-.screen--6 .slot-glow--big.is-green,
+.screen--6 .slot-glow--big.is-normal {
+    opacity: 1;
+    animation: none;
+    filter: none;
+}
+.screen--6 .panel--big.is-normal {
+    filter: none;
+}
 .screen--8 .slot-glow--big.is-green {
     filter: hue-rotate(143deg) drop-shadow(0 0 0.9cqw rgba(70, 255, 140, 0.95)) drop-shadow(0 0 2cqw rgba(70, 255, 140, 0.65));
 }
-.screen--6 .panel--big.is-green,
 .screen--8 .panel--big.is-green {
     filter: hue-rotate(143deg);
 }

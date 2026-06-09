@@ -24,7 +24,7 @@
         } else {
             if (game) game.classList.remove("level-2");
             if (orangeBot) orangeBot.src = "assets/images/orange_bot.webp";
-            if (purpleBot) purpleBot.src = "assets/images/Sahdow_Purple_Bot.webp";
+            if (purpleBot) purpleBot.src = "assets/images/purple_bot_low.webp";
             if (screen3Bot) screen3Bot.src = "assets/images/orange_bot_charged.webp";
         }
     }

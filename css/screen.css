@@ -97,6 +97,9 @@
     left: 7.135%;
     top: 31.111%;
     width: 24.896%;
+    /* L1 side bot: dimmed a little so it recedes like the right bot.
+       (Reset to full brightness when it becomes the L2 focal bot.) */
+    filter: brightness(0.8);
 }
 
 /* Center — orange bot (focal/clickable in L1): x=729.24 y=422 w=449.43 */
@@ -158,39 +161,6 @@
 .screen--1.is-lit .spotlight {
     opacity: 1;
     transform: translateX(-50%) rotate(0deg);
-}
-
-/* ---------- Consistent low-battery symbol on each bot's chest ----------
-   Sibling overlays positioned in screen coords (no wrapping), z below the
-   spotlight vignette so side bots' icons darken with them. */
-.chest-low {
-    position: absolute;
-    height: auto;
-    z-index: 6;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    filter: drop-shadow(0 0 0.5cqw rgba(255, 60, 50, 0.55));
-}
-/* Level 1 chest positions (orange centre, purple left, white-blue right) */
-.chest-low--orange {
-    left: 49.7%;
-    top: 73%;
-    width: 2.7%;
-}
-.chest-low--purple {
-    left: 19.55%;
-    top: 64%;
-    width: 3.4%;
-}
-.chest-low--white {
-    left: 78.4%;
-    top: 66%;
-    width: 2.5%;
-}
-/* Positions are for the Level-1 layout; in Level 2 the bots move and the
-   left bot is already charged, so hide these there. */
-.level-2 .chest-low {
-    display: none;
 }
 
 /* ---------- Question banner ----------
@@ -283,6 +253,7 @@
     width: 26.2%;
     z-index: 6;
     cursor: pointer; /* focal/clickable in L2 */
+    filter: none; /* focal bot is fully lit (not the dimmed L1 side bot) */
 }
 .level-2 .bot--purple:hover {
     transform: scale(1.03);

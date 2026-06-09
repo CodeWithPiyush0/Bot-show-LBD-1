@@ -56,7 +56,7 @@
                 <!-- The three bots -->
                 <img
                     class="bot bot--purple"
-                    src="assets/images/Sahdow_Purple_Bot.webp"
+                    src="assets/images/purple_bot_low.webp"
                     alt="Purple bot"
                     data-bot="purple"
                 />
@@ -72,11 +72,6 @@
                     alt="White and blue bot"
                     data-bot="white-blue"
                 />
-
-                <!-- Consistent low-battery symbol overlaid on each bot's chest -->
-                <img class="chest-low chest-low--purple" src="assets/images/low_battery.svg" alt="" aria-hidden="true" />
-                <img class="chest-low chest-low--orange" src="assets/images/low_battery.svg" alt="" aria-hidden="true" />
-                <img class="chest-low chest-low--white" src="assets/images/low_battery.svg" alt="" aria-hidden="true" />
 
                 <!-- Question banner at the top -->
                 <div class="question">
@@ -164,11 +159,12 @@
                             <path d="M 1256 547.4 L 1174 417.6" />
                             <path d="M 853 636 L 1078 636" />
                         </g>
-                        <!-- Travelling current pulses -->
+                        <!-- Travelling current pulses (diagonals only; the
+                             horizontal left->right connector is intentionally
+                             not animated). -->
                         <g class="charge-flow">
                             <path d="M 661.5 547.7 L 750.5 418.3" />
                             <path d="M 1256 547.4 L 1174 417.6" />
-                            <path d="M 853 636 L 1078 636" />
                         </g>
                     </svg>
 

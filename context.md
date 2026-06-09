@@ -125,13 +125,9 @@ theme. (The legacy `#screen-transition` card is no longer used.)
   bot is `cursor:pointer`. Side bots have no hover/pointer.
 - **Levels:** L1 focal = orange (centre), L2 focal = purple (repositioned to centre via
   `.level-2` rules); the other bots are the dimmed/side bots.
-- **Consistent low-battery symbol:** all three L1 bots show the **same** low-battery
-  icon on their chest. These are sibling `<img class="chest-low chest-low--{orange|purple|white}">`
-  overlays (in Screen 1, before the banner) all pointing at `low_battery.svg`, positioned
-  per-bot in screen coords (`.chest-low--*` in screen.css). They're `pointer-events:none`
-  and `z-index:6` (below the spotlight vignette z7, so the side bots' icons darken with
-  them under the spotlight). **Hidden in Level 2** (`.level-2 .chest-low{display:none}`)
-  because the bots reposition and the left/orange bot is already charged there.
+- Each bot's low-battery symbol is **baked into its art** (e.g. `orange_bot.webp` has the
+  low-battery chest icon in the image). (An earlier `.chest-low` CSS overlay was removed
+  once the bot art included the icon directly.)
 
 
 Background = `BG.webp`. Contents:
@@ -139,7 +135,9 @@ Background = `BG.webp`. Contents:
 - **Floor shadows + warm glow** — CSS radial-gradient `div`s (`.floor*`), recreated
   from Figma ellipses (those were blurred PNGs, not exported). z2/3.
 - **Three bots** (`.bot`, sized by `width` %, positioned by Figma coords):
-  - `.bot--purple` `Sahdow_Purple_Bot.webp` (note misspelled filename "Sahdow") — left, tallest, back.
+  - `.bot--purple` `purple_bot_low.webp` (low-battery purple) — left, tallest, back.
+    Dimmed `filter: brightness(0.8)` so it recedes like the right bot; reset to full
+    brightness when it becomes the L2 focal bot (`.level-2 .bot--purple`).
   - `.bot--orange` `orange_bot.webp` — center, focal, z6, **clickable** → Screen 2.
   - `.bot--white-blue` `White_blue_bot.webp` — right, smallest, back.
   - Subtle `:hover` scale. `decoding="async"` was REMOVED from bots (it caused a
@@ -247,7 +245,9 @@ Background = dark radial gradient. Structure:
 1. Current flows up through the connectors — `#charge-fx` SVG overlay, paths trace
    the **exact connector centerlines**:
    - left diagonal `M653,560 L759,406`, right `M1264,560 L1166,405`, horizontal `M838,636 L1093,636`.
-   - bright pulses travel (dash animation); they're the actual orange traces energizing.
+   - bright pulses travel (dash animation) on the **two diagonals only** (bottom→top);
+     the horizontal left→right connector is intentionally NOT flow-animated — it's
+     omitted from the `.charge-flow` group (kept in `.charge-glow` for the green end-glow).
 2. (+500ms) both groups travel **up into the big slot** as two rows (blue top y217,
    yellow bottom y319, center x965.5), uniform `PLACED_SCALE`.
 3. (+1400ms) `#charge-fx` turns **green** (`.is-green` → `.charge-glow` paths) and the
@@ -396,14 +396,14 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 |---|---|---|
 | ✅ | `BG.webp` | Screen 1 background (was BG.png 1.8MB → 41KB) |
 | ✅ | `Question_template.webp` | cream banner + mascot badge (both screens) |
-| ✅ | `Sahdow_Purple_Bot.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots |
+| ✅ | `purple_bot_low.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots (left/centre/right). `orange_bot.webp` (←`orange_bot.svg`, 900px) and `purple_bot_low.webp` (←`purple_bot_low.svg`, 950px) are regenerated via sharp (q82); their art has the low-battery icon baked into the chest. `purple_bot_low.webp` doubles as the L2 focal bot. |
+| ✅ | `Sahdow_Purple_Bot.webp` | dimmed "shadow" purple bot — now used only as the Part 2 Screen 5 left/side bot (L1). |
 | ✅ | `White_purple_bot.webp` (overcharged) / `White_purple_bot_charged.webp` (fixed) | Part 2 centre bot |
 | ✅ | `purple_bot.webp` / `orange_bot_charged.webp` | Part 2 Screen 5 side bots |
 | ✅ | `battery_slots.webp` / `battery_slots_white.webp` | panels — converted from SVG (~280K→~60K each) for load speed |
 | ✅ | `Bigger_Slot.svg` | **true vector** — big-slot green-glow overlay |
 | ✅ | `spotlight.svg` | true vector (1KB) |
 | ✅ | `blue_battery.svg` / `yellow_battery.svg` | draggable battery art — Pre-LBD style (metallic cap/bands, glossy body, lightning bolt), 62×100 viewBox. JS builds them via `color + "_battery.svg"`. (old `.png` versions superseded) |
-| ✅ | `low_battery.svg` | low-battery icon (same shell/bands as above but dark empty body + one red bar). Used as the chest overlay on all L1 bots (`.chest-low`). |
 | ✅ | `bite_talking.mp4` | live mascot avatar video — re-encoded small (384px, ~63K) since it shows at ~110px |
 | ⚠️ unused | `screen2_avatar.png` | old static avatar; replaced by the video |
 | ⚠️ unused | `Blue_tray.svg` / `Yellow_tray.svg` | trays are now CSS (had batteries baked in) |
