@@ -157,6 +157,24 @@
         if (bigGlow) bigGlow.classList.add("is-charged");
     }
 
+    // Zoom OUT of the concept board to reveal the whole charged bot
+    // celebrating on Screen 3 (mirror of the enter-zoom), let it dance,
+    // then run `onDanced`. Reuses the zoomOutOfBot / revealBot keyframes.
+    function revealDancingBot(onDanced) {
+        const from = document.getElementById("screen-4");
+        const screen3 = document.getElementById("screen-3");
+        if (from) from.classList.add("is-zooming-out");
+        later(function () {
+            if (global.GameNav) global.GameNav.show("screen-3");
+            if (screen3) screen3.classList.add("is-revealing");
+        }, 150);
+        later(function () {
+            if (screen3) screen3.classList.remove("is-revealing");
+            if (from) from.classList.remove("is-zooming-out");
+            later(onDanced, 3000); // dance ~3s, then continue
+        }, 1300);
+    }
+
     function play() {
         build();
         if (!contentEl) return;
@@ -184,10 +202,13 @@
                 const phaseBAt = SLOT_GLOW_STAGGER + PHASE_GAP;
                 later(phaseWhole, phaseBAt);
 
-                // Part One complete -> automatically start Part Two.
+                // Concept taught -> zoom OUT of the board to reveal the bot
+                // celebrating (Screen 3), let it dance, then start Part Two.
                 later(function () {
-                    if (global.GameNav) global.GameNav.show("screen-5");
-                    if (global.Part2) global.Part2.startIntro();
+                    revealDancingBot(function () {
+                        if (global.GameNav) global.GameNav.show("screen-5");
+                        if (global.Part2) global.Part2.startIntro();
+                    });
                 }, phaseBAt + 3000);
             }, 650); // after the banner unrolls
         }, 150);

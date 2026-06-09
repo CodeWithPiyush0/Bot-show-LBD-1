@@ -207,7 +207,8 @@
     animation: enterInsideBot 0.72s cubic-bezier(0, 0, 0.2, 1);
     will-change: transform, opacity;
 }
-.screen--6.is-zooming-out {
+.screen--6.is-zooming-out,
+.screen--8.is-zooming-out { /* concept (Screen 8) reveals the dancing bot */
     transform-origin: 49.7% 70%;
     animation: zoomOutOfBot 0.55s cubic-bezier(0.42, 0, 1, 1) forwards;
     pointer-events: none;

@@ -420,16 +420,13 @@
         }
 
         const q = byId("question-6");
-        // announce, then zoom out to the celebrating bot
+        // announce, then stay inside the bot to teach the concept (Screen 8).
+        // The celebrating dance now comes AFTER the concept (playConcept2
+        // zooms out to reveal it).
         openBanner(q, "This bot is fixed.", null, null);
         global.setTimeout(function () {
-            zoomOutTo("screen-6", "screen-7", function () {
-                // dance ~3s, then the concept screen
-                global.setTimeout(function () {
-                    global.GameNav.show("screen-8");
-                    playConcept2();
-                }, 3000);
-            });
+            global.GameNav.show("screen-8");
+            playConcept2();
         }, 2200);
     }
 
@@ -518,9 +515,14 @@
                     }, 600);
                 }, 2400);
 
-                // Transition to Level 2 / Completion Screen after teaching completes
+                // Concept taught -> zoom OUT to reveal the bot celebrating
+                // (Screen 7), let it dance, then the level transition.
                 global.setTimeout(function () {
-                    if (global.showLevelTransition) global.showLevelTransition();
+                    zoomOutTo("screen-8", "screen-7", function () {
+                        global.setTimeout(function () {
+                            if (global.showLevelTransition) global.showLevelTransition();
+                        }, 3000);
+                    });
                 }, 6500);
             }, 650);
         }, 150);

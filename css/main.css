@@ -356,7 +356,8 @@ body.qa-intercept-on #stage *::after {
    The reverse of the zoom-in. We pull back from the chest: the interior
    recedes and the whole charged bot is revealed, shrinking from a
    chest-close-up to its normal size. Same chest focal point. */
-.screen--2.is-zooming-out {
+.screen--2.is-zooming-out,
+.screen--4.is-zooming-out { /* concept (Screen 4) reveals the dancing bot */
     transform-origin: 49.6% 73%; /* the chest */
     animation: zoomOutOfBot 0.55s cubic-bezier(0.42, 0, 1, 1) forwards;
     pointer-events: none;

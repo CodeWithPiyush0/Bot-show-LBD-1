@@ -290,18 +290,25 @@ blue group glides tray→small-left slot, `.is-ghost`) → dragging enabled.
 
 ## 8b. Screen 3 — the bot celebrates (`screen3.css`)
 
-The end screen, shown after the finale. Same room background as Screen 1
+The celebration screen. Same room background as Screen 1
 (`var(--bg-image)` = BG.webp) + the `spotlight`, with the **charged bot centered**:
 `.charged-bot` wraps `orange_bot_charged.webp` (placeholder — **swap for a dancing
 video later**). It does a gentle CSS "dance" loop (`botDance`: bob + sway, pivot at
 feet) while `.screen--3.is-active`. Markup is a `<section class="screen screen--3"
-id="screen-3">` inside the stage; reached via `GameNav.show("screen-3")`.
+id="screen-3">` inside the stage.
+
+**Order:** the dance comes **AFTER the concept** (Screen 4), not before. The
+concept screen zooms OUT of the board to reveal the dancing bot
+(`concept.js revealDancingBot()` → `.screen--4.is-zooming-out` + `.screen--3.is-revealing`,
+reusing the `zoomOutOfBot`/`revealBot` keyframes). It dances ~3s, then Part 2 begins.
 
 ---
 
 ## 8c. Screen 4 — concept "2 parts make a whole" (`screen4.css` + `concept.js`)
 
-Reached ~3s after Screen 3 appears (the bot dances, then `GameNav.show("screen-4")`).
+Reached straight from Screen 2's finale (`batteries.js`, ~3.2s after charging —
+**stays inside the bot**, no dance yet). After the concept teaches, it zooms out
+to reveal the dancing bot (Screen 3), which then leads into Part 2.
 Uses the **charged (green) panel** look from Screen 2's end state — same layered
 panel imgs (`panel is-green` + `panel--small-left/right` orange overlays +
 `panel--big is-green`) — and `.s4-content { transform: translateY(14%) }` nudges the
@@ -348,12 +355,16 @@ Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
   yellow row, green `panel--big is-green`); small slots empty. Banner prompts "Drag the
   batteries to the small slots." then closes; the player drags each group **big → small**.
   When **both small slots are filled**, `onFixed()` shows "This bot is fixed." then
-  **zooms OUT** to Screen 7. (Same drag pattern as Part 1, reversed direction.)
-- **Screen 7** (`screen--7`, celebrate): `White_purple_bot_charged.webp` dances under
-  the spotlight (reuses `.charged-bot`/`botDance`). After ~3s → Screen 8.
+  goes **straight to the concept** (Screen 8) — stays inside the bot. (Same drag
+  pattern as Part 1, reversed direction.)
 - **Screen 8** (`screen--8`, concept): "This whole is made of these 2 parts." — the
   **inverse** of Screen 4: Phase A "This whole" → big slot glows; Phase B "…2 parts" →
   the two part slots glow one by one. Reuses `.s4-content`, glows, battery layout.
+  After teaching, `playConcept2()` **zooms OUT** (`zoomOutTo("screen-8","screen-7")`,
+  `.screen--8.is-zooming-out`) to reveal the dancing bot.
+- **Screen 7** (`screen--7`, celebrate): `White_purple_bot_charged.webp` dances under
+  the spotlight (reuses `.charged-bot`/`botDance`). After ~3s → `showLevelTransition()`.
+  **Note the order: concept (8) BEFORE the dance (7)**, same as Part 1.
 
 All Part-2 logic is in `part2.js` (`Part2.startIntro/startSplit/playConcept2`), styles in
 `part2.css` (scoped `.screen--5/6/7/8`, reusing all shared components + the zoom keyframes).

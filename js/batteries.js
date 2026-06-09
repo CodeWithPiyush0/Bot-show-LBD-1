@@ -288,22 +288,13 @@
             }
         }, 900);
 
-        // Shortly after the message, zoom back OUT of the bot to reveal
-        // it celebrating (Screen 3). (Brief beat; tune with the VO later.)
-        global.setTimeout(function () {
-            if (window.GameFx && window.GameFx.exitBot) {
-                window.GameFx.exitBot();
-            } else if (window.GameNav) {
-                window.GameNav.show("screen-3");
-            }
-        }, 3200);
-
-        // The bot dances ~3s, then move on to the concept screen.
-        // (3200 zoom-out start + ~1300 settle + 3000 dance)
+        // Shortly after the message, stay inside the bot and teach the
+        // concept (Screen 4). The celebrating dance now comes AFTER the
+        // concept — concept.js zooms out to reveal it.
         global.setTimeout(function () {
             if (window.GameNav) window.GameNav.show("screen-4");
             if (window.ConceptScreen) window.ConceptScreen.play();
-        }, 7500);
+        }, 3200);
     }
 
     /* ---- ghost hint: demonstrate the drag a few times ---- */

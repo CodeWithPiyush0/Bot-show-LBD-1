@@ -328,6 +328,7 @@
 .level-2 .screen--1.is-zooming,
 .level-2 .screen--2.is-entering,
 .level-2 .screen--2.is-zooming-out,
+.level-2 .screen--4.is-zooming-out,
 .level-2 .screen--3.is-revealing {
     transform-origin: 49.7% 67% !important;
 }
