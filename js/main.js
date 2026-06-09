@@ -202,7 +202,6 @@
             window.GameNav.show("screen-8");
             if (window.Part2) window.Part2.playConcept2();
         }
-
         console.log("Bot Show: ready.");
     }
 

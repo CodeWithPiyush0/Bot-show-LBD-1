@@ -125,6 +125,13 @@ theme. (The legacy `#screen-transition` card is no longer used.)
   bot is `cursor:pointer`. Side bots have no hover/pointer.
 - **Levels:** L1 focal = orange (centre), L2 focal = purple (repositioned to centre via
   `.level-2` rules); the other bots are the dimmed/side bots.
+- **Consistent low-battery symbol:** all three L1 bots show the **same** low-battery
+  icon on their chest. These are sibling `<img class="chest-low chest-low--{orange|purple|white}">`
+  overlays (in Screen 1, before the banner) all pointing at `low_battery.svg`, positioned
+  per-bot in screen coords (`.chest-low--*` in screen.css). They're `pointer-events:none`
+  and `z-index:6` (below the spotlight vignette z7, so the side bots' icons darken with
+  them under the spotlight). **Hidden in Level 2** (`.level-2 .chest-low{display:none}`)
+  because the bots reposition and the left/orange bot is already charged there.
 
 
 Background = `BG.webp`. Contents:
@@ -365,8 +372,8 @@ paint:
   `window.load` (after first paint). So Screen 1 shows fast and the rest streams in.
 - **Unused source files** (the original `.svg`/`BG.png`, trays, etc.) were moved to a
   top-level `_source/` folder — exclude it from deploy. `assets/` is now ~1.5 MB.
-  NOTE: `blue_battery.png`/`yellow_battery.png` are referenced **dynamically** in JS
-  (`color + "_battery.png"`) — keep them even though static scans flag them as unused.
+  NOTE: `blue_battery.svg`/`yellow_battery.svg` are referenced **dynamically** in JS
+  (`color + "_battery.svg"`) — keep them even though static scans flag them as unused.
 
 **Performance history (important):** the original "SVG" bot/banner files were huge
 **raster images wrapped in SVG** (Screen 1 alone was ~8.7MB and loaded slowly when
@@ -384,7 +391,8 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 | ✅ | `battery_slots.webp` / `battery_slots_white.webp` | panels — converted from SVG (~280K→~60K each) for load speed |
 | ✅ | `Bigger_Slot.svg` | **true vector** — big-slot green-glow overlay |
 | ✅ | `spotlight.svg` | true vector (1KB) |
-| ✅ | `blue_battery.png` / `yellow_battery.png` | 62×100 transparent battery art |
+| ✅ | `blue_battery.svg` / `yellow_battery.svg` | draggable battery art — Pre-LBD style (metallic cap/bands, glossy body, lightning bolt), 62×100 viewBox. JS builds them via `color + "_battery.svg"`. (old `.png` versions superseded) |
+| ✅ | `low_battery.svg` | low-battery icon (same shell/bands as above but dark empty body + one red bar). Used as the chest overlay on all L1 bots (`.chest-low`). |
 | ✅ | `bite_talking.mp4` | live mascot avatar video — re-encoded small (384px, ~63K) since it shows at ~110px |
 | ⚠️ unused | `screen2_avatar.png` | old static avatar; replaced by the video |
 | ⚠️ unused | `Blue_tray.svg` / `Yellow_tray.svg` | trays are now CSS (had batteries baked in) |
@@ -439,6 +447,34 @@ screen (Part 1 & 2) and trigger its animation — for testing without playing th
 Self-contained (injects its own CSS/DOM). **Remove for production:** delete the file
 and its `<script src="js/devmenu.js">` tag in index.html. Reload for a clean state
 (jumps don't cancel a previous screen's pending timers).
+
+---
+
+## 11c. QA comment tool — freeze integration
+
+The `/qa/` comment tool (Supabase-backed) lets reviewers pin comments on the UI.
+When a reviewer opens the comment box it adds **`qa-intercept-on`** to `<body>`.
+Because this game runs almost everything on **JS timers** (`setTimeout` for the
+intro typewriter, charge/spotlight sequences, level curtains, and the
+`GameNav.show()` screen swaps), the QA tool's own freeze (which only pauses CSS
+on a `.level-intro-overlay` this game doesn't use) couldn't stop the action while
+someone typed a comment. So the game honours the flag itself, in **three layers**:
+- **`js/qa-freeze.js`** (loaded FIRST, before the other game scripts) — the main
+  fix. It wraps the global `setTimeout`/`setInterval` so that while
+  `body.qa-intercept-on` is set, **game** callbacks don't run: due timeouts are
+  HELD and replayed in order the instant the class is removed (comment box
+  closed), and game interval ticks are skipped. **QA's own timers are exempt**
+  (detected via the call stack containing `/qa/`) so the comment box still focuses
+  and toasts/sync still work. clearTimeout/clearInterval are unaffected (native
+  ids). A `MutationObserver` on `<body>`'s class drives pause/resume.
+- **`navigation.js`**: belt-and-suspenders — while comment mode is on,
+  `GameNav.show()` also holds the current screen and stashes the latest target in
+  `pendingScreen`, flushed on resume (catches any synchronous nav, e.g. Esc).
+- **`main.css`**: `body.qa-intercept-on #stage *` gets
+  `animation-play-state: paused` + `transition: none`, freezing pure-CSS loops
+  (bot dance, spotlight) and snapping in-flight transitions (scoped to `#stage`;
+  the QA UI lives on `<body>` and keeps animating).
+All of this is **inert during normal play** — the class only exists in QA mode.
 
 ---
 

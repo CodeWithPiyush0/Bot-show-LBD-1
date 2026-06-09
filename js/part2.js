@@ -237,7 +237,7 @@
         for (let i = 0; i < g.count; i++) {
             const b = document.createElement("img");
             b.className = "battery battery--" + g.color;
-            b.src = "assets/images/" + g.color + "_battery.png";
+            b.src = "assets/images/" + g.color + "_battery.svg";
             b.alt = "";
             b.draggable = false;
             el.appendChild(b);

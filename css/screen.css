@@ -160,6 +160,39 @@
     transform: translateX(-50%) rotate(0deg);
 }
 
+/* ---------- Consistent low-battery symbol on each bot's chest ----------
+   Sibling overlays positioned in screen coords (no wrapping), z below the
+   spotlight vignette so side bots' icons darken with them. */
+.chest-low {
+    position: absolute;
+    height: auto;
+    z-index: 6;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 0.5cqw rgba(255, 60, 50, 0.55));
+}
+/* Level 1 chest positions (orange centre, purple left, white-blue right) */
+.chest-low--orange {
+    left: 49.7%;
+    top: 73%;
+    width: 2.7%;
+}
+.chest-low--purple {
+    left: 19.55%;
+    top: 64%;
+    width: 3.4%;
+}
+.chest-low--white {
+    left: 78.4%;
+    top: 66%;
+    width: 2.5%;
+}
+/* Positions are for the Level-1 layout; in Level 2 the bots move and the
+   left bot is already charged, so hide these there. */
+.level-2 .chest-low {
+    display: none;
+}
+
 /* ---------- Question banner ----------
    Figma "Question_template": x=28 y=45 w=1865 h=145 */
 .question {

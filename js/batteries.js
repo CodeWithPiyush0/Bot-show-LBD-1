@@ -79,7 +79,7 @@
             for (let i = 0; i < g.count; i++) {
                 const bat = document.createElement("img");
                 bat.className = "battery battery--" + g.color;
-                bat.src = "assets/images/" + g.color + "_battery.png";
+                bat.src = "assets/images/" + g.color + "_battery.svg";
                 bat.alt = "";
                 bat.draggable = false;
                 ghostGroup.appendChild(bat);
@@ -100,7 +100,7 @@
             for (let i = 0; i < g.count; i++) {
                 const bat = document.createElement("img");
                 bat.className = "battery battery--" + g.color;
-                bat.src = "assets/images/" + g.color + "_battery.png";
+                bat.src = "assets/images/" + g.color + "_battery.svg";
                 bat.alt = g.color + " battery";
                 bat.draggable = false;
                 group.appendChild(bat);
@@ -165,7 +165,7 @@
             for (let i = 0; i < group.children.length; i++) {
                 const bat = document.createElement("img");
                 bat.className = "battery battery--" + group.dataset.color;
-                bat.src = "assets/images/" + group.dataset.color + "_battery.png";
+                bat.src = "assets/images/" + group.dataset.color + "_battery.svg";
                 bat.alt = "";
                 bat.draggable = false;
                 ghost.appendChild(bat);
@@ -197,7 +197,7 @@
             for (let i = 0; i < group.children.length; i++) {
                 const bat = document.createElement("img");
                 bat.className = "battery battery--" + group.dataset.color;
-                bat.src = "assets/images/" + group.dataset.color + "_battery.png";
+                bat.src = "assets/images/" + group.dataset.color + "_battery.svg";
                 bat.style.position = "fixed";
                 bat.style.left = startRects[i].left + "px";
                 bat.style.top = startRects[i].top + "px";
@@ -324,7 +324,7 @@
         for (let i = 0; i < count; i++) {
             const bat = document.createElement("img");
             bat.className = "battery battery--" + color;
-            bat.src = "assets/images/" + color + "_battery.png";
+            bat.src = "assets/images/" + color + "_battery.svg";
             bat.alt = "";
             bat.draggable = false;
             g.appendChild(bat);

@@ -73,6 +73,11 @@
                     data-bot="white-blue"
                 />
 
+                <!-- Consistent low-battery symbol overlaid on each bot's chest -->
+                <img class="chest-low chest-low--purple" src="assets/images/low_battery.svg" alt="" aria-hidden="true" />
+                <img class="chest-low chest-low--orange" src="assets/images/low_battery.svg" alt="" aria-hidden="true" />
+                <img class="chest-low chest-low--white" src="assets/images/low_battery.svg" alt="" aria-hidden="true" />
+
                 <!-- Question banner at the top -->
                 <div class="question">
                     <img
@@ -425,6 +430,8 @@
     </main>
 
     <!-- Scripts -->
+    <!-- Loaded first: makes timers pausable so the QA tool can freeze the game -->
+    <script src="js/qa-freeze.js" defer></script>
     <script src="js/navigation.js" defer></script>
     <script src="js/concept.js" defer></script>
     <script src="js/part2.js" defer></script>

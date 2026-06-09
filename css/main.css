@@ -49,6 +49,17 @@
     container-name: stage;
 }
 
+/* While the QA comment tool is open (it adds `qa-intercept-on` to <body>),
+   freeze the on-stage animation so the reviewer can comment on a still frame.
+   Scoped to the stage so the QA UI (appended to <body>) keeps animating. */
+body.qa-intercept-on #stage,
+body.qa-intercept-on #stage *,
+body.qa-intercept-on #stage *::before,
+body.qa-intercept-on #stage *::after {
+    animation-play-state: paused !important;
+    transition: none !important;
+}
+
 /* ---------- Screens ----------
    Each screen fills the stage and is stacked. Only the active one
    is visible; switching fades between them.
