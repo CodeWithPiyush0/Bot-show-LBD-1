@@ -119,8 +119,8 @@
 
 /* ---------- Screen 6 — split puzzle ---------- */
 .screen--6 {
-    /* scheme tint outside the panel (white L1; blue L2 via main.css) */
-    background: #efeced;
+    /* fixed cream background outside the panel (same for every bot/level) */
+    background: #fbe7cb;
 }
 .s6-content {
     position: absolute;
@@ -177,8 +177,8 @@
 
 /* ---------- Screen 8 — concept: a whole is made of 2 parts ---------- */
 .screen--8 {
-    /* scheme tint outside the panel (white L1; blue L2 via main.css) */
-    background: #efeced;
+    /* fixed cream background outside the panel (same for every bot/level) */
+    background: #fbe7cb;
 }
 .screen--8 .question__template {
     clip-path: inset(0 91.2% 0 0);

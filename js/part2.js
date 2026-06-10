@@ -428,8 +428,20 @@
         // zooms out to reveal it).
         openBanner(q, "This bot is fixed.", null, null);
         global.setTimeout(function () {
-            global.GameNav.show("screen-8");
-            playConcept2();
+            if (window.currentLevel === 2) {
+                // L2: skip the concept screen — reveal the celebrating bot,
+                // then finish (level/game-complete transition).
+                zoomOutTo("screen-6", "screen-7", function () {
+                    global.setTimeout(function () {
+                        if (global.showLevelTransition) global.showLevelTransition();
+                    }, 3000);
+                });
+            } else {
+                // L1 (tutorial): teach the concept (Screen 8), which then
+                // zooms out to reveal the dance.
+                global.GameNav.show("screen-8");
+                playConcept2();
+            }
         }, 2200);
     }
 

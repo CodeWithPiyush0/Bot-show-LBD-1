@@ -65,9 +65,9 @@ LBD-1/
 
 - `.game` fills the viewport; the letterbox fill (bars outside the 16:9 stage) is set
   **per active screen** by `navigation.js` (a `LETTERBOX` map): purple `#0a0130` for the
-  Pre-LBD splash, brown `#5a3624` for room screens (1/3/5/7), and the **per-bot scheme
-  tint** for interior screens (2/4/6/8) — orange/purple (Part 1) and white/blue (Part 2),
-  see `LETTERBOX`/`LETTERBOX_L2` — so the bars blend with each screen's edges.
+  Pre-LBD splash, brown `#5a3624` for room screens (1/3/5/7), and a fixed cream
+  `#FBE7CB` for interior screens (2/4/6/8) — matching the background outside the panel
+  (same for every bot/level) — so the bars blend with each screen's edges.
 - `.game__screen` (id `stage`) is a **fixed 16:9 box** sized to the largest that
   fits: `width: min(100vw, 100dvh * 1920/1080)`. It is **not** CSS-scaled — it
   renders at real pixels, so **1 viewport px == 1 stage px** (important for drag math).
@@ -226,12 +226,13 @@ Background = dark radial gradient. Structure:
     layer; called from `setupLevel()` → screens 2/4 get orange|purple, screens 6/8 get
     white|blue. All 4 panel layers (`.panel`, `.panel--small-left/right`, `.panel--big`)
     share the one scheme image.
-  - **Background outside the panel** matches the Figma scheme too (not black): the
-    interior screens get a light tint of the bot colour — orange `#fbe7cb`, purple
-    `#e5d2ef`, white `#efeced`, blue `#cde0f8` (pink `#eec1d6`). Set on `.screen--2/4/6/8`
-    in CSS (L1 defaults; `.level-2 .screen--N` overrides in main.css), and the
-    **letterbox** bars match via `navigation.js` (`LETTERBOX` + `LETTERBOX_L2`, keyed on
-    `window.currentLevel`).
+  - **Background OUTSIDE the panel** is a fixed cream **`#FBE7CB`** on every interior
+    screen (`.screen--2/4/6/8`) and the **letterbox** bars (`navigation.js LETTERBOX`) —
+    the same for every bot/level (NOT tinted per bot).
+  - **Board (INSIDE the panel)** keeps each bot's colour. The orange board was recoloured
+    to **`#F5C99A`** (a soft peach) — `panel_orange.webp` was re-tinted with sharp
+    (`modulate brightness 1.22 / saturation 0.55 / hue +5`) from the brighter Figma
+    orange. The other boards stay their Figma colours.
   - **No more hue-rotate/grayscale board recolouring.** The board keeps its bot colour;
     charge **success** is signalled by the green **slot-glow** + green **current flow**
     (not the board), and Part 2 **overcharge** by the red/yellow/green **slot-glow** on
@@ -308,6 +309,13 @@ banner has a clear gap above the panel: `transform: translateY(10%) scale(0.85)`
 banner opens + types prompt → holds 3.5s → banner closes to mascot + content grows
 back to normal (smooth) → **ghost hint** demonstrates the drag **3×** (a translucent
 blue group glides tray→small-left slot, `.is-ghost`) → dragging enabled.
+
+> **Level 2 = play solo.** L2 is no longer a tutorial: `playHint()` skips the ghost
+> demo (just enables dragging) when `window.currentLevel === 2`, and **both concept
+> screens are skipped** in L2 — Part 1 (`batteries.js`) goes charge → reveal dance
+> (Screen 3) → Part 2 directly (no Screen 4), and Part 2 (`part2.js onFixed`) goes
+> split → reveal dance (Screen 7) → level transition directly (no Screen 8). L1 still
+> shows the ghost hint and both concept screens.
 
 ---
 

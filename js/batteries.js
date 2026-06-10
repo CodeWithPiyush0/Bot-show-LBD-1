@@ -288,12 +288,26 @@
             }
         }, 900);
 
-        // Shortly after the message, stay inside the bot and teach the
-        // concept (Screen 4). The celebrating dance now comes AFTER the
-        // concept — concept.js zooms out to reveal it.
+        // Shortly after the message, continue.
         global.setTimeout(function () {
-            if (window.GameNav) window.GameNav.show("screen-4");
-            if (window.ConceptScreen) window.ConceptScreen.play();
+            if (window.currentLevel === 2) {
+                // L2: the player already learned the concept — skip the concept
+                // screen, just reveal the celebrating bot then go to Part 2.
+                if (window.GameFx && window.GameFx.exitBot) {
+                    window.GameFx.exitBot();
+                } else if (window.GameNav) {
+                    window.GameNav.show("screen-3");
+                }
+                global.setTimeout(function () {
+                    if (window.GameNav) window.GameNav.show("screen-5");
+                    if (window.Part2) window.Part2.startIntro();
+                }, 4300); // reveal settle (~1300) + dance (~3000)
+            } else {
+                // L1 (tutorial): stay inside the bot and teach the concept
+                // (Screen 4); concept.js then zooms out to reveal the dance.
+                if (window.GameNav) window.GameNav.show("screen-4");
+                if (window.ConceptScreen) window.ConceptScreen.play();
+            }
         }, 3200);
     }
 
@@ -327,7 +341,8 @@
     }
 
     function playHint() {
-        if (!contentEl || charged) {
+        // L2: no demo — the player drags on their own. Just enable dragging.
+        if (!contentEl || charged || window.currentLevel === 2) {
             enabled = true;
             return;
         }
