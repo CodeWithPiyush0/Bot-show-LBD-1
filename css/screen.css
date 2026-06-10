@@ -301,7 +301,144 @@
 .level-2 .screen--2.is-zooming-out,
 .level-2 .screen--4.is-zooming-out,
 .level-2 .screen--3.is-revealing {
-    transform-origin: 49.7% 67% !important;
+    transform-origin: 50% 70% !important;
+}
+
+/* ===========================================================
+   L2+ bot chooser — scrollable carousel
+   From Level 2 the player browses a horizontal row of bots and
+   taps one to fix it. In L1 (tutorial) the carousel is hidden and
+   the fixed 3-bot layout above is used instead.
+   =========================================================== */
+.bot-carousel {
+    display: none;
+}
+.level-2 .bot-carousel {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 26%;
+    height: 66%;
+    z-index: 5;
+}
+/* In the chooser, hide the fixed L1 bots and their floor shadows. */
+.level-2 .bot--purple,
+.level-2 .bot--orange,
+.level-2 .bot--white-blue,
+.level-2 .screen--1 .floor {
+    display: none !important;
+}
+
+.bot-carousel__track {
+    display: flex;
+    align-items: flex-end;
+    gap: 4cqw; /* even spacing between bots */
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    /* big side padding so any bot can scroll to the centre and the
+       neighbouring bots only peek in from the screen edges */
+    padding: 0 39cqw;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.bot-carousel__track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Staged like Screen 1: the centred bot is big & in front, the bots to the
+   sides are progressively smaller and set back (scaled by carousel.js as you
+   scroll), and every bot has a floor shadow. */
+.carousel-bot {
+    flex: 0 0 24cqw;
+    scroll-snap-align: center;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    transform-origin: bottom center; /* shrink toward the feet */
+    transition: transform 0.25s ease, filter 0.25s ease;
+}
+.carousel-bot img {
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    position: relative;
+    z-index: 1;
+}
+/* Floor shadow under each bot (sits at the feet; scales with the bot). */
+.carousel-bot::before {
+    content: "";
+    position: absolute;
+    bottom: 1.5%;
+    left: 50%;
+    width: 78%;
+    height: 5.5%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(15, 8, 4, 0.5) 0%,
+        rgba(15, 8, 4, 0.28) 45%,
+        rgba(15, 8, 4, 0) 72%
+    );
+    z-index: 0;
+}
+/* While a bot is being chosen, the spotlight dims all but the selected one
+   (filter only — the depth scale is handled by carousel.js via transform). */
+.screen--1.is-choosing .carousel-bot {
+    filter: brightness(0.4);
+}
+.screen--1.is-choosing .carousel-bot.is-selected {
+    filter: none;
+}
+
+/* A fixed bot shows its charged image happily dancing and can't be re-picked. */
+.carousel-bot.is-fixed {
+    cursor: default;
+}
+.carousel-bot.is-fixed img {
+    animation: botDance 1.25s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+/* Phase visibility: each level has a CHARGE phase (low bots) then a SPLIT
+   phase (overcharged bots). Show only the current phase's un-fixed bots;
+   fixed bots always stay (dancing). */
+.bot-carousel:not(.phase-split) .carousel-bot[data-state="overcharged"]:not(.is-fixed) {
+    display: none;
+}
+.bot-carousel.phase-split .carousel-bot[data-state="low"]:not(.is-fixed) {
+    display: none;
+}
+/* In the split phase the broken (overcharged) bots pulse a red glow to draw
+   the eye. Uses a ::after glow (opacity) so it never fights the spotlight
+   dim, which is a `filter`. */
+.bot-carousel.phase-split .carousel-bot[data-state="overcharged"]:not(.is-fixed)::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: 92%;
+    height: 72%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255, 90, 60, 0.55) 0%, rgba(255, 90, 60, 0) 65%);
+    animation: ocPulse 1.1s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+@keyframes ocPulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.85; }
 }
 
 

@@ -124,8 +124,40 @@ theme. (The legacy `#screen-transition` card is no longer used.)
 - **Hover** is only on the focal/clickable bot — `.bot--orange:hover` (L1 centre) and
   `.level-2 .bot--purple:hover` (L2 centre). `.bot` is `cursor:default`; only the focal
   bot is `cursor:pointer`. Side bots have no hover/pointer.
-- **Levels:** L1 focal = orange (centre), L2 focal = purple (repositioned to centre via
-  `.level-2` rules); the other bots are the dimmed/side bots.
+- **Levels:** L1 = guided tutorial (fixed 3-bot layout, orange focal). **From L2 = the
+  bot chooser** (see below); the old single-bot `.level-2` repositioning rules are now
+  superseded (the fixed bots are `display:none` in L2).
+
+### Game structure: Tutorial + 4 levels (the L2+ bot chooser)
+- **Tutorial** = the guided flow (charge → concept → split → concept), `gameStage 0`.
+- **Levels 1-4** = the chooser. Each level fixes **TWO different bots in two phases**:
+  1. **CHARGE phase** — the **low** bots are shown; tap one → charge puzzle (Part 1) →
+     it dances (fixed).
+  2. **SPLIT phase** — the **overcharged** bots appear, pulsing a red glow; tap one →
+     split puzzle (Part 2) → it dances (fixed). Level complete → next level.
+- 8 bot appearances: orange/blue/purple/pink each in **low** + **overcharged** state
+  (`data-scheme` + `data-state`), plus their **charged** art for the fixed/dancing look.
+  (Whichever is fixed swaps to `<scheme>_bot_charged.webp` and dances.)
+
+### Chooser carousel (`carousel.js`, `index.html`, `screen.css`)
+Horizontal **scrollable row** (`.bot-carousel__track`, only under `.level-2`), staged like
+Screen 1 via coverflow: `carousel.js layout()` scales each bot by distance from centre
+(centre big & front, sides small & set back), and each `.carousel-bot::before` is its floor
+shadow. CSS shows only the current phase's un-fixed bots (`.phase-split` toggles low ↔
+overcharged); fixed bots always stay, dancing.
+- **Flow:** tap a bot → `select()` centres it, **spotlight falls** (`.is-choosing` dims the
+  rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
+  zooms in (`enterBotTo`) → charge (`screen-2`, part 1) or split (`screen-6`, part 2).
+- **After a puzzle**, `returnToChooser()` → `BotChooser.onFixed(scheme)`: marks that bot
+  fixed (swaps to charged art + dances) and returns `{levelComplete}`. Charge done → straight
+  to the split phase. Split done (both bots fixed) → **curtain** `playCurtain("Level N
+  Complete!", …)` then the next level's chooser; after level 4 → `playCurtain("All Bots
+  Fixed!", …)` → pre screen. (Tutorial→Level 1 uses `showLevelTransition()` = "Tutorial
+  Complete!".) `playCurtain(title, sub, onSwap)` in main.js is the shared curtain helper.
+- Counts per phase come from `window.STAGES[gameStage]` via `getCounts(1|2)` (see §8).
+- `intro.js Screen1Intro.play()` is chooser-aware: in L2 it skips the auto-spotlight, calls
+  `BotChooser.enterChooser()`, and types the L2 prompt (`data-text2`).
+- Test via the dev menu → "Level 2 (Real Game) → 1 · Choose bot" (charge phase).
 - Each bot's low-battery symbol is **baked into its art** (e.g. `orange_bot.webp` has the
   low-battery chest icon in the image). (An earlier `.chest-low` CSS overlay was removed
   once the bot art included the icon directly.)
@@ -247,10 +279,29 @@ Background = dark radial gradient. Structure:
   - small-left: `{x:423, y:568, w:407, h:139}`
   - small-right: `{x:1103, y:567, w:407, h:139}`
 
+### Per-stage battery counts (`main.js window.STAGES` / `getCounts(part)`)
+The "whole" splits into two parts — **blue** group + **yellow** group. Counts vary by
+stage (Tutorial + Levels 1-4) per the design table:
+
+| Stage | Part 1 (charge) blue,yellow | Part 2 (split) blue,yellow |
+|---|---|---|
+| Tutorial | 4, 2 | 3, 2 |
+| Level 1 | 3, 5 | 4, 3 |
+| Level 2 | 6, 3 | 2, 8 |
+| Level 3 | 6, 4 | 5, 4 |
+| Level 4 | 6, 6 | 6, 5 |
+
+`window.gameStage` indexes `STAGES`; `getCounts(1|2)` returns `{blue,yellow}`. Wired into
+`batteries.js setupBatteries` (Part 1), `part2.js startSplit` (Part 2) and `concept.js`.
+**Bridge for now:** `setupLevel()` sets `gameStage = level===2 ? 1 : 0` (Tutorial vs
+Level 1); stages 2-4 activate once the chooser progression is built. (Heads-up: large
+counts like 8 may overflow a small slot at `PLACED_SCALE 0.82` — revisit slot sizing.)
+
 ### Batteries & drag-drop (`batteries.js`)
-- Two **groups** (single draggable units, NOT individual batteries):
-  - blue: 4 batteries, tray center `(506.5, 948.5)`
-  - yellow: 6 batteries, tray center `(1413.5, 948.5)`
+- Two **groups** (single draggable units, NOT individual batteries); counts come from
+  `getCounts()` above (defaults blue 4 / yellow 6):
+  - blue tray center `(506.5, 948.5)`
+  - yellow tray center `(1413.5, 948.5)`
   - battery art = `blue_battery.png` / `yellow_battery.png` (62×100, transparent,
     exported isolated from Figma with `contentsOnly`). Single battery = `3.229cqw` wide.
 - A group is positioned by its **center** (`left/top` %, `translate(-50%,-50%)`).
@@ -429,6 +480,7 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 | ✅ | `Question_template.webp` | cream banner + mascot badge (both screens) |
 | ✅ | `purple_bot_low.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots (left/centre/right). `orange_bot.webp` (←`orange_bot.svg`, 900px) and `purple_bot_low.webp` (←`purple_bot_low.svg`, 950px) are regenerated via sharp (q82); their art has the low-battery icon baked into the chest. `purple_bot_low.webp` doubles as the L2 focal bot. |
 | ✅ | `Sahdow_Purple_Bot.webp` | dimmed "shadow" purple bot — now used only as the Part 2 Screen 5 left/side bot (L1). |
+| ✅ | `blue_bot_low.webp` / `pink_bot_low.webp` | low-battery blue & pink bots for the L2+ chooser carousel (exported from Figma `284:11` / `286:94`). |
 | ✅ | `White_purple_bot.webp` (overcharged) / `White_purple_bot_charged.webp` (fixed) | Part 2 centre bot |
 | ✅ | `purple_bot.webp` / `orange_bot_charged.webp` | Part 2 Screen 5 side bots |
 | ✅ | `panel_orange.webp` / `panel_purple.webp` / `panel_white.webp` / `panel_blue.webp` / `panel_pink.webp` | per-bot **filled colour** interior boards (1920×822), exported from Figma `287:719` "Main container" frames. Swapped per level by `setPanelScheme()`. pink = exported, unused. |

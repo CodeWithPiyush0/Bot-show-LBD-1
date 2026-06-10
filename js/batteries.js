@@ -291,17 +291,9 @@
         // Shortly after the message, continue.
         global.setTimeout(function () {
             if (window.currentLevel === 2) {
-                // L2: the player already learned the concept — skip the concept
-                // screen, just reveal the celebrating bot then go to Part 2.
-                if (window.GameFx && window.GameFx.exitBot) {
-                    window.GameFx.exitBot();
-                } else if (window.GameNav) {
-                    window.GameNav.show("screen-3");
-                }
-                global.setTimeout(function () {
-                    if (window.GameNav) window.GameNav.show("screen-5");
-                    if (window.Part2) window.Part2.startIntro();
-                }, 4300); // reveal settle (~1300) + dance (~3000)
+                // Chooser mode: this bot is charged — go back to the chooser,
+                // marked done (no concept, no separate dance screen).
+                if (window.returnToChooser) window.returnToChooser();
             } else {
                 // L1 (tutorial): stay inside the bot and teach the concept
                 // (Screen 4); concept.js then zooms out to reveal the dance.
@@ -488,9 +480,10 @@
         const oldGroups = contentEl.querySelectorAll(".battery-group, .tray-ghost");
         oldGroups.forEach(el => el.remove());
 
-        // Set counts based on level
-        GROUPS[0].count = (window.currentLevel === 2) ? 6 : 4;
-        GROUPS[1].count = 6; // Always 6 yellow
+        // Set counts from the current stage's Part 1 config.
+        const c = window.getCounts ? window.getCounts(1) : { blue: 4, yellow: 6 };
+        GROUPS[0].count = c.blue;
+        GROUPS[1].count = c.yellow;
 
         // Reset slot occupancies
         DROPPABLE.forEach((id) => {

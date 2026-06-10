@@ -73,6 +73,41 @@
                     data-bot="white-blue"
                 />
 
+                <!-- L2+ scrollable bot chooser (hidden in the L1 tutorial).
+                     Two phases per level: the CHARGE phase shows the low bots,
+                     then the SPLIT phase shows the overcharged bots (highlighted).
+                     carousel.js toggles which set is visible. -->
+                <div class="bot-carousel" id="bot-carousel" aria-hidden="true">
+                    <div class="bot-carousel__track" id="bot-carousel-track">
+                        <!-- Low bots (CHARGE phase) -->
+                        <button class="carousel-bot" type="button" data-scheme="orange" data-state="low">
+                            <img src="assets/images/orange_bot.webp" alt="Low orange bot" draggable="false" />
+                        </button>
+                        <button class="carousel-bot" type="button" data-scheme="blue" data-state="low">
+                            <img src="assets/images/blue_bot_low.webp" alt="Low blue bot" draggable="false" />
+                        </button>
+                        <button class="carousel-bot" type="button" data-scheme="purple" data-state="low">
+                            <img src="assets/images/purple_bot_low.webp" alt="Low purple bot" draggable="false" />
+                        </button>
+                        <button class="carousel-bot" type="button" data-scheme="pink" data-state="low">
+                            <img src="assets/images/pink_bot_low.webp" alt="Low pink bot" draggable="false" />
+                        </button>
+                        <!-- Overcharged bots (SPLIT phase) -->
+                        <button class="carousel-bot" type="button" data-scheme="orange" data-state="overcharged">
+                            <img src="assets/images/orange_bot_overcharged.webp" alt="Overcharged orange bot" draggable="false" />
+                        </button>
+                        <button class="carousel-bot" type="button" data-scheme="blue" data-state="overcharged">
+                            <img src="assets/images/blue_bot_overcharged.webp" alt="Overcharged blue bot" draggable="false" />
+                        </button>
+                        <button class="carousel-bot" type="button" data-scheme="purple" data-state="overcharged">
+                            <img src="assets/images/purple_bot_overcharged.webp" alt="Overcharged purple bot" draggable="false" />
+                        </button>
+                        <button class="carousel-bot" type="button" data-scheme="pink" data-state="overcharged">
+                            <img src="assets/images/pink_bot_overcharged.webp" alt="Overcharged pink bot" draggable="false" />
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Question banner at the top -->
                 <div class="question">
                     <img
@@ -91,7 +126,7 @@
                         preload="auto"
                         aria-hidden="true"
                     ></video>
-                    <p class="question__text" data-text="Tap the bot to fix its batteries."></p>
+                    <p class="question__text" data-text="Tap the bot to fix its batteries." data-text2="Scroll and tap a bot to fix it."></p>
                 </div>
 
             </section>
@@ -434,6 +469,7 @@
     <script src="js/intro.js" defer></script>
     <script src="js/batteries.js" defer></script>
     <script src="js/main.js" defer></script>
+    <script src="js/carousel.js" defer></script>
     <!-- TEMPORARY dev tool — remove this line and js/devmenu.js for production -->
     <script src="js/devmenu.js" defer></script>
     <!-- QA comment tool (activates only with ?qa=true) -->

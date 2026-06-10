@@ -95,10 +95,12 @@
         smallBats.length = 0;
         bigBats.length = 0;
 
-        // Adjust counts dynamically based on current level
-        const countBlue = (window.currentLevel === 2) ? 6 : 4;
-        LAYOUT[0].count = countBlue; // small-left
-        LAYOUT[2].count = countBlue; // big top row
+        // Counts from the current stage's Part 1 config (blue + yellow).
+        const c = window.getCounts ? window.getCounts(1) : { blue: 4, yellow: 6 };
+        LAYOUT[0].count = c.blue; // small-left (part 1)
+        LAYOUT[2].count = c.blue; // big top row
+        LAYOUT[1].count = c.yellow; // small-right (part 2)
+        LAYOUT[3].count = c.yellow; // big bottom row
 
         LAYOUT.forEach(function (g) {
             const made = makeGroup(g);

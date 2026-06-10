@@ -264,9 +264,10 @@
         const oldGroups = s6.querySelectorAll(".battery-group");
         oldGroups.forEach(el => el.remove());
 
-        // Adjust counts dynamically based on level
-        GROUPS[0].count = (window.currentLevel === 2) ? 5 : 4;
-        GROUPS[1].count = 6; // Always 6 yellow
+        // Set counts from the current stage's Part 2 (split) config.
+        const c = window.getCounts ? window.getCounts(2) : { blue: 4, yellow: 6 };
+        GROUPS[0].count = c.blue;
+        GROUPS[1].count = c.yellow;
 
         // Rebuild the battery groups
         GROUPS.forEach(function (g) {
@@ -429,13 +430,9 @@
         openBanner(q, "This bot is fixed.", null, null);
         global.setTimeout(function () {
             if (window.currentLevel === 2) {
-                // L2: skip the concept screen — reveal the celebrating bot,
-                // then finish (level/game-complete transition).
-                zoomOutTo("screen-6", "screen-7", function () {
-                    global.setTimeout(function () {
-                        if (global.showLevelTransition) global.showLevelTransition();
-                    }, 3000);
-                });
+                // Chooser mode: mark this bot done and return to the chooser
+                // (no concept; completion is handled when all bots are fixed).
+                if (window.returnToChooser) window.returnToChooser();
             } else {
                 // L1 (tutorial): teach the concept (Screen 8), which then
                 // zooms out to reveal the dance.

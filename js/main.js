@@ -9,6 +9,23 @@
 
     window.currentLevel = 1;
 
+    // ---- Per-stage battery counts ----------------------------------------
+    // 5 stages: Tutorial, then Levels 1-4. Each puzzle's "whole" splits into
+    // two parts — a = blue group, b = yellow group. Part 1 = charge (combine
+    // the parts into the whole), Part 2 = split (whole back into parts).
+    window.STAGES = [
+        { key: "tutorial", part1: { blue: 4, yellow: 2 }, part2: { blue: 3, yellow: 2 } },
+        { key: "level1", part1: { blue: 3, yellow: 5 }, part2: { blue: 4, yellow: 3 } },
+        { key: "level2", part1: { blue: 6, yellow: 3 }, part2: { blue: 2, yellow: 8 } },
+        { key: "level3", part1: { blue: 6, yellow: 4 }, part2: { blue: 5, yellow: 4 } },
+        { key: "level4", part1: { blue: 6, yellow: 6 }, part2: { blue: 6, yellow: 5 } },
+    ];
+    window.gameStage = 0; // index into STAGES (0 = Tutorial)
+    window.getCounts = function (part) {
+        const s = window.STAGES[window.gameStage] || window.STAGES[0];
+        return part === 2 ? s.part2 : s.part1;
+    };
+
     // Each bot has its own interior-panel colour scheme (per the Figma):
     // orange / purple (Part 1 L1/L2) and white / blue (Part 2 L1/L2). The
     // filled colour boards are pre-rendered images (panel_<scheme>.webp), so we
@@ -28,6 +45,9 @@
 
     function setupLevel(level) {
         window.currentLevel = level;
+        // Bridge to the stage table: L1 = Tutorial, L2 = first chooser stage.
+        // (Stages 2-4 activate as the chooser progression is built out.)
+        window.gameStage = level === 2 ? 1 : 0;
         const game = document.getElementById("game");
         const orangeBot = document.querySelector(".bot--orange");
         const purpleBot = document.querySelector(".bot--purple");
@@ -51,53 +71,40 @@
     }
     window.setupLevel = setupLevel;
 
-    // Theatre-curtain level transition: close the curtains over the
-    // finished level, swap to the next behind them, then part to reveal it.
-    function showLevelTransition() {
-        const finishing = window.currentLevel === 2; // L2 done -> whole game complete
+    // Theatre-curtain transition: close the curtains over the message, run
+    // `onSwap` behind them, then part to reveal the next screen.
+    function playCurtain(title, sub, onSwap) {
         const curtains = document.getElementById("curtains");
         const titleEl = document.getElementById("curtain-title");
         const subEl = document.getElementById("curtain-sub");
-
-        if (titleEl) titleEl.textContent = finishing ? "All Bots Fixed!" : "Level 1 Complete!";
-        if (subEl) {
-            subEl.textContent = finishing
-                ? "Fantastic work — you fixed every bot!"
-                : "Get ready for Level 2…";
-        }
-
-        // Behind the closed curtains, set up the next level.
-        function swap() {
-            if (finishing) {
-                setupLevel(1);
-                window.GameNav.show("screen-pre");
-            } else {
-                setupLevel(2);
-                window.GameNav.show("screen-1");
-                if (window.Screen1Intro) window.Screen1Intro.play();
-            }
-        }
+        if (titleEl) titleEl.textContent = title;
+        if (subEl) subEl.textContent = sub;
 
         if (!curtains) {
-            swap();
+            onSwap();
             return;
         }
-
         curtains.classList.add("is-active");
-        // close (next frame so the transition runs)
         window.requestAnimationFrame(function () {
             curtains.classList.add("is-closed");
         });
-        // once closed, swap the level behind them
-        window.setTimeout(swap, 950);
-        // hold the message, then open the curtains
+        window.setTimeout(onSwap, 950); // swap behind the closed curtains
         window.setTimeout(function () {
             curtains.classList.remove("is-closed");
-        }, 2600);
-        // fully open -> stand down
+        }, 2600); // hold the message, then open
         window.setTimeout(function () {
             curtains.classList.remove("is-active");
         }, 3600);
+    }
+    window.playCurtain = playCurtain;
+
+    // Tutorial finished -> curtain -> Level 1 (the bot chooser).
+    function showLevelTransition() {
+        playCurtain("Tutorial Complete!", "Get ready for Level 1…", function () {
+            setupLevel(2); // enters chooser mode (gameStage 1)
+            window.GameNav.show("screen-1");
+            if (window.Screen1Intro) window.Screen1Intro.play();
+        });
     }
     window.showLevelTransition = showLevelTransition;
 
@@ -140,24 +147,81 @@
         const screen1 = document.getElementById("screen-1");
         const screen2 = document.getElementById("screen-2");
 
-        function enterBot() {
+        // Zoom Screen 1 into the (centred) bot, then hand off to `targetId`
+        // which emerges from inside the chest.
+        function enterBotTo(targetId, onSettled) {
             if (!screen1 || screen1.classList.contains("is-zooming")) return;
             screen1.classList.add("is-zooming");
+            const target = document.getElementById(targetId);
 
-            // Hand off when Screen 1 has zoomed to ~2x, which is exactly
-            // Screen 2's starting scale, so the crossfade is seamless.
+            // Hand off when Screen 1 has zoomed to ~2x, which is exactly the
+            // target's starting scale, so the crossfade is seamless.
             window.setTimeout(function () {
-                window.GameNav.show("screen-2");
-                if (screen2) screen2.classList.add("is-entering");
+                window.GameNav.show(targetId);
+                if (target) target.classList.add("is-entering");
             }, 380);
 
-            // Clean up once Screen 2 has fully settled, then play its intro.
+            // Clean up once the target has fully settled, then run its intro.
             window.setTimeout(function () {
-                if (screen2) screen2.classList.remove("is-entering");
+                if (target) target.classList.remove("is-entering");
                 screen1.classList.remove("is-zooming");
-                if (window.Screen2Intro) window.Screen2Intro.play();
+                if (onSettled) onSettled();
             }, 1200);
         }
+
+        function enterBot() {
+            enterBotTo("screen-2", function () {
+                if (window.Screen2Intro) window.Screen2Intro.play();
+            });
+        }
+
+        // L2+ chooser: enter the chosen bot to fix it — Part 1 (charge) for the
+        // low bots, Part 2 (split) for the overcharged one — using that bot's
+        // panel colour scheme.
+        function chooseBotEnter(scheme, part) {
+            window.currentScheme = scheme;
+            if (part === "2") {
+                if (window.setPanelScheme) window.setPanelScheme(["screen-6", "screen-8"], scheme);
+                enterBotTo("screen-6", function () {
+                    if (window.Part2) window.Part2.startSplit();
+                });
+            } else {
+                if (window.setPanelScheme) window.setPanelScheme(["screen-2", "screen-4"], scheme);
+                enterBot();
+            }
+        }
+        window.chooseBotEnter = chooseBotEnter;
+
+        // Return to the L2+ chooser after a bot is fixed. onFixed() marks the
+        // bot done (charged + dancing) and advances the phase/level, returning
+        // whether the LEVEL just completed (i.e. the split bot was fixed).
+        function returnToChooser() {
+            const res = window.BotChooser
+                ? window.BotChooser.onFixed(window.currentScheme)
+                : { levelComplete: false };
+
+            if (res && res.levelComplete) {
+                // Both bots of the level are fixed → curtain "Level X Complete"
+                // then on to the next level's chooser (or game complete).
+                const completed = (window.gameStage || 2) - 1; // level just finished
+                if ((window.gameStage || 1) > 4) {
+                    playCurtain("All Bots Fixed!", "Fantastic work — you fixed every bot!", function () {
+                        setupLevel(1);
+                        window.GameNav.show("screen-pre");
+                    });
+                } else {
+                    playCurtain("Level " + completed + " Complete!", "Get ready for Level " + window.gameStage + "…", function () {
+                        window.GameNav.show("screen-1");
+                        if (window.BotChooser) window.BotChooser.enterChooser();
+                    });
+                }
+            } else {
+                // First bot (charge) done → straight to the split phase.
+                window.GameNav.show("screen-1");
+                if (window.BotChooser) window.BotChooser.enterChooser();
+            }
+        }
+        window.returnToChooser = returnToChooser;
 
         if (orangeBot) {
             orangeBot.addEventListener("click", function () {

@@ -33,18 +33,28 @@
         const textEl = screen1.querySelector(".question__text");
         if (!textEl) return;
 
+        const isChooser = window.currentLevel === 2; // L2+ = scrollable bot chooser
+
         // (re)start the CSS intro animations
         screen1.classList.remove("is-intro");
         screen1.classList.remove("is-lit"); // start with all bots normally lit
         void screen1.offsetWidth; // reflow so the animation can restart
         screen1.classList.add("is-intro");
 
-        // After a beat, bring the spotlight up onto the centre bot.
-        window.setTimeout(function () {
-            screen1.classList.add("is-lit");
-        }, 1000);
+        if (isChooser) {
+            // Chooser mode: no auto-spotlight — it falls when the player taps a
+            // bot (handled in carousel.js). Reset/centre the chooser row.
+            if (window.BotChooser) window.BotChooser.enterChooser();
+        } else {
+            // L1 tutorial: bring the spotlight up onto the centre bot after a beat.
+            window.setTimeout(function () {
+                screen1.classList.add("is-lit");
+            }, 1000);
+        }
 
-        const full = textEl.getAttribute("data-text") || "";
+        const full = isChooser
+            ? (textEl.getAttribute("data-text2") || "Scroll and tap a bot to fix it.")
+            : (textEl.getAttribute("data-text") || "");
         textEl.textContent = "";
 
         let started = false;
