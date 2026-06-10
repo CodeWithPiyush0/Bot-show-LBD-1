@@ -7,8 +7,8 @@
    =========================================================== */
 
 .screen--4 {
-    /* same dark interior as Screen 2 */
-    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+    /* same scheme tint as Screen 2 (orange L1; purple L2 via main.css) */
+    background: #fbe7cb;
 }
 
 .s4-content {

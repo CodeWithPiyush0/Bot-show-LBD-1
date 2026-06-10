@@ -65,8 +65,9 @@ LBD-1/
 
 - `.game` fills the viewport; the letterbox fill (bars outside the 16:9 stage) is set
   **per active screen** by `navigation.js` (a `LETTERBOX` map): purple `#0a0130` for the
-  Pre-LBD splash, brown `#5a3624` for room screens (1/3/5/7), dark `#0b0b0c` for the
-  interior screens (2/4/6/8) — so the bars blend with each screen's edges.
+  Pre-LBD splash, brown `#5a3624` for room screens (1/3/5/7), and the **per-bot scheme
+  tint** for interior screens (2/4/6/8) — orange/purple (Part 1) and white/blue (Part 2),
+  see `LETTERBOX`/`LETTERBOX_L2` — so the bars blend with each screen's edges.
 - `.game__screen` (id `stage`) is a **fixed 16:9 box** sized to the largest that
   fits: `width: min(100vw, 100dvh * 1920/1080)`. It is **not** CSS-scaled — it
   renders at real pixels, so **1 viewport px == 1 stage px** (important for drag math).
@@ -214,7 +215,29 @@ Background = dark radial gradient. Structure:
 ```
 
 ### Panel & slots
-- `battery_slots.svg` (true vector, ~280KB) is the **whole panel** (1834×786) at
+- **Per-bot colour scheme (from Figma `287:719`):** each bot's interior board is a
+  **filled colour** matching the bot. The board is a pre-rendered image
+  `panel_<scheme>.webp` (1920×822, exported from the Figma "Main container" frames and
+  stretched to the exact battery_slots canvas so slots line up). Schemes:
+  **orange** = Part 1 L1, **purple** = Part 1 L2, **white** = Part 2 L1,
+  **blue** = Part 2 L2 (the Part-2 bot is hue-blue in L2). `panel_pink.webp` is also
+  exported (pink bot) but no current screen uses it.
+  - `main.js setPanelScheme(screenIds, scheme)` swaps the `src` of every `img.panel`
+    layer; called from `setupLevel()` → screens 2/4 get orange|purple, screens 6/8 get
+    white|blue. All 4 panel layers (`.panel`, `.panel--small-left/right`, `.panel--big`)
+    share the one scheme image.
+  - **Background outside the panel** matches the Figma scheme too (not black): the
+    interior screens get a light tint of the bot colour — orange `#fbe7cb`, purple
+    `#e5d2ef`, white `#efeced`, blue `#cde0f8` (pink `#eec1d6`). Set on `.screen--2/4/6/8`
+    in CSS (L1 defaults; `.level-2 .screen--N` overrides in main.css), and the
+    **letterbox** bars match via `navigation.js` (`LETTERBOX` + `LETTERBOX_L2`, keyed on
+    `window.currentLevel`).
+  - **No more hue-rotate/grayscale board recolouring.** The board keeps its bot colour;
+    charge **success** is signalled by the green **slot-glow** + green **current flow**
+    (not the board), and Part 2 **overcharge** by the red/yellow/green **slot-glow** on
+    the big slot. (The old `battery_slots.webp` / `battery_slots_white.webp` are now
+    unused.)
+- (Legacy) `battery_slots.svg` (true vector, ~280KB) is the **whole panel** (1834×786) at
   Figma (43,40): the metallic border, the 3 slots, the orange connectors, decorators.
 - Trays are **recreated in CSS** (the tray SVGs had the batteries baked in, so they
   couldn't be emptied). Blue accent `#96f2f7`, yellow accent `#f3e21f`, grey rim `#5f5e5e`.
@@ -400,7 +423,8 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 | ✅ | `Sahdow_Purple_Bot.webp` | dimmed "shadow" purple bot — now used only as the Part 2 Screen 5 left/side bot (L1). |
 | ✅ | `White_purple_bot.webp` (overcharged) / `White_purple_bot_charged.webp` (fixed) | Part 2 centre bot |
 | ✅ | `purple_bot.webp` / `orange_bot_charged.webp` | Part 2 Screen 5 side bots |
-| ✅ | `battery_slots.webp` / `battery_slots_white.webp` | panels — converted from SVG (~280K→~60K each) for load speed |
+| ✅ | `panel_orange.webp` / `panel_purple.webp` / `panel_white.webp` / `panel_blue.webp` / `panel_pink.webp` | per-bot **filled colour** interior boards (1920×822), exported from Figma `287:719` "Main container" frames. Swapped per level by `setPanelScheme()`. pink = exported, unused. |
+| ⚠️ unused | `battery_slots.webp` / `battery_slots_white.webp` | old dark-board/outline panels — superseded by the filled `panel_*.webp` set. |
 | ✅ | `Bigger_Slot.svg` | **true vector** — big-slot green-glow overlay |
 | ✅ | `spotlight.svg` | true vector (1KB) |
 | ✅ | `blue_battery.svg` / `yellow_battery.svg` | draggable battery art — Pre-LBD style (metallic cap/bands, glossy body, lightning bolt), 62×100 viewBox. JS builds them via `color + "_battery.svg"`. (old `.png` versions superseded) |

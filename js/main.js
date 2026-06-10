@@ -9,6 +9,23 @@
 
     window.currentLevel = 1;
 
+    // Each bot has its own interior-panel colour scheme (per the Figma):
+    // orange / purple (Part 1 L1/L2) and white / blue (Part 2 L1/L2). The
+    // filled colour boards are pre-rendered images (panel_<scheme>.webp), so we
+    // just swap the src of every panel layer in the given screens.
+    function setPanelScheme(screenIds, scheme) {
+        const src = "assets/images/panel_" + scheme + ".webp";
+        screenIds.forEach(function (id) {
+            const root = document.getElementById(id);
+            if (!root) return;
+            root.querySelectorAll("img.panel").forEach(function (img) {
+                img.src = src;
+                img.removeAttribute("data-src");
+            });
+        });
+    }
+    window.setPanelScheme = setPanelScheme;
+
     function setupLevel(level) {
         window.currentLevel = level;
         const game = document.getElementById("game");
@@ -27,6 +44,10 @@
             if (purpleBot) purpleBot.src = "assets/images/purple_bot_low.webp";
             if (screen3Bot) screen3Bot.src = "assets/images/orange_bot_charged.webp";
         }
+
+        // Panel colour scheme per bot/level.
+        setPanelScheme(["screen-2", "screen-4"], level === 2 ? "purple" : "orange");
+        setPanelScheme(["screen-6", "screen-8"], level === 2 ? "blue" : "white");
     }
     window.setupLevel = setupLevel;
 

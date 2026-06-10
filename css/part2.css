@@ -119,7 +119,8 @@
 
 /* ---------- Screen 6 — split puzzle ---------- */
 .screen--6 {
-    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+    /* scheme tint outside the panel (white L1; blue L2 via main.css) */
+    background: #efeced;
 }
 .s6-content {
     position: absolute;
@@ -151,9 +152,6 @@
 .screen--6 .slot-glow--big.is-yellow {
     filter: hue-rotate(55deg) drop-shadow(0 0 0.9cqw rgba(255, 235, 59, 0.95)) drop-shadow(0 0 2cqw rgba(255, 235, 59, 0.65));
 }
-.screen--6 .panel--big.is-yellow {
-    filter: hue-rotate(55deg);
-}
 .screen--6 .slot-glow--big.is-normal {
     opacity: 1;
     animation: none;
@@ -164,9 +162,6 @@
 }
 .screen--8 .slot-glow--big.is-green {
     filter: hue-rotate(143deg) drop-shadow(0 0 0.9cqw rgba(70, 255, 140, 0.95)) drop-shadow(0 0 2cqw rgba(70, 255, 140, 0.65));
-}
-.screen--8 .panel--big.is-green {
-    filter: hue-rotate(143deg);
 }
 
 /* ---------- Screen 7 — the fixed bot celebrates ---------- */
@@ -182,7 +177,8 @@
 
 /* ---------- Screen 8 — concept: a whole is made of 2 parts ---------- */
 .screen--8 {
-    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+    /* scheme tint outside the panel (white L1; blue L2 via main.css) */
+    background: #efeced;
 }
 .screen--8 .question__template {
     clip-path: inset(0 91.2% 0 0);
@@ -231,15 +227,8 @@
     filter: hue-rotate(-60deg) !important;
 }
 
-/* Gray/white panel filters to turn orange connectors white in Part 2 */
-.screen--6 .panel,
-.screen--6 .panel--small-left,
-.screen--6 .panel--small-right,
-.screen--8 .panel,
-.screen--8 .panel--small-left,
-.screen--8 .panel--small-right {
-    filter: grayscale(1) brightness(1.4);
-}
+/* (Part 2 boards are now pre-coloured panel images — white (L1) / blue (L2) —
+   so the old grayscale-from-orange conversion is no longer needed.) */
 
 /* White slot highlight for splitting puzzle (since White Bot is selected) */
 .screen--6 .slot.is-hover {

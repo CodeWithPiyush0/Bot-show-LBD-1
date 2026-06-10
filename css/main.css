@@ -92,8 +92,21 @@ body.qa-intercept-on #stage *::after {
 }
 
 .screen--2 {
-    /* Inside of the bot — dark interior */
-    background: radial-gradient(ellipse at 50% 42%, #1c1c1f 0%, #0b0b0c 82%);
+    /* Inside the bot — background tint matches the bot's panel scheme (Figma).
+       L1 = orange tint; L2 swaps to purple in the block below. */
+    background: #fbe7cb;
+}
+
+/* Per-bot background tint outside the panel (matches the Figma colour sheet).
+   Part 1: orange (L1) / purple (L2).  Part 2: white (L1) / blue (L2).
+   Bases are set on each screen; these L2 rules win by specificity. */
+.level-2 .screen--2,
+.level-2 .screen--4 {
+    background: #e5d2ef; /* purple */
+}
+.level-2 .screen--6,
+.level-2 .screen--8 {
+    background: #cde0f8; /* blue */
 }
 
 /* ---------- Theatre curtain transition (level changes) ----------

@@ -16,17 +16,32 @@
         "screen-3": "#5a3624",
         "screen-5": "#5a3624",
         "screen-7": "#5a3624",
-        "screen-2": "#0b0b0c", // dark interior
-        "screen-4": "#0b0b0c",
-        "screen-6": "#0b0b0c",
-        "screen-8": "#0b0b0c",
+        // Interior screens: letterbox matches the bot's panel-scheme tint so the
+        // bars blend with the background outside the panel (L1 defaults here;
+        // L2 overrides below). Part 1 = orange, Part 2 = white.
+        "screen-2": "#fbe7cb",
+        "screen-4": "#fbe7cb",
+        "screen-6": "#efeced",
+        "screen-8": "#efeced",
         "screen-transition": "#05010a",
+    };
+    // Level-2 tints (purple for Part 1 interiors, blue for Part 2).
+    const LETTERBOX_L2 = {
+        "screen-2": "#e5d2ef",
+        "screen-4": "#e5d2ef",
+        "screen-6": "#cde0f8",
+        "screen-8": "#cde0f8",
     };
     const DEFAULT_LETTERBOX = "#5a3624";
 
     function applyLetterbox(screenId) {
         const game = document.getElementById("game");
-        if (game) game.style.backgroundColor = LETTERBOX[screenId] || DEFAULT_LETTERBOX;
+        if (!game) return;
+        let color = LETTERBOX[screenId] || DEFAULT_LETTERBOX;
+        if (window.currentLevel === 2 && LETTERBOX_L2[screenId]) {
+            color = LETTERBOX_L2[screenId];
+        }
+        game.style.backgroundColor = color;
     }
 
     function doShow(screenId) {

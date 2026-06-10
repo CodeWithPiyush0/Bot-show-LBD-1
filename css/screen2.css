@@ -19,9 +19,9 @@
     transition: filter 0.4s ease;
 }
 
-.panel.is-green {
-    filter: hue-rotate(110deg);
-}
+/* The board colour now comes from the per-bot panel image (panel_<scheme>.webp),
+   not a hue-rotate. Charge success is signalled by the green slot-glow + green
+   current flow below, so the board itself keeps its bot colour. */
 
 .panel--small-left {
     clip-path: inset(65% 56% 13% 19.5%);
@@ -37,10 +37,6 @@
     clip-path: inset(10% 34% 52% 35%);
     z-index: 5;
     transition: filter 0.4s ease;
-}
-
-.panel--big.is-green {
-    filter: hue-rotate(110deg);
 }
 
 /* ---------- Slot drop-zones ----------
@@ -357,18 +353,7 @@
    =========================================================== */
 
 /* Hue rotate panels to purple (240deg maps orange to purple) */
-.level-2 .panel,
-.level-2 .panel--small-left,
-.level-2 .panel--small-right,
-.level-2 .panel--big {
-    filter: hue-rotate(240deg);
-}
-
-/* Keep success green state overriding purple */
-.level-2 .panel.is-green,
-.level-2 .panel--big.is-green {
-    filter: hue-rotate(110deg) !important;
-}
+/* (L2's purple board now comes from panel_purple.webp — no hue-rotate needed.) */
 
 /* Purple flow pulses and wire glow */
 .level-2 .charge-flow {
