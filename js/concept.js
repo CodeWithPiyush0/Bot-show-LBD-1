@@ -24,8 +24,8 @@
     // Battery groups (design px centres). Small slots = the parts;
     // big slot = the whole (blue row on top, yellow row below).
     const LAYOUT = [
-        { color: "blue", count: 4, cx: 626.5, cy: 637.5, where: "small" }, // small-left
-        { color: "yellow", count: 6, cx: 1306.5, cy: 636.5, where: "small" }, // small-right
+        { color: "blue", count: 4, cx: 629, cy: 622, where: "small" }, // small-left
+        { color: "yellow", count: 6, cx: 1302, cy: 621, where: "small" }, // small-right
         { color: "blue", count: 4, cx: 965.5, cy: 217, where: "big" }, // big top row
         { color: "yellow", count: 6, cx: 965.5, cy: 319, where: "big" }, // big bottom row
     ];

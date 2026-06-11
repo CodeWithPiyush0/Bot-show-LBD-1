@@ -14,26 +14,62 @@
     // (Reuses the same entry points the deep-links / flow use.)
     const SCREENS = [
         { label: "0 · Start (Pre-LBD)", go: function () { nav("screen-pre"); } },
-        { label: "Curtain Transition (test)", go: function () { setLvl(1); nav("screen-8"); if (global.showLevelTransition) global.showLevelTransition(); } },
-        { label: "— Level 1 (Tutorial) —", go: null },
-        { label: "1 · Choose bot", go: function () { setLvl(1); nav("screen-1"); call(global.Screen1Intro, "play"); } },
-        { label: "2 · Charge puzzle", go: function () { setLvl(1); nav("screen-2"); call(global.Screen2Intro, "play"); } },
-        { label: "3 · Charged bot", go: function () { setLvl(1); nav("screen-3"); } },
-        { label: "4 · Concept (P1)", go: function () { setLvl(1); nav("screen-4"); call(global.ConceptScreen, "play"); } },
-        { label: "5 · Overcharged intro", go: function () { setLvl(1); nav("screen-5"); call(global.Part2, "startIntro"); } },
-        { label: "6 · Split puzzle", go: function () { setLvl(1); nav("screen-6"); call(global.Part2, "startSplit"); } },
-        { label: "7 · Fixed bot", go: function () { setLvl(1); nav("screen-7"); } },
-        { label: "8 · Concept (P2)", go: function () { setLvl(1); nav("screen-8"); call(global.Part2, "playConcept2"); } },
-        { label: "— Level 2 (Real Game) —", go: null },
-        { label: "1 · Choose bot", go: function () { setLvl(2); nav("screen-1"); call(global.Screen1Intro, "play"); } },
-        { label: "2 · Charge puzzle", go: function () { setLvl(2); nav("screen-2"); call(global.Screen2Intro, "play"); } },
-        { label: "3 · Charged bot", go: function () { setLvl(2); nav("screen-3"); } },
-        { label: "4 · Concept (P1)", go: function () { setLvl(2); nav("screen-4"); call(global.ConceptScreen, "play"); } },
-        { label: "5 · Overcharged intro", go: function () { setLvl(2); nav("screen-5"); call(global.Part2, "startIntro"); } },
-        { label: "6 · Split puzzle", go: function () { setLvl(2); nav("screen-6"); call(global.Part2, "startSplit"); } },
-        { label: "7 · Fixed bot", go: function () { setLvl(2); nav("screen-7"); } },
-        { label: "8 · Concept (P2)", go: function () { setLvl(2); nav("screen-8"); call(global.Part2, "playConcept2"); } },
+        { label: "— Tutorial —", go: null },
+        { label: "Choose bot (3 bots)", go: function () { setLvl(1); nav("screen-1"); call(global.Screen1Intro, "play"); } },
+        { label: "Charge puzzle", go: function () { setLvl(1); nav("screen-2"); call(global.Screen2Intro, "play"); } },
+        { label: "Charged bot (dance)", go: function () { setLvl(1); nav("screen-3"); } },
+        { label: "Concept · 2 parts → whole", go: function () { setLvl(1); nav("screen-4"); call(global.ConceptScreen, "play"); } },
+        { label: "Overcharged intro", go: function () { setLvl(1); nav("screen-5"); call(global.Part2, "startIntro"); } },
+        { label: "Split puzzle", go: function () { setLvl(1); nav("screen-6"); call(global.Part2, "startSplit"); } },
+        { label: "Fixed bot (dance)", go: function () { setLvl(1); nav("screen-7"); } },
+        { label: "Concept · whole → 2 parts", go: function () { setLvl(1); nav("screen-8"); call(global.Part2, "playConcept2"); } },
+        { label: "— Levels 1-4 (chooser) —", go: null },
+        { label: "Chooser · charge phase", go: function () { chooser(1, false); } },
+        { label: "Chooser · split phase", go: function () { chooser(1, true); } },
+        { label: "Charge puzzle (L1 counts)", go: function () { chooserPuzzle(1, 1, "blue"); } },
+        { label: "Split puzzle (L1 counts)", go: function () { chooserPuzzle(1, 2, "orange"); } },
+        { label: "Level-complete curtain", go: function () { if (global.playCurtain) global.playCurtain("Level 1 Complete!", "Get ready for Level 2…", function () { chooser(2, false); }); } },
+        { label: "— Test a level's counts —", go: null },
+        { label: "Level 1 counts", go: function () { chooser(1, false); } },
+        { label: "Level 2 counts", go: function () { chooser(2, false); } },
+        { label: "Level 3 counts", go: function () { chooser(3, false); } },
+        { label: "Level 4 counts", go: function () { chooser(4, false); } },
     ];
+
+    // Jump into the chooser at a given level (1-4); splitPhase shows the
+    // overcharged bots (simulates having just charged one).
+    function chooser(stage, splitPhase) {
+        setLvl(2);
+        global.gameStage = stage;
+        if (global.BotChooser && global.BotChooser.reset) global.BotChooser.reset();
+        nav("screen-1");
+        call(global.Screen1Intro, "play");
+        if (splitPhase) {
+            global.setTimeout(function () {
+                global.currentScheme = "orange";
+                if (global.BotChooser) {
+                    global.BotChooser.onFixed("orange"); // charge a low bot → split phase
+                    global.BotChooser.enterChooser(false);
+                }
+            }, 450);
+        }
+    }
+
+    // Jump straight into a chooser-level puzzle (part 1 = charge, 2 = split).
+    function chooserPuzzle(stage, part, scheme) {
+        setLvl(2);
+        global.gameStage = stage;
+        global.currentScheme = scheme;
+        if (part === 2) {
+            if (global.setPanelScheme) global.setPanelScheme(["screen-6", "screen-8"], scheme);
+            nav("screen-6");
+            call(global.Part2, "startSplit");
+        } else {
+            if (global.setPanelScheme) global.setPanelScheme(["screen-2", "screen-4"], scheme);
+            nav("screen-2");
+            call(global.Screen2Intro, "play");
+        }
+    }
 
     function setLvl(lvl) {
         if (global.setupLevel) global.setupLevel(lvl);

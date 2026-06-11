@@ -17,12 +17,22 @@
 
     let wired = false;
     let phase = "charge"; // "charge" (low bots) | "split" (overcharged bots)
+    let lastFixed = null; // the bot just fixed — centred so it's seen dancing
+    let chargedColor = null; // colour charged this level — its overcharged twin is
+    // hidden in the split phase so a level never fixes the same bot twice
+    let hintShown = false; // one-time scroll hint at the first chooser level
 
     const CHARGED = {
+        // low set
         orange: "assets/images/orange_bot_charged.webp",
         blue: "assets/images/blue_bot_charged.webp",
         purple: "assets/images/purple_bot_charged.webp",
         pink: "assets/images/pink_bot_charged.webp",
+        // overcharged set (distinct colours)
+        red: "assets/images/red_bot_charged.webp",
+        green: "assets/images/green_bot_charged.webp",
+        teal: "assets/images/teal_bot_charged.webp",
+        yellow: "assets/images/yellow_bot_charged.webp",
     };
 
     function track() {
@@ -69,12 +79,74 @@
         if (!t || wired) return;
         wired = true;
         bots().forEach(function (btn) {
+            const img = btn.querySelector("img");
+            if (img) img.dataset.orig = img.getAttribute("src"); // for reset()
             btn.addEventListener("click", function () {
                 select(btn);
             });
         });
         t.addEventListener("scroll", onScroll, { passive: true });
         global.addEventListener("resize", onScroll);
+    }
+
+    // Reset the chooser to a clean charge phase (used by the dev menu to jump in).
+    function reset() {
+        phase = "charge";
+        lastFixed = null;
+        chargedColor = null;
+        hintShown = false; // replay the scroll hint on dev jumps
+        bots().forEach(function (b) {
+            b.classList.remove("is-fixed", "is-selected", "is-locked");
+            const img = b.querySelector("img");
+            if (img && img.dataset.orig) img.src = img.dataset.orig;
+        });
+    }
+
+    // Smoothly tween a scroll container's scrollLeft. Progress is counted in
+    // animation FRAMES (not performance.now) so it advances reliably; combined
+    // with scroll-snap temporarily off, the pan runs smoothly.
+    function tweenScroll(el, to, dur, done) {
+        const from = el.scrollLeft;
+        const steps = Math.max(1, Math.round(dur / 16));
+        let i = 0;
+        function step() {
+            i += 1;
+            const p = Math.min(1, i / steps);
+            const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; // easeInOut
+            el.scrollLeft = from + (to - from) * e;
+            if (p < 1) global.setTimeout(step, 16);
+            else if (done) done();
+        }
+        global.setTimeout(step, 16);
+    }
+
+    // Hint at the start of the chooser: pan the row left→right→left and settle
+    // in the centre (a few bots on each side), so the kid sees it scrolls.
+    let hintRunning = false;
+    function scrollHint(tries) {
+        const t = track();
+        tries = tries || 0;
+        // wait until the row is laid out and actually overflows (scrollable)
+        if (!t || t.clientWidth === 0 || t.scrollWidth <= t.clientWidth + 5) {
+            if (tries < 12) global.setTimeout(function () { scrollHint(tries + 1); }, 150);
+            return;
+        }
+        if (hintRunning) return;
+        hintRunning = true;
+        const max = t.scrollWidth - t.clientWidth;
+        const center = Math.round(max / 2);
+        const car = document.getElementById("bot-carousel");
+        if (car) car.classList.add("no-snap"); // don't let snap fight the tween
+        const legs = [0, max, center]; // left edge → right edge → centre
+        let i = 0;
+        (function next() {
+            if (i >= legs.length) {
+                if (car) car.classList.remove("no-snap");
+                hintRunning = false;
+                return;
+            }
+            tweenScroll(t, legs[i], 700, function () { i += 1; next(); });
+        })();
     }
 
     function setPhase(p) {
@@ -85,7 +157,9 @@
 
     // Entered whenever Screen 1 shows in chooser mode. Presents the bots for
     // the current phase; if every level is done, completes the game.
-    function enterChooser() {
+    // centerFixed: bring the just-fixed (dancing) bot to the front instead of
+    // the next selectable one — so the player sees their bot celebrating.
+    function enterChooser(centerFixed) {
         const screen1 = document.getElementById("screen-1");
         if (screen1) screen1.classList.remove("is-choosing", "is-lit");
         bots().forEach(function (b) {
@@ -98,18 +172,52 @@
         }
 
         setPhase(phase);
-        // bring the first still-broken bot of this phase to centre
-        const avail = bots().filter(function (b) {
-            return b.dataset.state === wantState() && !b.classList.contains("is-fixed");
+
+        // No same bot twice in a level: in the split phase, hide the overcharged
+        // twin of the colour charged this level.
+        bots().forEach(function (b) {
+            b.classList.toggle(
+                "is-locked",
+                phase === "split" && b.dataset.state === "overcharged" && b.dataset.scheme === chargedColor
+            );
         });
-        if (avail[0]) avail[0].scrollIntoView({ inline: "center", block: "nearest" });
+
+        // First time the chooser appears (Level 1, charge phase): nudge the row
+        // so the kid sees it scrolls.
+        if (!hintShown && phase === "charge" && (global.gameStage || 1) === 1) {
+            hintShown = true;
+            global.setTimeout(scrollHint, 900);
+        }
+
+        // Banner text per phase, so the player knows why they're fixing again.
+        // Use the cancellable Screen 1 typer so it can't be clobbered.
+        const textEl = document.querySelector("#screen-1 .question__text");
+        const msg = phase === "split"
+            ? "Oh no! A few bots are overcharged — tap one to fix it."
+            : (textEl ? textEl.getAttribute("data-text2") : null) || "Scroll and tap a bot to fix it.";
+        if (window.Screen1Intro && window.Screen1Intro.setText) {
+            window.Screen1Intro.setText(msg);
+        } else if (textEl) {
+            textEl.textContent = msg;
+        }
+
+        let focus = null;
+        if (centerFixed && lastFixed) {
+            focus = lastFixed; // show the just-fixed bot dancing in front
+        } else {
+            // otherwise bring the first still-broken bot of this phase to centre
+            focus = bots().filter(function (b) {
+                return b.dataset.state === wantState() && !b.classList.contains("is-fixed") && !b.classList.contains("is-locked");
+            })[0];
+        }
+        if (focus) focus.scrollIntoView({ inline: "center", block: "nearest" });
         global.requestAnimationFrame(layout);
         global.setTimeout(layout, 60);
     }
 
     function select(btn) {
-        // only the current phase's un-fixed bots are tappable
-        if (btn.dataset.state !== wantState() || btn.classList.contains("is-fixed")) return;
+        // only the current phase's un-fixed, un-locked bots are tappable
+        if (btn.dataset.state !== wantState() || btn.classList.contains("is-fixed") || btn.classList.contains("is-locked")) return;
         const screen1 = document.getElementById("screen-1");
         btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
         bots().forEach(function (b) {
@@ -138,12 +246,15 @@
             btn.classList.remove("is-selected");
             const img = btn.querySelector("img");
             if (img && CHARGED[scheme]) img.src = CHARGED[scheme];
+            lastFixed = btn; // centred next time the chooser shows
         }
         if (phase === "charge") {
+            chargedColor = scheme; // its overcharged twin is locked out this level
             phase = "split"; // same level, now fix an overcharged bot
             return { levelComplete: false };
         }
         // split bot fixed → both bots of the level done → next level
+        chargedColor = null;
         phase = "charge";
         global.gameStage = (global.gameStage || 1) + 1;
         return { levelComplete: true };
@@ -154,6 +265,7 @@
         enterChooser: enterChooser,
         onFixed: onFixed,
         markFixed: onFixed, // back-compat alias
+        reset: reset,
     };
     document.addEventListener("DOMContentLoaded", init);
 })(window);

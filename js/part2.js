@@ -27,8 +27,8 @@
 
     // Inner recesses for placing groups when dropped.
     const SLOTS = {
-        "small-left": { x: 423, y: 568, w: 407, h: 139 },
-        "small-right": { x: 1103, y: 567, w: 407, h: 139 },
+        "small-left": { x: 425.5, y: 552.5, w: 407, h: 139 }, // centre (629, 622)
+        "small-right": { x: 1098.5, y: 551.5, w: 407, h: 139 }, // centre (1302, 621)
     };
     const DROPPABLE = ["small-left", "small-right"];
 
@@ -444,8 +444,8 @@
 
     /* ---------- Screen 8: concept "a whole is made of 2 parts" ---------- */
     const C_LAYOUT = [
-        { color: "blue", count: 4, cx: 626.5, cy: 637.5, where: "small" },
-        { color: "yellow", count: 6, cx: 1306.5, cy: 636.5, where: "small" },
+        { color: "blue", count: 4, cx: 629, cy: 622, where: "small" },
+        { color: "yellow", count: 6, cx: 1302, cy: 621, where: "small" },
         { color: "blue", count: 4, cx: 965.5, cy: 217, where: "big" },
         { color: "yellow", count: 6, cx: 965.5, cy: 319, where: "big" },
     ];

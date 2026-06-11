@@ -100,7 +100,7 @@ body.qa-intercept-on #stage *::after {
    Two velvet curtain halves slide in to cover the stage, the level
    message shows, then they part to reveal the next level. */
 .curtains {
-    position: absolute;
+    position: fixed; /* cover the WHOLE viewport, including the letterbox bars */
     inset: 0;
     z-index: 60; /* above screens, below the dev menu / QA tool */
     pointer-events: none;
@@ -225,6 +225,70 @@ body.qa-intercept-on #stage *::after {
     50% {
         transform: translateX(-50%) scale(1.06);
     }
+}
+
+/* ---------- Pre-LBD play ICON button (big, poppy, kid-friendly) ---------- */
+.play-btn--icon {
+    position: absolute;
+    left: 50%;
+    bottom: 7.5%;
+    transform: translateX(-50%);
+    width: 12cqw;
+    height: 12cqw;
+    padding: 0;
+    border: 0.55cqw solid #fff;
+    border-radius: 50%;
+    /* glossy candy gradient */
+    background: radial-gradient(circle at 36% 30%, #ffe48f 0%, #ffb22e 38%, #ff8a00 72%, #ff6d00 100%);
+    box-shadow:
+        0 0.9cqw 0 #c96a00, /* 3D base */
+        0 1.6cqw 2.4cqw rgba(0, 0, 0, 0.45), /* drop shadow */
+        inset 0 0.5cqw 0.7cqw rgba(255, 255, 255, 0.6), /* top gloss */
+        inset 0 -0.7cqw 0.9cqw rgba(170, 65, 0, 0.45); /* bottom shade */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: playBob 1.25s ease-in-out infinite;
+    transition: filter 0.15s ease;
+    z-index: 2;
+}
+/* expanding glow ring that pulses out — draws the kid's eye */
+.play-btn--icon::before {
+    content: "";
+    position: absolute;
+    inset: -0.55cqw;
+    border-radius: 50%;
+    border: 0.5cqw solid rgba(255, 255, 255, 0.8);
+    animation: playRing 1.6s ease-out infinite;
+    pointer-events: none;
+}
+/* the play triangle */
+.play-btn__icon {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 2.7cqw 0 2.7cqw 4.5cqw;
+    border-color: transparent transparent transparent #fff;
+    margin-left: 1.1cqw; /* optical centering of the triangle */
+    filter: drop-shadow(0 0.2cqw 0.25cqw rgba(150, 60, 0, 0.5));
+}
+.play-btn--icon:hover {
+    filter: brightness(1.07) saturate(1.05);
+}
+.play-btn--icon:active {
+    box-shadow:
+        0 0.25cqw 0 #c96a00,
+        0 0.5cqw 1cqw rgba(0, 0, 0, 0.45),
+        inset 0 0.5cqw 0.7cqw rgba(255, 255, 255, 0.55);
+}
+@keyframes playBob {
+    0%, 100% { transform: translateX(-50%) scale(1) translateY(0); }
+    50% { transform: translateX(-50%) scale(1.06) translateY(-0.6cqw); }
+}
+@keyframes playRing {
+    0% { transform: scale(0.95); opacity: 0.85; }
+    100% { transform: scale(1.35); opacity: 0; }
 }
 
 /* ---------- Level Transition Screen ---------- */

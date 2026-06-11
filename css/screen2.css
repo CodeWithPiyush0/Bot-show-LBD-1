@@ -340,7 +340,7 @@
    Reuses the cream template. Starts closed (mascot only); JS toggles
    `.is-open` to unroll it and types the prompt, then closes it. */
 .screen--2 .question__template {
-    clip-path: inset(0 91.2% 0 0); /* closed: only the mascot face */
+    clip-path: inset(0 91.7% 0 0); /* closed: only the mascot face */
     transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 

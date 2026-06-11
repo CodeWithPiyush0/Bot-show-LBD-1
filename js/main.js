@@ -16,7 +16,7 @@
     window.STAGES = [
         { key: "tutorial", part1: { blue: 4, yellow: 2 }, part2: { blue: 3, yellow: 2 } },
         { key: "level1", part1: { blue: 3, yellow: 5 }, part2: { blue: 4, yellow: 3 } },
-        { key: "level2", part1: { blue: 6, yellow: 3 }, part2: { blue: 2, yellow: 8 } },
+        { key: "level2", part1: { blue: 6, yellow: 3 }, part2: { blue: 7, yellow: 3 } },
         { key: "level3", part1: { blue: 6, yellow: 4 }, part2: { blue: 5, yellow: 4 } },
         { key: "level4", part1: { blue: 6, yellow: 6 }, part2: { blue: 6, yellow: 5 } },
     ];
@@ -212,13 +212,14 @@
                 } else {
                     playCurtain("Level " + completed + " Complete!", "Get ready for Level " + window.gameStage + "…", function () {
                         window.GameNav.show("screen-1");
-                        if (window.BotChooser) window.BotChooser.enterChooser();
+                        if (window.BotChooser) window.BotChooser.enterChooser(false);
                     });
                 }
             } else {
-                // First bot (charge) done → straight to the split phase.
+                // First bot (charge) done → show it dancing in front, then the
+                // player picks an overcharged bot for the split phase.
                 window.GameNav.show("screen-1");
-                if (window.BotChooser) window.BotChooser.enterChooser();
+                if (window.BotChooser) window.BotChooser.enterChooser(true);
             }
         }
         window.returnToChooser = returnToChooser;

@@ -24,6 +24,22 @@
         })();
     }
 
+    // Cancellable typewriter for the Screen 1 banner: a new call cancels any
+    // in-flight one (token bump), so re-setting the text (e.g. the chooser's
+    // split-phase message) can't be clobbered by an earlier run.
+    let s1Token = 0;
+    function typeScreen1(el, text) {
+        const token = ++s1Token;
+        el.textContent = "";
+        let i = 0;
+        (function tick() {
+            if (token !== s1Token || i >= text.length) return;
+            el.textContent += text.charAt(i);
+            i += 1;
+            window.setTimeout(tick, TYPE_SPEED);
+        })();
+    }
+
     // Plays the Screen 1 intro on demand (called when "Let's Play" is
     // tapped), so the mascot-unroll + typing run when the screen appears.
     function playScreen1Intro() {
@@ -61,7 +77,7 @@
         const startTyping = function () {
             if (started) return;
             started = true;
-            typewriter(textEl, full, TYPE_SPEED);
+            typeScreen1(textEl, full);
         };
 
         if (template) {
@@ -72,7 +88,14 @@
         }
     }
 
-    window.Screen1Intro = { play: playScreen1Intro };
+    // Type a message into the Screen 1 banner, cancelling any running typer
+    // (used by the chooser to swap to the overcharged-phase message).
+    function setScreen1Text(message) {
+        const el = document.querySelector("#screen-1 .question__text");
+        if (el) typeScreen1(el, message);
+    }
+
+    window.Screen1Intro = { play: playScreen1Intro, setText: setScreen1Text };
 
     /* ---- Screen 2 intro ----
        Opens the banner, types the prompt, holds (placeholder for the

@@ -33,7 +33,9 @@
 
             <!-- ===== PRE-LBD - start screen ===== -->
             <section class="screen screen--pre is-active" id="screen-pre" data-screen="pre">
-                <button class="play-btn" id="play-btn" type="button">Play</button>
+                <button class="play-btn--icon" id="play-btn" type="button" aria-label="Play">
+                    <span class="play-btn__icon" aria-hidden="true"></span>
+                </button>
             </section>
 
             <!-- ===== SCREEN 1 - choose the bot ===== -->
@@ -92,18 +94,20 @@
                         <button class="carousel-bot" type="button" data-scheme="pink" data-state="low">
                             <img src="assets/images/pink_bot_low.webp" alt="Low pink bot" draggable="false" />
                         </button>
-                        <!-- Overcharged bots (SPLIT phase) -->
-                        <button class="carousel-bot" type="button" data-scheme="orange" data-state="overcharged">
-                            <img src="assets/images/orange_bot_overcharged.webp" alt="Overcharged orange bot" draggable="false" />
+                        <!-- Overcharged bots (SPLIT phase) — a DIFFERENT colour set
+                             from the low bots so no bot is reused for both states.
+                             (A CSS red chest-glow is layered on in the chooser.) -->
+                        <button class="carousel-bot" type="button" data-scheme="red" data-state="overcharged">
+                            <img src="assets/images/red_bot_overcharged.webp" alt="Overcharged red bot" draggable="false" />
                         </button>
-                        <button class="carousel-bot" type="button" data-scheme="blue" data-state="overcharged">
-                            <img src="assets/images/blue_bot_overcharged.webp" alt="Overcharged blue bot" draggable="false" />
+                        <button class="carousel-bot" type="button" data-scheme="green" data-state="overcharged">
+                            <img src="assets/images/green_bot_overcharged.webp" alt="Overcharged green bot" draggable="false" />
                         </button>
-                        <button class="carousel-bot" type="button" data-scheme="purple" data-state="overcharged">
-                            <img src="assets/images/purple_bot_overcharged.webp" alt="Overcharged purple bot" draggable="false" />
+                        <button class="carousel-bot" type="button" data-scheme="teal" data-state="overcharged">
+                            <img src="assets/images/teal_bot_overcharged.webp" alt="Overcharged teal bot" draggable="false" />
                         </button>
-                        <button class="carousel-bot" type="button" data-scheme="pink" data-state="overcharged">
-                            <img src="assets/images/pink_bot_overcharged.webp" alt="Overcharged pink bot" draggable="false" />
+                        <button class="carousel-bot" type="button" data-scheme="yellow" data-state="overcharged">
+                            <img src="assets/images/yellow_bot_overcharged.webp" alt="Overcharged yellow bot" draggable="false" />
                         </button>
                     </div>
                 </div>
@@ -190,16 +194,16 @@
                         aria-hidden="true"
                     >
                         <g class="charge-glow">
-                            <path d="M 661.5 547.7 L 750.5 418.3" />
-                            <path d="M 1256 547.4 L 1174 417.6" />
-                            <path d="M 853 636 L 1078 636" />
+                            <path d="M 660 540 L 748 420" />
+                            <path d="M 1260 540 L 1172 420" />
+                            <path d="M 850 628 L 1070 628" />
                         </g>
                         <!-- Travelling current pulses (diagonals only; the
                              horizontal left->right connector is intentionally
                              not animated). -->
                         <g class="charge-flow">
-                            <path d="M 661.5 547.7 L 750.5 418.3" />
-                            <path d="M 1256 547.4 L 1174 417.6" />
+                            <path d="M 660 540 L 748 420" />
+                            <path d="M 1260 540 L 1172 420" />
                         </g>
                     </svg>
 
@@ -446,17 +450,17 @@
                 </div>
             </section>
 
-            <!-- ===== Theatre CURTAIN transition (overlays the stage on
-                 level changes: closes, shows the message, then parts) ===== -->
-            <div class="curtains" id="curtains" aria-hidden="true">
-                <div class="curtain curtain--left"></div>
-                <div class="curtain curtain--right"></div>
-                <div class="curtain-text">
-                    <h1 class="curtain-title" id="curtain-title"></h1>
-                    <p class="curtain-sub" id="curtain-sub"></p>
-                </div>
-            </div>
+        </div>
 
+        <!-- ===== Theatre CURTAIN transition — sits OUTSIDE #stage so it
+             covers the WHOLE screen (including the letterbox bars) ===== -->
+        <div class="curtains" id="curtains" aria-hidden="true">
+            <div class="curtain curtain--left"></div>
+            <div class="curtain curtain--right"></div>
+            <div class="curtain-text">
+                <h1 class="curtain-title" id="curtain-title"></h1>
+                <p class="curtain-sub" id="curtain-sub"></p>
+            </div>
         </div>
     </main>
 

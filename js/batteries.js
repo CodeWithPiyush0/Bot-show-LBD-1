@@ -36,8 +36,8 @@
     // Slot inner recesses (absolute design px).
     const SLOTS = {
         big: { x: 715, y: 143, w: 501, h: 250 },
-        "small-left": { x: 423, y: 568, w: 407, h: 139 },
-        "small-right": { x: 1103, y: 567, w: 407, h: 139 },
+        "small-left": { x: 425.5, y: 552.5, w: 407, h: 139 }, // centre (629, 622)
+        "small-right": { x: 1098.5, y: 551.5, w: 407, h: 139 }, // centre (1302, 621)
     };
 
     // Only the two bottom slots accept player drops.

@@ -99,14 +99,16 @@ empty breakpoint stubs for future per-device tweaks (none needed so far).
 ## 4b. Pre-LBD — start screen (`screen--pre`, `main.css`)
 
 The **first** screen on load (`is-active`). Full-screen `Pre_LBD.webp` splash
-("FIX-A-BOT" title + the two bots + battery) with a **"Play"** button
-(`.play-btn`, `#play-btn`) on the floor. Clicking it (`main.js`) → `GameNav.show("screen-1")`
+("FIX-A-BOT" title + the two bots + battery) with a big circular **play-icon** button
+(`.play-btn--icon`, `#play-btn` — glossy orange disc + white ▶ triangle, bob + glow-ring
+animation) on the floor. Clicking it (`main.js`) → `GameNav.show("screen-1")`
 + `Screen1Intro.play()`. Because of this, Screen 1's intro is **on-demand** now:
 its CSS animations are scoped to `.screen--1.is-intro` and the typewriter runs from
 `Screen1Intro.play()` (NOT on page load).
 
-**Level transition = theatre curtains.** `#curtains` (in `#stage`, styled in `main.css`)
-is two velvet curtain halves. `showLevelTransition()` (main.js) closes them over the
+**Level transition = theatre curtains.** `#curtains` sits **outside `#stage`** (direct
+child of `#game`) and is `position: fixed` so it covers the **whole viewport** including
+the letterbox bars. Two velvet curtain halves. `showLevelTransition()` (main.js) closes them over the
 finished level (showing "Level 1 Complete!" / "All Bots Fixed!"), swaps the screen
 behind them, then parts them to reveal the next level — matching the auditorium-stage
 theme. (The legacy `#screen-transition` card is no longer used.)
@@ -135,9 +137,29 @@ theme. (The legacy `#screen-transition` card is no longer used.)
      it dances (fixed).
   2. **SPLIT phase** — the **overcharged** bots appear, pulsing a red glow; tap one →
      split puzzle (Part 2) → it dances (fixed). Level complete → next level.
-- 8 bot appearances: orange/blue/purple/pink each in **low** + **overcharged** state
-  (`data-scheme` + `data-state`), plus their **charged** art for the fixed/dancing look.
-  (Whichever is fixed swaps to `<scheme>_bot_charged.webp` and dances.)
+- **Low set** (charge phase): orange / blue / purple / pink — `<color>_bot[_low].webp`
+  (red battery). Fixed → `<color>_bot_charged.webp` (green filled, dances).
+- **Overcharged set** (split phase): a DISTINCT colour set **red / green / teal / yellow**
+  so no colour is reused for both states. These are recoloured (hue-shift) from the low
+  set's overcharged art via sharp (`red←orange -30`, `green←blue -75`, `teal←purple -125`,
+  `yellow←pink +85`); their `_bot_charged.webp` (fixed/dancing) and `panel_<color>.webp`
+  are recoloured the same way. The recolour keeps the **white "!"** but shifts the baked
+  red glow, so a **CSS red chest glow** is layered on in the chooser
+  (`.carousel-bot[data-state="overcharged"]::after`, screen-blend over the chest, + a red
+  rim glow on the img) so it always reads "overcharged red". *(For a perfect baked red
+  glow, swap in Figma-made art — the system is keyed by `data-scheme`.)*
+- `data-scheme` (colour) + `data-state` (low|overcharged) on each `.carousel-bot`; charge
+  phase shows the low bots, split phase the overcharged ones. (The old per-level
+  `chargedColor`/`.is-locked` exclusion is now moot since the sets are different colours,
+  but it's left in harmlessly.)
+  - **Scroll hint:** the first time the chooser appears (Level 1, charge phase) the row
+    pans **left → right → centre** (`scrollHint()` → `tweenScroll`, a `setTimeout`-stepped
+    tween that's reliable; it retries until the row is laid out and adds `.no-snap` so
+    scroll-snap doesn't fight it), ending centred with bots peeking on both sides — so the
+    kid sees it scrolls. (Uses setTimeout-stepping, NOT rAF/`performance.now`, which don't
+    advance under headless virtual-time and made the old `scrollTo` version flaky.)
+  - **Closed banner:** the question template's closed clip is `inset(0 91.7% 0 0)` (was
+    91.2%, which left a cream sliver with a hard cut to the right of the mascot badge).
 
 ### Chooser carousel (`carousel.js`, `index.html`, `screen.css`)
 Horizontal **scrollable row** (`.bot-carousel__track`, only under `.level-2`), staged like
@@ -150,7 +172,9 @@ overcharged); fixed bots always stay, dancing.
   zooms in (`enterBotTo`) → charge (`screen-2`, part 1) or split (`screen-6`, part 2).
 - **After a puzzle**, `returnToChooser()` → `BotChooser.onFixed(scheme)`: marks that bot
   fixed (swaps to charged art + dances) and returns `{levelComplete}`. Charge done → straight
-  to the split phase. Split done (both bots fixed) → **curtain** `playCurtain("Level N
+  to the split phase, with `enterChooser(true)` **centring the just-fixed bot in front** so
+  the player sees it dancing (the next overcharged bot peeks on the side). `lastFixed` tracks
+  it; the level-complete curtain re-enters with `enterChooser(false)` (fresh). Split done (both bots fixed) → **curtain** `playCurtain("Level N
   Complete!", …)` then the next level's chooser; after level 4 → `playCurtain("All Bots
   Fixed!", …)` → pre screen. (Tutorial→Level 1 uses `showLevelTransition()` = "Tutorial
   Complete!".) `playCurtain(title, sub, onSwap)` in main.js is the shared curtain helper.
@@ -274,10 +298,12 @@ Background = dark radial gradient. Structure:
   Figma (43,40): the metallic border, the 3 slots, the orange connectors, decorators.
 - Trays are **recreated in CSS** (the tray SVGs had the batteries baked in, so they
   couldn't be emptied). Blue accent `#96f2f7`, yellow accent `#f3e21f`, grey rim `#5f5e5e`.
-- **Slot inner rects (design px), used for layout + drop centers:**
-  - big: `{x:715, y:143, w:501, h:250}`
-  - small-left: `{x:423, y:568, w:407, h:139}`
-  - small-right: `{x:1103, y:567, w:407, h:139}`
+- **Slot inner rects (design px), used for layout + drop centers** — small slots were
+  re-centred to the new filled panels (batteries were sitting low/bottom before):
+  - big: `{x:715, y:143, w:501, h:250}` (centre 965,268)
+  - small-left: `{x:425.5, y:552.5, w:407, h:139}` (centre **629, 622**)
+  - small-right: `{x:1098.5, y:551.5, w:407, h:139}` (centre **1302, 621**)
+  - (Same centres mirrored in `part2.js SLOTS`, `concept.js LAYOUT`, `part2.js C_LAYOUT`.)
 
 ### Per-stage battery counts (`main.js window.STAGES` / `getCounts(part)`)
 The "whole" splits into two parts — **blue** group + **yellow** group. Counts vary by
@@ -287,15 +313,17 @@ stage (Tutorial + Levels 1-4) per the design table:
 |---|---|---|
 | Tutorial | 4, 2 | 3, 2 |
 | Level 1 | 3, 5 | 4, 3 |
-| Level 2 | 6, 3 | 2, 8 |
+| Level 2 | 6, 3 | 7, 3 |
 | Level 3 | 6, 4 | 5, 4 |
 | Level 4 | 6, 6 | 6, 5 |
 
 `window.gameStage` indexes `STAGES`; `getCounts(1|2)` returns `{blue,yellow}`. Wired into
 `batteries.js setupBatteries` (Part 1), `part2.js startSplit` (Part 2) and `concept.js`.
-**Bridge for now:** `setupLevel()` sets `gameStage = level===2 ? 1 : 0` (Tutorial vs
-Level 1); stages 2-4 activate once the chooser progression is built. (Heads-up: large
-counts like 8 may overflow a small slot at `PLACED_SCALE 0.82` — revisit slot sizing.)
+`setupLevel(2)` starts the chooser at `gameStage 1`; the chooser then advances
+`gameStage` 1→4 as each level is completed. A small slot fits up to **7** batteries at
+`PLACED_SCALE 0.82` (8 overflows — that's why Level 2's split is **(7,3)** not (2,8)).
+In the chooser's **split phase** the banner reads "Oh no! A few bots are overcharged —
+tap one to fix it." (`Screen1Intro.setText`, a cancellable typer).
 
 ### Batteries & drag-drop (`batteries.js`)
 - Two **groups** (single draggable units, NOT individual batteries); counts come from
@@ -319,7 +347,10 @@ counts like 8 may overflow a small slot at `PLACED_SCALE 0.82` — revisit slot 
 `startCharge()`:
 1. Current flows up through the connectors — `#charge-fx` SVG overlay, paths trace
    the **exact connector centerlines**:
-   - left diagonal `M653,560 L759,406`, right `M1264,560 L1166,405`, horizontal `M838,636 L1093,636`.
+   - **Re-calibrated to the new filled panels** (the connectors/slots shifted ~10-15px
+     vs the old `battery_slots` art): left `M660,540 L748,420`, right `M1260,540 L1172,420`,
+     horizontal glow `M850,628 L1070,628`. (The concept's small-slot glows in `screen4.css`
+     were likewise nudged to the new slot positions: `top ~50.5%`, `width 21.72%`.)
    - bright pulses travel (dash animation) on the **two diagonals only** (bottom→top);
      the horizontal left→right connector is intentionally NOT flow-animated — it's
      omitted from the `.charge-flow` group (kept in `.charge-glow` for the green end-glow).
@@ -537,9 +568,12 @@ Convert to CSS: `left% = x/1920*100`, `top% = y/1080*100`, `width% = w/1920*100`
 
 ## 11b. Dev menu (TEMPORARY)
 
-`js/devmenu.js` adds a ☰ hamburger (top-right) that opens a list to jump to any
-screen (Part 1 & 2) and trigger its animation — for testing without playing through.
-Self-contained (injects its own CSS/DOM). **Remove for production:** delete the file
+`js/devmenu.js` adds a ☰ hamburger (top-left) that opens a list to jump to any
+screen — for testing without playing through. Sections: **Tutorial** (each screen),
+**Levels 1-4 (chooser)** — charge phase, split phase, the charge/split puzzles, the
+level-complete curtain — and **Test a level's counts** (jump into the chooser at L1-L4).
+Helpers: `chooser(stage, splitPhase)`, `chooserPuzzle(stage, part, scheme)`,
+`BotChooser.reset()`. Self-contained (injects its own CSS/DOM). **Remove for production:** delete the file
 and its `<script src="js/devmenu.js">` tag in index.html. Reload for a clean state
 (jumps don't cancel a previous screen's pending timers).
 
