@@ -60,6 +60,8 @@
         if (isChooser) {
             // Chooser mode: no auto-spotlight — it falls when the player taps a
             // bot (handled in carousel.js). Reset/centre the chooser row.
+            // enterChooser() OWNS the banner text (it sets a per-part message),
+            // so we don't auto-type here — that would clobber it.
             if (window.BotChooser) window.BotChooser.enterChooser();
         } else {
             // L1 tutorial: bring the spotlight up onto the centre bot after a beat.
@@ -68,14 +70,13 @@
             }, 1000);
         }
 
-        const full = isChooser
-            ? (textEl.getAttribute("data-text2") || "Scroll and tap a bot to fix it.")
-            : (textEl.getAttribute("data-text") || "");
-        textEl.textContent = "";
+        // In chooser mode the text is set by enterChooser(); skip local typing.
+        const full = isChooser ? null : (textEl.getAttribute("data-text") || "");
+        if (!isChooser) textEl.textContent = "";
 
         let started = false;
         const startTyping = function () {
-            if (started) return;
+            if (started || !full) return;
             started = true;
             typeScreen1(textEl, full);
         };

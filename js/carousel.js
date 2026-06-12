@@ -1,13 +1,14 @@
 /* ===========================================================
    carousel.js
-   L2+ bot chooser, played as 4 levels (after the Tutorial). Each
-   level fixes TWO different bots in two phases:
-     1. CHARGE phase — the low bots are shown; tap one, charge it
-        (Part 1), it dances (fixed).
-     2. SPLIT phase  — the overcharged bots appear highlighted; tap
-        one, split it (Part 2), it dances (fixed). Level complete.
-   Battery counts per level come from window.STAGES (main.js); the
-   level index is window.gameStage (1-4). After level 4 -> complete.
+   The bot chooser — played as 4 levels within each PART of the game:
+     • Part 1 (CHARGE): the low bots are shown; tap one, charge it,
+       it dances (fixed). Four levels = all four low bots charged.
+     • Part 2 (SPLIT):  the overcharged bots are shown; tap one, split
+       it, it dances (fixed). Four levels = all four bots fixed.
+   The active part is window.gamePart (1 = charge, 2 = split); each
+   level fixes ONE bot and advances window.gameStage (1-4). Battery
+   counts per level come from window.STAGES (main.js). After level 4
+   of a part, main.js moves on to the next part (or the game ends).
    The bots are staged like Screen 1 (centre focal + side peeks +
    shadows) via the coverflow layout below.
    =========================================================== */
@@ -18,9 +19,7 @@
     let wired = false;
     let phase = "charge"; // "charge" (low bots) | "split" (overcharged bots)
     let lastFixed = null; // the bot just fixed — centred so it's seen dancing
-    let chargedColor = null; // colour charged this level — its overcharged twin is
-    // hidden in the split phase so a level never fixes the same bot twice
-    let hintShown = false; // one-time scroll hint at the first chooser level
+    let hintShown = false; // one-time scroll hint at the first level of a part
 
     const CHARGED = {
         // low set
@@ -89,12 +88,12 @@
         global.addEventListener("resize", onScroll);
     }
 
-    // Reset the chooser to a clean charge phase (used by the dev menu to jump in).
+    // Reset the chooser to a clean slate (called at the start of each part's
+    // levels, and by the dev menu to jump in). Phase is set from gamePart in
+    // enterChooser; here we just clear fixed/selected state and restore images.
     function reset() {
-        phase = "charge";
         lastFixed = null;
-        chargedColor = null;
-        hintShown = false; // replay the scroll hint on dev jumps
+        hintShown = false; // replay the scroll hint at the new part's level 1
         bots().forEach(function (b) {
             b.classList.remove("is-fixed", "is-selected", "is-locked");
             const img = b.querySelector("img");
@@ -171,30 +170,22 @@
             return;
         }
 
-        setPhase(phase);
+        // The part decides which bots are shown: Part 1 charges the low bots,
+        // Part 2 splits the overcharged ones.
+        setPhase((global.gamePart === 2) ? "split" : "charge");
 
-        // No same bot twice in a level: in the split phase, hide the overcharged
-        // twin of the colour charged this level.
-        bots().forEach(function (b) {
-            b.classList.toggle(
-                "is-locked",
-                phase === "split" && b.dataset.state === "overcharged" && b.dataset.scheme === chargedColor
-            );
-        });
-
-        // First time the chooser appears (Level 1, charge phase): nudge the row
-        // so the kid sees it scrolls.
-        if (!hintShown && phase === "charge" && (global.gameStage || 1) === 1) {
+        // First level of the part: nudge the row so the kid sees it scrolls.
+        if (!hintShown && (global.gameStage || 1) === 1) {
             hintShown = true;
             global.setTimeout(scrollHint, 900);
         }
 
-        // Banner text per phase, so the player knows why they're fixing again.
-        // Use the cancellable Screen 1 typer so it can't be clobbered.
+        // Banner text per part, so the player knows what to do. Use the
+        // cancellable Screen 1 typer so it can't be clobbered.
         const textEl = document.querySelector("#screen-1 .question__text");
         const msg = phase === "split"
-            ? "Oh no! A few bots are overcharged — tap one to fix it."
-            : (textEl ? textEl.getAttribute("data-text2") : null) || "Scroll and tap a bot to fix it.";
+            ? "Oh no! These bots are overcharged — tap one to fix it."
+            : "Scroll and tap a bot to charge it.";
         if (window.Screen1Intro && window.Screen1Intro.setText) {
             window.Screen1Intro.setText(msg);
         } else if (textEl) {
@@ -236,7 +227,8 @@
     }
 
     // Called (via main.js returnToChooser) once a puzzle is solved: mark that
-    // bot fixed (charged image, dancing) and advance the phase / level.
+    // bot fixed (charged image, dancing) and advance to the next level. Each
+    // level fixes ONE bot, so every solve completes a level.
     function onFixed(scheme) {
         const btn = document.querySelector(
             '.carousel-bot[data-scheme="' + scheme + '"][data-state="' + wantState() + '"]'
@@ -248,14 +240,6 @@
             if (img && CHARGED[scheme]) img.src = CHARGED[scheme];
             lastFixed = btn; // centred next time the chooser shows
         }
-        if (phase === "charge") {
-            chargedColor = scheme; // its overcharged twin is locked out this level
-            phase = "split"; // same level, now fix an overcharged bot
-            return { levelComplete: false };
-        }
-        // split bot fixed → both bots of the level done → next level
-        chargedColor = null;
-        phase = "charge";
         global.gameStage = (global.gameStage || 1) + 1;
         return { levelComplete: true };
     }

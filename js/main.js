@@ -8,6 +8,10 @@
     "use strict";
 
     window.currentLevel = 1;
+    // Which half of the game we're in:
+    //   1 = CHARGE (Part 1): tutorial teaches charging, then 4 charge levels.
+    //   2 = SPLIT  (Part 2): tutorial teaches splitting, then 4 split levels.
+    window.gamePart = 1;
 
     // ---- Per-stage battery counts ----------------------------------------
     // 5 stages: Tutorial, then Levels 1-4. Each puzzle's "whole" splits into
@@ -98,12 +102,46 @@
     }
     window.playCurtain = playCurtain;
 
-    // Tutorial finished -> curtain -> Level 1 (the bot chooser).
+    // ---- Game flow --------------------------------------------------------
+    // Two separated halves, each = a guided TUTORIAL then 4 chooser LEVELS:
+    //   Part 1: charge tutorial → charge 4 bots → Part 2: split tutorial →
+    //   split 4 overcharged bots → done.
+
+    // Part 1 — the charging tutorial (guided 3-bot Screen 1 → charge → concept).
+    function startGame() {
+        window.gamePart = 1;
+        setupLevel(1); // tutorial mode (guided, gameStage 0)
+        window.GameNav.show("screen-1");
+        if (window.Screen1Intro) window.Screen1Intro.play();
+    }
+    window.startGame = startGame;
+
+    // Enter the LEVELS (bot chooser) for a part: 1 = charge the low bots,
+    // 2 = split the overcharged bots. Four levels, one bot each.
+    function startLevels(part) {
+        window.gamePart = part;
+        setupLevel(2); // chooser mode (.level-2, gameStage 1)
+        if (window.BotChooser) window.BotChooser.reset(); // fresh bots for this part
+        window.GameNav.show("screen-1");
+        if (window.Screen1Intro) window.Screen1Intro.play();
+    }
+    window.startLevels = startLevels;
+
+    // Part 2 — the splitting tutorial (Screen 5 intro → split → concept).
+    function startPart2Tutorial() {
+        window.gamePart = 2;
+        setupLevel(1); // tutorial mode (guided, gameStage 0)
+        window.GameNav.show("screen-5");
+        if (window.Part2) window.Part2.startIntro();
+    }
+    window.startPart2Tutorial = startPart2Tutorial;
+
+    // Tutorial finished — kept for back-compat / dev menu. In the new flow the
+    // tutorials hand off directly (Part 1 concept → startLevels(1), Part 2
+    // concept → startLevels(2)), so this just enters the current part's levels.
     function showLevelTransition() {
         playCurtain("Tutorial Complete!", "Get ready for Level 1…", function () {
-            setupLevel(2); // enters chooser mode (gameStage 1)
-            window.GameNav.show("screen-1");
-            if (window.Screen1Intro) window.Screen1Intro.play();
+            startLevels(window.gamePart || 1);
         });
     }
     window.showLevelTransition = showLevelTransition;
@@ -115,28 +153,21 @@
             return;
         }
 
-        // Play button on Start Screen begins Level 1 (Tutorial)
+        // Play button on Start Screen begins Part 1 (the charging tutorial).
         const playBtn = document.getElementById("play-btn");
         if (playBtn) {
             playBtn.addEventListener("click", function () {
-                setupLevel(1);
-                window.GameNav.show("screen-1");
-                if (window.Screen1Intro) window.Screen1Intro.play();
+                startGame();
             });
         }
 
-        // Next level / Restart button on transition screen
+        // Next level / Restart button on transition screen → back to start.
         const nextLevelBtn = document.getElementById("next-level-btn");
         if (nextLevelBtn) {
             nextLevelBtn.addEventListener("click", function () {
-                if (window.currentLevel === 1) {
-                    setupLevel(2);
-                    window.GameNav.show("screen-1");
-                    if (window.Screen1Intro) window.Screen1Intro.play();
-                } else {
-                    setupLevel(1);
-                    window.GameNav.show("screen-pre");
-                }
+                window.gamePart = 1;
+                setupLevel(1);
+                window.GameNav.show("screen-pre");
             });
         }
 
@@ -192,34 +223,34 @@
         }
         window.chooseBotEnter = chooseBotEnter;
 
-        // Return to the L2+ chooser after a bot is fixed. onFixed() marks the
-        // bot done (charged + dancing) and advances the phase/level, returning
-        // whether the LEVEL just completed (i.e. the split bot was fixed).
+        // Return to the chooser after a level's bot is fixed. onFixed() marks
+        // the bot done (charged + dancing) and advances gameStage. Each level
+        // is ONE bot now, so every fix completes a level.
         function returnToChooser() {
-            const res = window.BotChooser
-                ? window.BotChooser.onFixed(window.currentScheme)
-                : { levelComplete: false };
+            if (window.BotChooser) window.BotChooser.onFixed(window.currentScheme);
+            const justFinished = (window.gameStage || 2) - 1; // level just completed
 
-            if (res && res.levelComplete) {
-                // Both bots of the level are fixed → curtain "Level X Complete"
-                // then on to the next level's chooser (or game complete).
-                const completed = (window.gameStage || 2) - 1; // level just finished
-                if ((window.gameStage || 1) > 4) {
+            if ((window.gameStage || 1) > 4) {
+                // All 4 bots of this part are fixed.
+                if (window.gamePart === 1) {
+                    // Part 1 (charge) done → on to the Part 2 (split) tutorial.
+                    playCurtain("Part 1 Complete!", "Now let's fix the overcharged bots…", function () {
+                        startPart2Tutorial();
+                    });
+                } else {
+                    // Part 2 (split) done → the whole game is complete.
                     playCurtain("All Bots Fixed!", "Fantastic work — you fixed every bot!", function () {
+                        window.gamePart = 1;
                         setupLevel(1);
                         window.GameNav.show("screen-pre");
                     });
-                } else {
-                    playCurtain("Level " + completed + " Complete!", "Get ready for Level " + window.gameStage + "…", function () {
-                        window.GameNav.show("screen-1");
-                        if (window.BotChooser) window.BotChooser.enterChooser(false);
-                    });
                 }
             } else {
-                // First bot (charge) done → show it dancing in front, then the
-                // player picks an overcharged bot for the split phase.
-                window.GameNav.show("screen-1");
-                if (window.BotChooser) window.BotChooser.enterChooser(true);
+                // Next level of the same part.
+                playCurtain("Level " + justFinished + " Complete!", "Get ready for Level " + window.gameStage + "…", function () {
+                    window.GameNav.show("screen-1");
+                    if (window.BotChooser) window.BotChooser.enterChooser(false);
+                });
             }
         }
         window.returnToChooser = returnToChooser;

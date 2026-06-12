@@ -204,12 +204,12 @@
                 const phaseBAt = SLOT_GLOW_STAGGER + PHASE_GAP;
                 later(phaseWhole, phaseBAt);
 
-                // Concept taught -> zoom OUT of the board to reveal the bot
-                // celebrating (Screen 3), let it dance, then start Part Two.
+                // Part 1 concept taught -> zoom OUT to the celebrating bot
+                // (Screen 3), let it dance, then begin the Part 1 charge
+                // LEVELS (the kid now charges the bots in the chooser).
                 later(function () {
                     revealDancingBot(function () {
-                        if (global.GameNav) global.GameNav.show("screen-5");
-                        if (global.Part2) global.Part2.startIntro();
+                        if (global.startLevels) global.startLevels(1);
                     });
                 }, phaseBAt + 3000);
             }, 650); // after the banner unrolls

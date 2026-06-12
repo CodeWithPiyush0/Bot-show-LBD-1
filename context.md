@@ -99,19 +99,22 @@ empty breakpoint stubs for future per-device tweaks (none needed so far).
 ## 4b. Pre-LBD — start screen (`screen--pre`, `main.css`)
 
 The **first** screen on load (`is-active`). Full-screen `Pre_LBD.webp` splash
-("FIX-A-BOT" title + the two bots + battery) with a big circular **play-icon** button
-(`.play-btn--icon`, `#play-btn` — glossy orange disc + white ▶ triangle, bob + glow-ring
-animation) on the floor. Clicking it (`main.js`) → `GameNav.show("screen-1")`
-+ `Screen1Intro.play()`. Because of this, Screen 1's intro is **on-demand** now:
-its CSS animations are scoped to `.screen--1.is-intro` and the typewriter runs from
-`Screen1Intro.play()` (NOT on page load).
+("FIX-A-BOT" title + the two bots + battery) with a big **play button** on the floor:
+`.play-btn--icon` (`#play-btn`) is now the **`play_btn.webp` image** (a glossy orange 3D
+disc with a white ▶ triangle, converted from `assets/images/play_btn.svg` via sharp →
+400×363 webp) — a transparent `<button>` wrapping `<img>`, with a `playBob` bob loop +
+drop-shadow (the old CSS-drawn gradient disc/triangle + glow-ring were replaced).
+Clicking it (`main.js`) → `startGame()` → Part 1 charging tutorial. Because of this,
+Screen 1's intro is **on-demand**: its CSS animations are scoped to `.screen--1.is-intro`
+and the typewriter runs from `Screen1Intro.play()` (NOT on page load).
 
 **Level transition = theatre curtains.** `#curtains` sits **outside `#stage`** (direct
 child of `#game`) and is `position: fixed` so it covers the **whole viewport** including
-the letterbox bars. Two velvet curtain halves. `showLevelTransition()` (main.js) closes them over the
-finished level (showing "Level 1 Complete!" / "All Bots Fixed!"), swaps the screen
-behind them, then parts them to reveal the next level — matching the auditorium-stage
-theme. (The legacy `#screen-transition` card is no longer used.)
+the letterbox bars. Two velvet curtain halves. `playCurtain(title, sub, onSwap)` (main.js,
+the shared helper) closes them over a finished level (showing "Level N Complete!" /
+"Part 1 Complete!" / "All Bots Fixed!"), runs `onSwap` to swap the screen behind them,
+then parts them to reveal the next — matching the auditorium-stage theme. (The legacy
+`#screen-transition` card is no longer used.)
 
 ---
 
@@ -130,34 +133,57 @@ theme. (The legacy `#screen-transition` card is no longer used.)
   bot chooser** (see below); the old single-bot `.level-2` repositioning rules are now
   superseded (the fixed bots are `display:none` in L2).
 
-### Game structure: Tutorial + 4 levels (the L2+ bot chooser)
-- **Tutorial** = the guided flow (charge → concept → split → concept), `gameStage 0`.
-- **Levels 1-4** = the chooser. Each level fixes **TWO different bots in two phases**:
-  1. **CHARGE phase** — the **low** bots are shown; tap one → charge puzzle (Part 1) →
-     it dances (fixed).
-  2. **SPLIT phase** — the **overcharged** bots appear, pulsing a red glow; tap one →
-     split puzzle (Part 2) → it dances (fixed). Level complete → next level.
-- **Low set** (charge phase): orange / blue / purple / pink — `<color>_bot[_low].webp`
-  (red battery). Fixed → `<color>_bot_charged.webp` (green filled, dances).
-- **Overcharged set** (split phase): a DISTINCT colour set **red / green / teal / yellow**
-  so no colour is reused for both states. These are recoloured (hue-shift) from the low
-  set's overcharged art via sharp (`red←orange -30`, `green←blue -75`, `teal←purple -125`,
-  `yellow←pink +85`); their `_bot_charged.webp` (fixed/dancing) and `panel_<color>.webp`
-  are recoloured the same way. The recolour keeps the **white "!"** but shifts the baked
-  red glow, so a **CSS red chest glow** is layered on in the chooser
-  (`.carousel-bot[data-state="overcharged"]::after`, screen-blend over the chest, + a red
-  rim glow on the img) so it always reads "overcharged red". *(For a perfect baked red
-  glow, swap in Figma-made art — the system is keyed by `data-scheme`.)*
-- `data-scheme` (colour) + `data-state` (low|overcharged) on each `.carousel-bot`; charge
-  phase shows the low bots, split phase the overcharged ones. (The old per-level
-  `chargedColor`/`.is-locked` exclusion is now moot since the sets are different colours,
-  but it's left in harmlessly.)
-  - **Scroll hint:** the first time the chooser appears (Level 1, charge phase) the row
-    pans **left → right → centre** (`scrollHint()` → `tweenScroll`, a `setTimeout`-stepped
-    tween that's reliable; it retries until the row is laid out and adds `.no-snap` so
-    scroll-snap doesn't fight it), ending centred with bots peeking on both sides — so the
-    kid sees it scrolls. (Uses setTimeout-stepping, NOT rAF/`performance.now`, which don't
+### Game structure: TWO halves, each = a guided tutorial then 4 chooser levels
+> **MAJOR FLOW (current):** the game is split into two sequential halves so the child
+> learns one operation, practises it across all the bots, then learns the inverse and
+> practises that. State: **`window.gamePart`** (1 = charge, 2 = split) + **`window.gameStage`**
+> (0 = tutorial, 1-4 = the level number within the part).
+>
+> 1. **Part 1 — CHARGE tutorial** (`gamePart 1, gameStage 0`): the guided 3-bot Screen 1 →
+>    charge puzzle (Screen 2) → concept (Screen 4) → dancing bot (Screen 3).
+> 2. **Part 1 — CHARGE levels** (`gamePart 1, gameStage 1-4`): the chooser shows the 4 **low**
+>    bots; each level the kid charges ONE → it dances → "Level N Complete" curtain → next.
+> 3. **Part 2 — SPLIT tutorial** (`gamePart 2, gameStage 0`): after Part 1's 4th level, a
+>    "Part 1 Complete!" curtain → Screen 5 overcharged intro → split puzzle (Screen 6) →
+>    concept (Screen 8) → dancing bot (Screen 7).
+> 4. **Part 2 — SPLIT levels** (`gamePart 2, gameStage 1-4`): the chooser shows the 4
+>    **overcharged** bots; each level the kid splits ONE → dances → curtain → next. After
+>    the 4th → "All Bots Fixed!" curtain → back to the start screen.
+>
+> Flow functions in `main.js`: `startGame()` (play button → Part 1 tutorial),
+> `startLevels(part)` (enter a part's chooser; resets the chooser), `startPart2Tutorial()`
+> (Screen 5). The tutorials hand off automatically: Part 1 concept (`concept.js`) →
+> `startLevels(1)`; Part 2 concept (`part2.js playConcept2`) → `startLevels(2)`.
+> `currentLevel` is kept as a coarse mode flag (1 = guided tutorial, 2 = chooser/levels);
+> `setupLevel(1|2)` toggles it + `.level-2`.
+
+- **The chooser** (`.level-2`, Screen 1): which bots show is decided by `gamePart` —
+  **Part 1 shows the low bots, Part 2 shows the overcharged bots**. Each level fixes **ONE**
+  bot; every solve advances `gameStage` and completes a level (no more two-phase per level).
+- **Low set** (Part 1): orange / blue / purple / pink — `<color>_bot[_low].webp` (red
+  battery). Fixed → `<color>_bot_charged.webp` (green filled, dances).
+- **Overcharged set** (Part 2): a DISTINCT colour set **red / green / teal / yellow** so no
+  colour is reused for both states. Recoloured (hue-shift) from the low set's overcharged
+  art via sharp (`red←orange -30`, `green←blue -75`, `teal←purple -125`, `yellow←pink +85`);
+  their `_bot_charged.webp` (fixed/dancing) and `panel_<color>.webp` are recoloured the same.
+  The recolour keeps the **white "!"** but shifts the baked red glow, so a **CSS red chest
+  glow** is layered on in the chooser (`.carousel-bot[data-state="overcharged"]::after`,
+  screen-blend over the chest, + a red rim glow on the img) so it always reads "overcharged
+  red". *(For a perfect baked red glow, swap in Figma-made art — keyed by `data-scheme`.)*
+- `data-scheme` (colour) + `data-state` (low|overcharged) on each `.carousel-bot`. CSS shows
+  **only one state per part**: `.bot-carousel:not(.phase-split)` hides all `overcharged`,
+  `.bot-carousel.phase-split` hides all `low` (so Part 1's charged-and-dancing low bots don't
+  leak into Part 2). `enterChooser` sets `phase` from `gamePart` each entry. (The old
+  per-level two-phase `chargedColor`/`.is-locked` exclusion was **removed**.)
+  - **Scroll hint:** the first level of EACH part the row pans **left → right → centre**
+    (`scrollHint()` → `tweenScroll`, a `setTimeout`-stepped tween that's reliable; retries
+    until laid out, adds `.no-snap` so scroll-snap doesn't fight it), ending centred with
+    bots peeking both sides. (setTimeout-stepping, NOT rAF/`performance.now`, which don't
     advance under headless virtual-time and made the old `scrollTo` version flaky.)
+  - **Banner per part** (`enterChooser`, via `Screen1Intro.setText`, a cancellable typer):
+    Part 1 = "Scroll and tap a bot to charge it.", Part 2 = "Oh no! These bots are
+    overcharged — tap one to fix it." (`intro.js` no longer auto-types `data-text2` in
+    chooser mode, which used to clobber this.)
   - **Closed banner:** the question template's closed clip is `inset(0 91.7% 0 0)` (was
     91.2%, which left a cream sliver with a hard cut to the right of the mascot badge).
 
@@ -165,23 +191,24 @@ theme. (The legacy `#screen-transition` card is no longer used.)
 Horizontal **scrollable row** (`.bot-carousel__track`, only under `.level-2`), staged like
 Screen 1 via coverflow: `carousel.js layout()` scales each bot by distance from centre
 (centre big & front, sides small & set back), and each `.carousel-bot::before` is its floor
-shadow. CSS shows only the current phase's un-fixed bots (`.phase-split` toggles low ↔
-overcharged); fixed bots always stay, dancing.
+shadow. CSS shows only the current part's bots (`.phase-split` = Part 2 overcharged, else
+Part 1 low — see §5); fixed bots of the current state keep dancing.
 - **Flow:** tap a bot → `select()` centres it, **spotlight falls** (`.is-choosing` dims the
   rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
-  zooms in (`enterBotTo`) → charge (`screen-2`, part 1) or split (`screen-6`, part 2).
-- **After a puzzle**, `returnToChooser()` → `BotChooser.onFixed(scheme)`: marks that bot
-  fixed (swaps to charged art + dances) and returns `{levelComplete}`. Charge done → straight
-  to the split phase, with `enterChooser(true)` **centring the just-fixed bot in front** so
-  the player sees it dancing (the next overcharged bot peeks on the side). `lastFixed` tracks
-  it; the level-complete curtain re-enters with `enterChooser(false)` (fresh). Split done (both bots fixed) → **curtain** `playCurtain("Level N
-  Complete!", …)` then the next level's chooser; after level 4 → `playCurtain("All Bots
-  Fixed!", …)` → pre screen. (Tutorial→Level 1 uses `showLevelTransition()` = "Tutorial
-  Complete!".) `playCurtain(title, sub, onSwap)` in main.js is the shared curtain helper.
-- Counts per phase come from `window.STAGES[gameStage]` via `getCounts(1|2)` (see §8).
-- `intro.js Screen1Intro.play()` is chooser-aware: in L2 it skips the auto-spotlight, calls
-  `BotChooser.enterChooser()`, and types the L2 prompt (`data-text2`).
-- Test via the dev menu → "Level 2 (Real Game) → 1 · Choose bot" (charge phase).
+  zooms in (`enterBotTo`) → charge (`screen-2`, part "1") or split (`screen-6`, part "2"),
+  where `part` = `phase === "charge" ? "1" : "2"`.
+- **After a puzzle**, `returnToChooser()` (main.js) → `BotChooser.onFixed(scheme)`: marks
+  that bot fixed (swaps to charged art + dances) and **advances `gameStage`** — each solve
+  completes a level. Then: if `gameStage <= 4` → `playCurtain("Level N Complete!", …)` →
+  `enterChooser(false)` for the next level; if `gameStage > 4` → the part is done →
+  `gamePart 1`: `playCurtain("Part 1 Complete!", …)` → `startPart2Tutorial()`; `gamePart 2`:
+  `playCurtain("All Bots Fixed!", …)` → start screen.
+- **`startLevels(part)`** calls `BotChooser.reset()` so each part begins with all of its
+  bots fresh (un-fixed, original art) and the scroll hint re-armed.
+- Counts per puzzle come from `window.STAGES[gameStage]` via `getCounts(1|2)` (see §8).
+- `intro.js Screen1Intro.play()` is chooser-aware: in chooser mode (`currentLevel === 2`) it
+  skips the auto-spotlight and calls `BotChooser.enterChooser()`, which OWNS the banner text.
+- Test via the dev menu → "Part 1: Charge levels" / "Part 2: Split levels".
 - Each bot's low-battery symbol is **baked into its art** (e.g. `orange_bot.webp` has the
   low-battery chest icon in the image). (An earlier `.chest-low` CSS overlay was removed
   once the bot art included the icon directly.)
@@ -319,11 +346,12 @@ stage (Tutorial + Levels 1-4) per the design table:
 
 `window.gameStage` indexes `STAGES`; `getCounts(1|2)` returns `{blue,yellow}`. Wired into
 `batteries.js setupBatteries` (Part 1), `part2.js startSplit` (Part 2) and `concept.js`.
-`setupLevel(2)` starts the chooser at `gameStage 1`; the chooser then advances
-`gameStage` 1→4 as each level is completed. A small slot fits up to **7** batteries at
-`PLACED_SCALE 0.82` (8 overflows — that's why Level 2's split is **(7,3)** not (2,8)).
-In the chooser's **split phase** the banner reads "Oh no! A few bots are overcharged —
-tap one to fix it." (`Screen1Intro.setText`, a cancellable typer).
+`setupLevel(2)` starts a part's chooser at `gameStage 1`; the chooser then advances
+`gameStage` 1→4 as each level is completed (each level = ONE bot). A small slot fits up to
+**7** batteries at `PLACED_SCALE 0.82` (8 overflows — that's why Level 2's split is **(7,3)**
+not (2,8)). The chooser banner is set per part by `enterChooser` (`Screen1Intro.setText`, a
+cancellable typer): Part 1 "Scroll and tap a bot to charge it.", Part 2 "Oh no! These bots
+are overcharged — tap one to fix it."
 
 ### Batteries & drag-drop (`batteries.js`)
 - Two **groups** (single draggable units, NOT individual batteries); counts come from
@@ -392,12 +420,14 @@ banner opens + types prompt → holds 3.5s → banner closes to mascot + content
 back to normal (smooth) → **ghost hint** demonstrates the drag **3×** (a translucent
 blue group glides tray→small-left slot, `.is-ghost`) → dragging enabled.
 
-> **Level 2 = play solo.** L2 is no longer a tutorial: `playHint()` skips the ghost
-> demo (just enables dragging) when `window.currentLevel === 2`, and **both concept
-> screens are skipped** in L2 — Part 1 (`batteries.js`) goes charge → reveal dance
-> (Screen 3) → Part 2 directly (no Screen 4), and Part 2 (`part2.js onFixed`) goes
-> split → reveal dance (Screen 7) → level transition directly (no Screen 8). L1 still
-> shows the ghost hint and both concept screens.
+> **Chooser levels (`currentLevel === 2`) = play solo.** Only the **tutorials**
+> (`currentLevel === 1`, the guided flow) show the ghost hint + the concept screens.
+> In the chooser levels both are skipped: `playHint()` just enables dragging, and the
+> finale goes **straight back to the chooser** via `returnToChooser()` — Part 1
+> (`batteries.js`) charge → `returnToChooser()` (no Screen 4 concept, no Screen 3 dance;
+> the carousel bot dances in place), and Part 2 (`part2.js onFixed`) split →
+> `returnToChooser()` (no Screen 8/7). The tutorials still show the ghost hint and the
+> concept, then hand off to that part's levels.
 
 ---
 
@@ -413,7 +443,8 @@ id="screen-3">` inside the stage.
 **Order:** the dance comes **AFTER the concept** (Screen 4), not before. The
 concept screen zooms OUT of the board to reveal the dancing bot
 (`concept.js revealDancingBot()` → `.screen--4.is-zooming-out` + `.screen--3.is-revealing`,
-reusing the `zoomOutOfBot`/`revealBot` keyframes). It dances ~3s, then Part 2 begins.
+reusing the `zoomOutOfBot`/`revealBot` keyframes). It dances ~3s, then — in the **new flow**
+— `concept.js` calls **`startLevels(1)`** to begin the Part 1 charge levels (NOT Part 2).
 
 ---
 
@@ -446,8 +477,11 @@ Phase timings are **placeholders for the VO** (`SLOT_GLOW_STAGGER`, `PHASE_GAP` 
 ## 8d. PART TWO — fixing overcharged bots (`part2.css` + `part2.js`)
 
 The inverse of Part One: bots are **overcharged** (the whole is too full), and the
-child **splits** the whole into two parts. Starts **automatically** after Part One's
-Screen 4 concept finishes (`concept.js` → `GameNav.show("screen-5")` + `Part2.startIntro()`).
+child **splits** the whole into two parts. In the **new flow**, Part 2 starts after **all 4
+Part 1 charge levels** are done: `returnToChooser()` (`gamePart 1, gameStage > 4`) →
+"Part 1 Complete!" curtain → **`startPart2Tutorial()`** → `GameNav.show("screen-5")` +
+`Part2.startIntro()`. (Screens 5-8 are the Part 2 **tutorial**; the Part 2 **levels** then
+reuse the chooser with the overcharged bots.)
 
 Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
 - **Screen 5** (`screen--5`, intro): room bg + 3 bots in a `.s5-stage` wrapper
@@ -476,7 +510,8 @@ Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
   After teaching, `playConcept2()` **zooms OUT** (`zoomOutTo("screen-8","screen-7")`,
   `.screen--8.is-zooming-out`) to reveal the dancing bot.
 - **Screen 7** (`screen--7`, celebrate): `White_purple_bot_charged.webp` dances under
-  the spotlight (reuses `.charged-bot`/`botDance`). After ~3s → `showLevelTransition()`.
+  the spotlight (reuses `.charged-bot`/`botDance`). In the **new flow**, after ~3s
+  `playConcept2()` calls **`startLevels(2)`** to begin the Part 2 split levels.
   **Note the order: concept (8) BEFORE the dance (7)**, same as Part 1.
 
 All Part-2 logic is in `part2.js` (`Part2.startIntro/startSplit/playConcept2`), styles in
@@ -531,6 +566,14 @@ To re-convert raster→WebP later: `sharp` was used in a temp `.build/` dir (now
 ## 10. JS public API (globals)
 
 ```js
+// --- Game flow (main.js) ---
+startGame()                             // play button → Part 1 charge tutorial
+startLevels(part)                       // part 1|2 → that part's chooser levels (resets chooser)
+startPart2Tutorial()                    // Screen 5 → Part 2 split tutorial
+returnToChooser()                       // after a level's bot is fixed → next level / part / done
+playCurtain(title, sub, onSwap)         // theatre-curtain transition (swap behind closed curtains)
+// window.gamePart (1=charge|2=split), window.gameStage (0=tutorial|1-4=level), window.getCounts(1|2)
+
 GameNav.show(screenId)                 // "screen-1" | "screen-2"
 Batteries.init()                        // auto-runs on DOMContentLoaded
 Batteries.setEnabled(bool)              // gate drag interaction
@@ -569,13 +612,15 @@ Convert to CSS: `left% = x/1920*100`, `top% = y/1080*100`, `width% = w/1920*100`
 ## 11b. Dev menu (TEMPORARY)
 
 `js/devmenu.js` adds a ☰ hamburger (top-left) that opens a list to jump to any
-screen — for testing without playing through. Sections: **Tutorial** (each screen),
-**Levels 1-4 (chooser)** — charge phase, split phase, the charge/split puzzles, the
-level-complete curtain — and **Test a level's counts** (jump into the chooser at L1-L4).
-Helpers: `chooser(stage, splitPhase)`, `chooserPuzzle(stage, part, scheme)`,
-`BotChooser.reset()`. Self-contained (injects its own CSS/DOM). **Remove for production:** delete the file
-and its `<script src="js/devmenu.js">` tag in index.html. Reload for a clean state
-(jumps don't cancel a previous screen's pending timers).
+screen — for testing without playing through. Sections mirror the new flow:
+**Part 1: Charge tutorial** (Screens 1-4), **Part 1: Charge levels** (charge chooser L1/L4
++ a charge puzzle), **Part 2: Split tutorial** (Screens 5-8), **Part 2: Split levels**
+(split chooser L1/L4 + a split puzzle), and **Misc** (level-complete + game-complete
+curtains). Helpers: `chooser(stage, part)` (sets `gamePart`), `chooserPuzzle(stage, part,
+scheme)`, `BotChooser.reset()`. Each entry sets `gamePart` before navigating. Self-contained
+(injects its own CSS/DOM). **Remove for production:** delete the file and its
+`<script src="js/devmenu.js">` tag in index.html. Reload for a clean state (jumps don't
+cancel a previous screen's pending timers).
 
 ---
 

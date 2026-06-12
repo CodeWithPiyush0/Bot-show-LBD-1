@@ -469,10 +469,12 @@
         c2Small.length = 0;
         c2Big.length = 0;
 
-        // Set counts based on level
-        const countBlue = (window.currentLevel === 2) ? 5 : 4;
-        C_LAYOUT[0].count = countBlue; // small-left
-        C_LAYOUT[2].count = countBlue; // big top row
+        // Counts mirror the split puzzle just completed (current stage, Part 2).
+        const cc = window.getCounts ? window.getCounts(2) : { blue: 4, yellow: 6 };
+        C_LAYOUT[0].count = cc.blue; // small-left
+        C_LAYOUT[2].count = cc.blue; // big top row
+        C_LAYOUT[1].count = cc.yellow; // small-right
+        C_LAYOUT[3].count = cc.yellow; // big bottom row
 
         C_LAYOUT.forEach(function (g) {
             const el = makeGroup({ color: g.color, count: g.count, cx: g.cx, cy: g.cy });
@@ -527,12 +529,13 @@
                     }, 600);
                 }, 2400);
 
-                // Concept taught -> zoom OUT to reveal the bot celebrating
-                // (Screen 7), let it dance, then the level transition.
+                // Part 2 concept taught -> zoom OUT to reveal the bot
+                // celebrating (Screen 7), let it dance, then begin the Part 2
+                // split LEVELS (the kid now fixes the overcharged bots).
                 global.setTimeout(function () {
                     zoomOutTo("screen-8", "screen-7", function () {
                         global.setTimeout(function () {
-                            if (global.showLevelTransition) global.showLevelTransition();
+                            if (global.startLevels) global.startLevels(2);
                         }, 3000);
                     });
                 }, 6500);
