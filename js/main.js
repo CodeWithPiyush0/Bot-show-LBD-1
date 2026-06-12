@@ -282,6 +282,9 @@
             window.setTimeout(function () {
                 if (screen3) screen3.classList.remove("is-revealing");
                 screen2.classList.remove("is-zooming-out");
+                // announce once the reveal has settled, so the banner is SEEN
+                // unrolling while the bot dances
+                if (window.Screen3Intro) window.Screen3Intro.showMessage();
             }, 1300);
         }
 

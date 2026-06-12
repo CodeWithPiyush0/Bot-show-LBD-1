@@ -177,7 +177,10 @@
         later(function () {
             if (screen3) screen3.classList.remove("is-revealing");
             if (from) from.classList.remove("is-zooming-out");
-            later(onDanced, 3000); // dance ~3s, then continue
+            // announce once the reveal has settled, so the banner is SEEN
+            // unrolling while the bot dances
+            if (global.Screen3Intro) global.Screen3Intro.showMessage();
+            later(onDanced, 3800); // banner opens + types (~2.2s), then a beat
         }, 1300);
     }
 

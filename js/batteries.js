@@ -275,8 +275,8 @@
             if (panelBig) panelBig.classList.add("is-green");
         }, 2000);
 
-        // 4) finale: trays slide away, the board moves down to fill the
-        //    gap, and the banner announces the bot is fully charged.
+        // 4) finale: trays slide away and the board moves down to fill the
+        //    gap (the "fully charged" line is announced later, on Screen 3).
         global.setTimeout(fullyCharged, 3600);
     }
 
@@ -303,14 +303,10 @@
             if (contentEl) contentEl.classList.add("is-charged-final");
         }, 250);
 
-        // Once it has settled, open the banner with the message.
-        global.setTimeout(function () {
-            if (window.Screen2Intro && window.Screen2Intro.showMessage) {
-                window.Screen2Intro.showMessage("The bot is fully charged.");
-            }
-        }, 900);
+        // ("The bot is fully charged." now types on Screen 3 while the bot
+        // dances — no banner message here.)
 
-        // Shortly after the message, continue.
+        // Once the board has settled, continue.
         global.setTimeout(function () {
             if (window.currentLevel === 2) {
                 // Chooser level: zoom out to the bot dancing full-screen
@@ -323,14 +319,14 @@
                 if (window.GameFx) window.GameFx.exitBot();
                 global.setTimeout(function () {
                     if (window.returnToChooser) window.returnToChooser();
-                }, 4300); // ~1.3s zoom-out + ~3s dance
+                }, 5100); // ~1.3s zoom-out + banner unroll/type + dance beat
             } else {
                 // Tutorial: stay inside the bot and teach the concept
                 // (Screen 4); concept.js then zooms out to reveal the dance.
                 if (window.GameNav) window.GameNav.show("screen-4");
                 if (window.ConceptScreen) window.ConceptScreen.play();
             }
-        }, 3200);
+        }, 1600); // shorter now that no banner message holds the screen
     }
 
     /* ---- ghost hint: demonstrate the drag ----

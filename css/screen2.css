@@ -350,9 +350,10 @@
 }
 
 /* Finale (bot fully charged): the trays are gone, so the board slides
-   down to fill the bottom and leave room for the banner up top. */
+   down to fill the bottom. EXACTLY 14% to match `.s4-content`'s offset —
+   any mismatch shows as a vertical jump when Screen 4 swaps in. */
 .s2-content.is-charged-final {
-    transform: translateY(15%);
+    transform: translateY(14%);
 }
 
 /* ---------- Question banner (Screen 2) ----------

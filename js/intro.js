@@ -163,4 +163,24 @@
         play: playScreen2Intro,
         showMessage: showScreen2Message,
     };
+
+    /* ---- Screen 3 banner ----
+       Opens and types "The bot is fully charged." while the bot dances
+       (the message moved here from the Screen 2 charge finale). */
+    function showScreen3Message() {
+        const q = document.getElementById("question-3");
+        if (!q) return;
+        const textEl = q.querySelector(".question__text");
+        const text = textEl.getAttribute("data-text") || "The bot is fully charged.";
+        q.classList.remove("is-open");
+        textEl.textContent = "";
+        window.setTimeout(function () {
+            q.classList.add("is-open");
+            window.setTimeout(function () {
+                typewriter(textEl, text, TYPE_SPEED);
+            }, 650); // after the unroll transition
+        }, 150);
+    }
+
+    window.Screen3Intro = { showMessage: showScreen3Message };
 })();

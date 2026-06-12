@@ -416,11 +416,17 @@ Once the batteries are in the big slot and it's glowing green, the finale plays
 1. **Battery trays + their placeholder ghosts fade out** (`.tray`, `.tray-ghost`),
    then are `display:none`'d so nothing lingers.
 2. **The board slides down** to fill the now-empty bottom — `.s2-content.is-charged-final`
-   = `transform: translateY(15%)` (everything moves together, stays aligned).
-3. **The banner re-opens** and types **"The bot is fully charged."** via
-   `Screen2Intro.showMessage(text)` (opens, types, stays open).
-4. **~3.2s after the finale starts** (a brief beat after the message — tune with VO),
-   it transitions to **Screen 3** via `GameFx.exitBot()`
+   = `transform: translateY(14%)` — **EXACTLY matching `.s4-content`'s 14%**: it was 15%
+   and the 1% mismatch showed as a vertical jitter when Screen 4 swapped in.
+3. **NO banner message here** (by request). "The bot is fully charged." moved to
+   **Screen 3** — `#question-3` (banner added to screen-3, closed-clip CSS in
+   screen3.css) opens + types via `Screen3Intro.showMessage()` (intro.js), called from
+   BOTH Screen 3 entries: `exitBot()` (main.js) and `revealDancingBot()` (concept.js).
+   It fires **AFTER the reveal settles (~1300ms)**, not at screen-show — otherwise the
+   unroll finishes during the zoom-out and is never seen. The dance windows give it
+   room: tutorial `onDanced` after 3800ms; levels `returnToChooser` after 5100ms.
+4. **~1.6s after the finale starts** (shortened — no message hold),
+   it transitions onward: tutorial → Screen 4 concept; levels → **Screen 3** via `GameFx.exitBot()`
    — the **reverse** of the enter-zoom: we pull back OUT of the chest (same 49.6%/73%
    focal point), the interior recedes, and the whole charged bot is revealed shrinking
    from a chest close-up to normal size (`zoomOutOfBot` + `revealBot` in `main.css`).
