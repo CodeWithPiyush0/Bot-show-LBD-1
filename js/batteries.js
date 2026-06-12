@@ -232,6 +232,7 @@
     function startCharge() {
         charged = true;
         abortHint();
+        cancelIdle();
         const groups = [slotOccupant["small-left"], slotOccupant["small-right"]];
 
         if (bigGlow) bigGlow.classList.remove("is-charged");
@@ -320,7 +321,12 @@
         }, 3200);
     }
 
-    /* ---- ghost hint: demonstrate the drag a few times ---- */
+    /* ---- ghost hint: demonstrate the drag ----
+       A translucent copy of a still-undropped group glides into an empty
+       slot. cycles = 3 for the tutorial demo; Infinity for the levels'
+       inactivity nudge (loops until the player does something). The source
+       group + target slot are picked fresh each cycle, so the demo always
+       shows a move the player can actually make. */
     let hintActive = false;
     let hintGhost = null;
 
@@ -332,7 +338,7 @@
         }
     }
 
-    function buildGhost(color, count, cx, cy) {
+    function buildGhost(color, count) {
         const g = document.createElement("div");
         g.className = "battery-group battery-group--" + color + " is-ghost";
         for (let i = 0; i < count; i++) {
@@ -343,67 +349,66 @@
             bat.draggable = false;
             g.appendChild(bat);
         }
-        g.style.left = pctX(cx);
-        g.style.top = pctY(cy);
-        setTransform(g, 1);
         return g;
     }
 
-    function playHint() {
-        // L2: no demo — the player drags on their own. Just enable dragging.
-        if (!contentEl || charged || window.currentLevel === 2) {
-            enabled = true;
-            return;
-        }
-        enabled = true; // allow dragging during hint
+    const MOVE = 1000;
+    const HOLD = 250;
+    const FADE = 300;
+    const GAP = 250;
+    const CYCLE = MOVE + HOLD + FADE + GAP;
+
+    function ghostRun(cycles) {
+        if (hintActive || charged || !contentEl) return;
         hintActive = true;
-        const fromX = GROUPS[0].cx; // blue tray centre
-        const fromY = GROUPS[0].cy;
-        const slot = SLOTS["small-left"];
-        const toX = slot.x + slot.w / 2;
-        const toY = slot.y + slot.h / 2;
-
-        hintGhost = buildGhost("blue", GROUPS[0].count, fromX, fromY);
-        contentEl.appendChild(hintGhost);
-
-        const MOVE = 1000;
-        const HOLD = 250;
-        const FADE = 300;
-        const GAP = 250;
-        const CYCLE = MOVE + HOLD + FADE + GAP;
         let n = 0;
 
         function cycle() {
             if (!hintActive) return;
-            if (n >= 3) {
+            if (n >= cycles || charged || !enabled) {
                 abortHint();
                 return;
             }
             n += 1;
 
-            // reset to the tray (no transition)
-            hintGhost.style.transition = "none";
-            hintGhost.style.left = pctX(fromX);
-            hintGhost.style.top = pctY(fromY);
+            // a group still waiting in the tray → the first empty slot
+            const group = contentEl.querySelector(
+                '.battery-group[data-location="tray"]:not(.is-ghost):not(.tray-ghost)'
+            );
+            const dstId = DROPPABLE.filter(function (id) {
+                return !slotOccupant[id];
+            })[0];
+            if (!group || !dstId) {
+                abortHint();
+                return;
+            }
+            const slot = SLOTS[dstId];
+
+            if (hintGhost) hintGhost.remove();
+            hintGhost = buildGhost(group.dataset.color, group.children.length);
+            hintGhost.style.left = group.style.left;
+            hintGhost.style.top = group.style.top;
             setTransform(hintGhost, 1);
             hintGhost.style.opacity = "0";
-            void hintGhost.offsetWidth; // force reflow so the reset applies
+            contentEl.appendChild(hintGhost);
+            void hintGhost.offsetWidth; // settle the start position
 
-            // fade in and glide to the slot
+            // fade in and glide to the slot (setTimeout, not rAF — reliable
+            // under headless virtual-time, same lesson as the scroll hint)
             hintGhost.style.transition =
                 "left " + MOVE + "ms ease, top " + MOVE + "ms ease, transform " +
                 MOVE + "ms ease, opacity 250ms ease";
-            window.requestAnimationFrame(function () {
-                if (!hintActive) return;
+            window.setTimeout(function () {
+                if (!hintActive || !hintGhost) return;
                 hintGhost.style.opacity = "0.3";
-                hintGhost.style.left = pctX(toX);
-                hintGhost.style.top = pctY(toY);
-                setTransform(hintGhost, fitScale(GROUPS[0].count));
-            });
+                hintGhost.style.left = pctX(slot.x + slot.w / 2);
+                hintGhost.style.top = pctY(slot.y + slot.h / 2);
+                setTransform(hintGhost, fitScale(hintGhost.children.length));
+            }, 30);
 
             // fade out at the slot
             window.setTimeout(function () {
-                if (!hintActive) return;
+                if (!hintActive || !hintGhost) return;
                 hintGhost.style.transition = "opacity " + FADE + "ms ease";
                 hintGhost.style.opacity = "0";
             }, MOVE + HOLD);
@@ -411,6 +416,49 @@
             window.setTimeout(cycle, CYCLE);
         }
         cycle();
+    }
+
+    /* ---- inactivity nudge (chooser levels only): if the kid does nothing
+       for IDLE_MS, loop the ghost demo until they interact ---- */
+    const IDLE_MS = 12000;
+    let idleTimer = null;
+
+    function cancelIdle() {
+        if (idleTimer) {
+            global.clearTimeout(idleTimer);
+            idleTimer = null;
+        }
+    }
+
+    function scheduleIdle() {
+        cancelIdle();
+        if (window.currentLevel !== 2 || charged || !enabled) return;
+        idleTimer = global.setTimeout(function () {
+            ghostRun(Infinity);
+        }, IDLE_MS);
+    }
+
+    // Any pointer activity stops a running nudge and restarts the idle clock.
+    // Levels only — the tutorial's 3× demo must survive stray mouse moves
+    // (it's aborted by an actual drag start in attachDrag).
+    function onActivity() {
+        if (window.currentLevel !== 2) return;
+        if (hintActive) abortHint();
+        scheduleIdle();
+    }
+
+    function playHint() {
+        if (!contentEl || charged) {
+            enabled = true;
+            return;
+        }
+        enabled = true; // allow dragging during/after the hint
+        if (window.currentLevel === 2) {
+            // Levels: no upfront demo — but nudge after 12s of inactivity.
+            scheduleIdle();
+            return;
+        }
+        ghostRun(3); // tutorial: demonstrate the drag 3×
     }
 
     function slotAtPoint(clientX, clientY) {
@@ -514,6 +562,8 @@
         // Reset state variables
         charged = false;
         enabled = false;
+        abortHint();
+        cancelIdle();
 
         // Reset elements class lists
         contentEl.classList.remove("is-charged-final");
@@ -552,6 +602,11 @@
             slotOccupant[id] = null;
         });
 
+        // Inactivity tracking for the levels' looping ghost nudge.
+        ["pointerdown", "pointermove"].forEach(function (ev) {
+            screen.addEventListener(ev, onActivity, { passive: true });
+        });
+
         setupBatteries();
     }
 
@@ -560,6 +615,10 @@
         setup: setupBatteries,
         setEnabled: function (v) {
             enabled = !!v;
+            if (!enabled) {
+                abortHint();
+                cancelIdle();
+            }
         },
         playHint: playHint,
     };

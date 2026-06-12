@@ -430,6 +430,22 @@ banner opens + types prompt → holds 3.5s → banner closes to mascot + content
 back to normal (smooth) → **ghost hint** demonstrates the drag **3×** (a translucent
 blue group glides tray→small-left slot, `.is-ghost`) → dragging enabled.
 
+### Ghost hint + inactivity nudge (both puzzles)
+Both puzzles share the same ghost-demo pattern (`ghostRun(cycles)` in `batteries.js`
+AND mirrored in `part2.js`): a translucent `.is-ghost` copy of a **still-undropped
+group** glides into the **first empty slot** (source/target picked fresh each cycle,
+so the demo always shows a legal move). Part 1 = tray → small slot; Part 2 = big slot
+→ small slot. The glide kick uses `setTimeout(30)` NOT rAF (headless-virtual-time
+lesson). Two uses:
+- **Tutorial demo:** `ghostRun(3)` plays automatically once dragging unlocks (Part 1
+  after the banner closes via `playHint()`; Part 2 in `startSplit`'s banner callback).
+  Tutorial only. A stray mouse move does NOT cancel it — only starting a real drag does.
+- **Inactivity nudge (levels only):** in chooser levels there's no upfront demo, but
+  if the kid does nothing for **`IDLE_MS = 12000`** (12s), `ghostRun(Infinity)` loops
+  the demo **until any pointer activity** (pointerdown/pointermove listeners on the
+  screen, `onActivity` → `abortHint()` + re-arm the 12s clock). Cleared on charge/fix/
+  setup/leave (`cancelIdle()`).
+
 > **Chooser levels (`currentLevel === 2`) = play solo.** Only the **tutorials**
 > (`currentLevel === 1`, the guided flow) show the ghost hint + the concept screens.
 > In the chooser levels the ghost hint and concepts are skipped, but the **full-screen
@@ -685,7 +701,8 @@ All of this is **inert during normal play** — the class only exists in QA mode
   when audio is provided, so banners stay open exactly as long as the VO.
 - **After charging:** the "fully charged" finale now plays (trays out, board slides
   down, banner says "The bot is fully charged."). Could chain to a next screen from here.
-- **Ghost hint** currently only demos blue→small-left; could also demo yellow→small-right.
+- **Ghost hint** is now dynamic (first undropped group → first empty slot) and exists
+  in both puzzles + as a 12s inactivity nudge in the levels (see §8).
 - **Bottom slots** don't get the green SVG glow (only the top slot does) — by request,
   but could be extended.
 - **Game rules:** drops are currently free (any group → either bottom slot). No

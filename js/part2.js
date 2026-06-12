@@ -255,12 +255,143 @@
         return el;
     }
 
+    /* ---- ghost hint: demonstrate dragging a group OUT of the big slot ----
+       Mirror of the Part 1 hint (batteries.js): a translucent copy of a group
+       still in the big slot glides down into an empty small slot. cycles = 3
+       for the tutorial demo; Infinity for the levels' inactivity nudge
+       (loops until the player does something). */
+    let hintActive = false;
+    let hintGhost = null;
+    const HINT_MOVE = 1000;
+    const HINT_HOLD = 250;
+    const HINT_FADE = 300;
+    const HINT_GAP = 250;
+    const HINT_CYCLE = HINT_MOVE + HINT_HOLD + HINT_FADE + HINT_GAP;
+
+    function abortHint() {
+        hintActive = false;
+        if (hintGhost) {
+            hintGhost.remove();
+            hintGhost = null;
+        }
+    }
+
+    function buildGhost(color, count) {
+        const g = document.createElement("div");
+        g.className = "battery-group battery-group--" + color + " is-ghost";
+        for (let i = 0; i < count; i++) {
+            const b = document.createElement("img");
+            b.className = "battery battery--" + color;
+            b.src = "assets/images/" + color + "_battery.svg";
+            b.alt = "";
+            b.draggable = false;
+            g.appendChild(b);
+        }
+        return g;
+    }
+
+    function ghostRun(cycles) {
+        if (hintActive || fixed || !s6) return;
+        hintActive = true;
+        let n = 0;
+
+        function cycle() {
+            if (!hintActive) return;
+            if (n >= cycles || fixed || !splitEnabled) {
+                abortHint();
+                return;
+            }
+            n += 1;
+
+            // a group still in the big slot → the first empty small slot
+            const group = s6.querySelector(
+                '.battery-group[data-location="big"]:not(.is-ghost)'
+            );
+            const dstId = DROPPABLE.filter(function (id) {
+                return !slotOccupant[id];
+            })[0];
+            if (!group || !dstId) {
+                abortHint();
+                return;
+            }
+            const r = SLOTS[dstId];
+
+            if (hintGhost) hintGhost.remove();
+            hintGhost = buildGhost(group.dataset.color, group.children.length);
+            hintGhost.style.left = group.style.left;
+            hintGhost.style.top = group.style.top;
+            setTransform(hintGhost, PLACED_SCALE);
+            hintGhost.style.opacity = "0";
+            s6.appendChild(hintGhost);
+            void hintGhost.offsetWidth; // settle the start position
+
+            // setTimeout, not rAF — reliable under headless virtual-time
+            hintGhost.style.transition =
+                "left " + HINT_MOVE + "ms ease, top " + HINT_MOVE + "ms ease, transform " +
+                HINT_MOVE + "ms ease, opacity 250ms ease";
+            global.setTimeout(function () {
+                if (!hintActive || !hintGhost) return;
+                hintGhost.style.opacity = "0.3";
+                hintGhost.style.left = pctX(r.x + r.w / 2);
+                hintGhost.style.top = pctY(r.y + r.h / 2);
+                setTransform(hintGhost, fitScale(hintGhost.children.length));
+            }, 30);
+
+            global.setTimeout(function () {
+                if (!hintActive || !hintGhost) return;
+                hintGhost.style.transition = "opacity " + HINT_FADE + "ms ease";
+                hintGhost.style.opacity = "0";
+            }, HINT_MOVE + HINT_HOLD);
+
+            global.setTimeout(cycle, HINT_CYCLE);
+        }
+        cycle();
+    }
+
+    /* ---- inactivity nudge (chooser levels only) ---- */
+    const IDLE_MS = 12000;
+    let idleTimer = null;
+
+    function cancelIdle() {
+        if (idleTimer) {
+            global.clearTimeout(idleTimer);
+            idleTimer = null;
+        }
+    }
+
+    function scheduleIdle() {
+        cancelIdle();
+        if (window.currentLevel !== 2 || fixed || !splitEnabled) return;
+        idleTimer = global.setTimeout(function () {
+            ghostRun(Infinity);
+        }, IDLE_MS);
+    }
+
+    // Levels only — the tutorial's 3× demo must survive stray mouse moves
+    // (it's aborted by an actual drag start in attachDrag).
+    function onActivity() {
+        if (window.currentLevel !== 2) return;
+        if (hintActive) abortHint();
+        scheduleIdle();
+    }
+
     function startSplit() {
         stage = byId("stage");
         s6 = byId("s6-content");
         if (!s6) return;
         fixed = false;
         splitEnabled = false;
+        abortHint();
+        cancelIdle();
+
+        // Inactivity tracking for the levels' looping ghost nudge (wired once).
+        const screen6 = byId("screen-6");
+        if (screen6 && !screen6.dataset.idleWired) {
+            screen6.dataset.idleWired = "1";
+            ["pointerdown", "pointermove"].forEach(function (ev) {
+                screen6.addEventListener(ev, onActivity, { passive: true });
+            });
+        }
 
         DROPPABLE.forEach(function (id) {
             slotOccupant[id] = null;
@@ -296,6 +427,13 @@
             null,
             function () {
                 splitEnabled = true; // dragging available
+                if (window.currentLevel === 2) {
+                    // Levels: no upfront demo — nudge after 12s of inactivity.
+                    scheduleIdle();
+                } else {
+                    // Tutorial: demonstrate the big→small drag 3×.
+                    ghostRun(3);
+                }
             }
         );
     }
@@ -384,6 +522,7 @@
         let dragging = false;
 
         group.addEventListener("pointerdown", function (e) {
+            if (hintActive) abortHint(); // kid takes over from the demo
             if (!splitEnabled || fixed) return;
             e.preventDefault();
             dragging = true;
@@ -419,6 +558,8 @@
     function onFixed() {
         fixed = true;
         splitEnabled = false;
+        abortHint();
+        cancelIdle();
 
         // The Screen 7 celebrating bot: in chooser levels it's the chosen
         // bot's charged art; in the tutorial it's the white/purple bot.
