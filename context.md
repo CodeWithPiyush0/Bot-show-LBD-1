@@ -378,6 +378,13 @@ tap a bot to charge it.", Part 2 "Oh no! These bots are overcharged — tap one 
 - Drag = Pointer Events (mouse + touch). While dragging, full size; drop on a slot →
   snaps to slot center at `PLACED_SCALE`; drop elsewhere → animates home. Slot under
   pointer highlights (`.slot.is-hover`).
+- **Big-slot rejection (Part 1):** the big slot is NOT a drop target — dropping a group
+  on it calls `rejectBig()` (batteries.js): the group bounces home (the group's normal
+  left/top transition) and the big slot **flashes red + shakes "no"** — the
+  `.slot-glow--big` overlay swaps to `Bigger_Slot_Red.svg`, gets `.is-rejected`
+  (opacity 1, red drop-shadows, `slotReject` translateX shake, screen2.css), then
+  restores to `Bigger_Slot.svg` after 550ms. Cleared by `clearReject()` on charge
+  start + setup. (Part 2 has no such case — there the big slot IS the groups' home.)
 - Dragging is **gated** by `enabled` (Battery API). It's OFF during the Screen 2
   intro and ghost hint, then turned ON.
 

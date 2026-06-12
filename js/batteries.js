@@ -229,10 +229,22 @@
         });
     }
 
+    function clearReject() {
+        if (rejectTimer) {
+            global.clearTimeout(rejectTimer);
+            rejectTimer = null;
+        }
+        if (bigGlow) {
+            bigGlow.classList.remove("is-rejected");
+            bigGlow.src = "assets/images/Bigger_Slot.svg";
+        }
+    }
+
     function startCharge() {
         charged = true;
         abortHint();
         cancelIdle();
+        clearReject();
         const groups = [slotOccupant["small-left"], slotOccupant["small-right"]];
 
         if (bigGlow) bigGlow.classList.remove("is-charged");
@@ -485,6 +497,31 @@
         });
     }
 
+    /* ---- big-slot rejection: it's not a drop target in Part 1 ---- */
+    function overBigSlot(clientX, clientY) {
+        const el = slotEls["big"];
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
+    }
+
+    // The big slot flashes red and shakes "no" while the group bounces home.
+    let rejectTimer = null;
+    function rejectBig(group) {
+        sendHome(group); // animated bounce back (the group's left/top transition)
+        if (!bigGlow || charged) return;
+        bigGlow.src = "assets/images/Bigger_Slot_Red.svg";
+        bigGlow.classList.remove("is-rejected");
+        void bigGlow.offsetWidth; // restart the shake on rapid re-drops
+        bigGlow.classList.add("is-rejected");
+        if (rejectTimer) global.clearTimeout(rejectTimer);
+        rejectTimer = global.setTimeout(function () {
+            bigGlow.classList.remove("is-rejected");
+            bigGlow.src = "assets/images/Bigger_Slot.svg"; // back to the green charge art
+            rejectTimer = null;
+        }, 550);
+    }
+
     function attachDrag(group) {
         let startX = 0;
         let startY = 0;
@@ -529,6 +566,8 @@
             if (id) {
                 placeInSlot(group, id);
                 if (bothBottomFilled() && !charged) startCharge();
+            } else if (overBigSlot(e.clientX, e.clientY)) {
+                rejectBig(group); // wrong slot: shake "no" + bounce home
             } else {
                 sendHome(group);
             }
@@ -564,6 +603,7 @@
         enabled = false;
         abortHint();
         cancelIdle();
+        clearReject();
 
         // Reset elements class lists
         contentEl.classList.remove("is-charged-final");

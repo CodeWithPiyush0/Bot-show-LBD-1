@@ -113,6 +113,25 @@
     }
 }
 
+/* Rejection: batteries dropped on the BIG slot (not a drop target in Part 1).
+   The slot flashes red and shakes "no" while the group bounces back home.
+   (JS swaps the art to Bigger_Slot_Red.svg for the duration.) */
+.slot-glow--big.is-rejected {
+    opacity: 1;
+    filter: drop-shadow(0 0 0.9cqw rgba(255, 60, 40, 0.95))
+        drop-shadow(0 0 2cqw rgba(255, 60, 40, 0.6));
+    animation: slotReject 0.5s ease-in-out;
+}
+
+@keyframes slotReject {
+    0%, 100% { transform: translateX(0); }
+    15% { transform: translateX(-1cqw); }
+    30% { transform: translateX(0.9cqw); }
+    45% { transform: translateX(-0.7cqw); }
+    60% { transform: translateX(0.5cqw); }
+    75% { transform: translateX(-0.3cqw); }
+}
+
 /* ---------- Current-flow animation ----------
    SVG overlay in the 1920 x 1080 design space. The paths trace the
    exact orange connector centerlines, so the current runs THROUGH
