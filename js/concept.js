@@ -63,11 +63,15 @@
     }
 
     function makeGroup(g) {
+        // Small slots shrink wide groups further so 7+ batteries never overflow.
+        const scale = (g.where === "small" && window.batteryFitScale)
+            ? window.batteryFitScale(g.count)
+            : SCALE;
         const el = document.createElement("div");
         el.className = "battery-group battery-group--" + g.color;
         el.style.left = pctX(g.cx);
         el.style.top = pctY(g.cy);
-        el.style.transform = "translate(-50%, -50%) scale(" + SCALE + ")";
+        el.style.transform = "translate(-50%, -50%) scale(" + scale + ")";
         el.style.pointerEvents = "none";
         const bats = [];
         for (let i = 0; i < g.count; i++) {

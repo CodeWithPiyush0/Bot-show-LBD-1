@@ -36,6 +36,13 @@
     const pctY = (px) => (px / DESIGN_H) * 100 + "%";
     const byId = (id) => document.getElementById(id);
 
+    // Scale a group down when it's too wide for a small slot (7+ batteries).
+    // Shared impl lives in batteries.js (window.batteryFitScale).
+    function fitScale(count) {
+        if (window.batteryFitScale) return window.batteryFitScale(count);
+        return Math.min(PLACED_SCALE, (407 * 0.96) / (count * 62 + (count - 1) * 12));
+    }
+
     let stage = null;
     let s6 = null;
     let centerTapEnabled = false;
@@ -360,7 +367,7 @@
         const r = SLOTS[id];
         group.style.left = pctX(r.x + r.w / 2);
         group.style.top = pctY(r.y + r.h / 2);
-        setTransform(group, PLACED_SCALE);
+        setTransform(group, fitScale(group.children.length));
         updateBigSlotState();
 
         if (slotOccupant["small-left"] && slotOccupant["small-right"] && !fixed) {
@@ -413,14 +420,14 @@
         fixed = true;
         splitEnabled = false;
 
-        // Apply blue color filter to the fixed celebrating bot in Screen 7 for Level 2
+        // The Screen 7 celebrating bot: in chooser levels it's the chosen
+        // bot's charged art; in the tutorial it's the white/purple bot.
         const s7Bot = document.querySelector("#screen-7 .charged-bot img");
         if (s7Bot) {
-            if (window.currentLevel === 2) {
-                s7Bot.classList.add("hue-blue");
-            } else {
-                s7Bot.classList.remove("hue-blue");
-            }
+            s7Bot.classList.remove("hue-blue");
+            s7Bot.src = (window.currentLevel === 2 && window.currentScheme)
+                ? "assets/images/" + window.currentScheme + "_bot_charged.webp"
+                : "assets/images/White_purple_bot_charged.webp";
         }
 
         const q = byId("question-6");
@@ -430,11 +437,15 @@
         openBanner(q, "This bot is fixed.", null, null);
         global.setTimeout(function () {
             if (window.currentLevel === 2) {
-                // Chooser mode: mark this bot done and return to the chooser
-                // (no concept; completion is handled when all bots are fixed).
-                if (window.returnToChooser) window.returnToChooser();
+                // Chooser level: zoom out to the bot dancing full-screen
+                // (Screen 7), let it celebrate, then end the level.
+                zoomOutTo("screen-6", "screen-7", function () {
+                    global.setTimeout(function () {
+                        if (window.returnToChooser) window.returnToChooser();
+                    }, 3000); // dance ~3s
+                });
             } else {
-                // L1 (tutorial): teach the concept (Screen 8), which then
+                // Tutorial: teach the concept (Screen 8), which then
                 // zooms out to reveal the dance.
                 global.GameNav.show("screen-8");
                 playConcept2();
@@ -479,6 +490,7 @@
         C_LAYOUT.forEach(function (g) {
             const el = makeGroup({ color: g.color, count: g.count, cx: g.cx, cy: g.cy });
             el.dataset.location = "";
+            if (g.where === "small") setTransform(el, fitScale(g.count));
             content.appendChild(el);
             const arr = g.where === "big" ? c2Big : c2Small;
             for (let i = 0; i < el.children.length; i++) arr.push(el.children[i]);

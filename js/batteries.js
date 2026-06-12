@@ -63,6 +63,15 @@
         return count * BAT_W + (count - 1) * GROUP_GAP;
     }
 
+    // Scale for a group sitting in a SMALL slot: the uniform PLACED_SCALE,
+    // shrunk further when the group is too wide to fit (e.g. 7 batteries —
+    // 506px × 0.82 = 415px > the 407px slot, which used to overflow).
+    const SMALL_SLOT_W = 407;
+    function fitScale(count) {
+        return Math.min(PLACED_SCALE, (SMALL_SLOT_W * 0.96) / groupWidth(count));
+    }
+    window.batteryFitScale = fitScale; // shared with part2.js / concept.js
+
     function setTransform(group, scale) {
         group.dataset.scale = scale;
         group.style.transform = "translate(-50%, -50%) scale(" + scale + ")";
@@ -140,7 +149,7 @@
         const r = SLOTS[id];
         group.style.left = pctX(r.x + r.w / 2);
         group.style.top = pctY(r.y + r.h / 2);
-        setTransform(group, PLACED_SCALE);
+        setTransform(group, fitScale(group.children.length));
     }
 
     /* ---- the charge sequence ---- */
@@ -172,7 +181,7 @@
             }
             ghost.style.left = pctX(slotData.x + slotData.w / 2);
             ghost.style.top = pctY(slotData.y + slotData.h / 2);
-            setTransform(ghost, PLACED_SCALE);
+            setTransform(ghost, fitScale(ghost.children.length));
             contentEl.appendChild(ghost);
         }
 
@@ -291,11 +300,19 @@
         // Shortly after the message, continue.
         global.setTimeout(function () {
             if (window.currentLevel === 2) {
-                // Chooser mode: this bot is charged — go back to the chooser,
-                // marked done (no concept, no separate dance screen).
-                if (window.returnToChooser) window.returnToChooser();
+                // Chooser level: zoom out to the bot dancing full-screen
+                // (Screen 3, with THIS bot's charged art), let it celebrate,
+                // then end the level (curtain → next).
+                const s3Bot = document.querySelector("#screen-3 .charged-bot img");
+                if (s3Bot && window.currentScheme) {
+                    s3Bot.src = "assets/images/" + window.currentScheme + "_bot_charged.webp";
+                }
+                if (window.GameFx) window.GameFx.exitBot();
+                global.setTimeout(function () {
+                    if (window.returnToChooser) window.returnToChooser();
+                }, 4300); // ~1.3s zoom-out + ~3s dance
             } else {
-                // L1 (tutorial): stay inside the bot and teach the concept
+                // Tutorial: stay inside the bot and teach the concept
                 // (Screen 4); concept.js then zooms out to reveal the dance.
                 if (window.GameNav) window.GameNav.show("screen-4");
                 if (window.ConceptScreen) window.ConceptScreen.play();
@@ -381,7 +398,7 @@
                 hintGhost.style.opacity = "0.3";
                 hintGhost.style.left = pctX(toX);
                 hintGhost.style.top = pctY(toY);
-                setTransform(hintGhost, PLACED_SCALE);
+                setTransform(hintGhost, fitScale(GROUPS[0].count));
             });
 
             // fade out at the slot

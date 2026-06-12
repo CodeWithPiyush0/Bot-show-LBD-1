@@ -170,6 +170,13 @@ then parts them to reveal the next — matching the auditorium-stage theme. (The
   glow** is layered on in the chooser (`.carousel-bot[data-state="overcharged"]::after`,
   screen-blend over the chest, + a red rim glow on the img) so it always reads "overcharged
   red". *(For a perfect baked red glow, swap in Figma-made art — keyed by `data-scheme`.)*
+  **Grounding:** the 4 `_bot_overcharged.webp` (and `blue_bot_low/charged`,
+  `green_bot_charged`) had large transparent BOTTOM padding baked in (green was 16.5% of
+  its height!), which made them float above the floor in the bottom-aligned carousel —
+  they were cropped (sharp `extract`) to ~1.5% bottom pad so the feet sit on the shadow.
+  If new bot art is added, **trim its bottom transparent padding** the same way.
+  KNOWN ARTIFACT: the recoloured `_bot_charged.webp` chest battery is hue-shifted too,
+  so it isn't green on red/green/teal/yellow — replace with Figma art to fix properly.
 - `data-scheme` (colour) + `data-state` (low|overcharged) on each `.carousel-bot`. CSS shows
   **only one state per part**: `.bot-carousel:not(.phase-split)` hides all `overcharged`,
   `.bot-carousel.phase-split` hides all `low` (so Part 1's charged-and-dancing low bots don't
@@ -347,11 +354,14 @@ stage (Tutorial + Levels 1-4) per the design table:
 `window.gameStage` indexes `STAGES`; `getCounts(1|2)` returns `{blue,yellow}`. Wired into
 `batteries.js setupBatteries` (Part 1), `part2.js startSplit` (Part 2) and `concept.js`.
 `setupLevel(2)` starts a part's chooser at `gameStage 1`; the chooser then advances
-`gameStage` 1→4 as each level is completed (each level = ONE bot). A small slot fits up to
-**7** batteries at `PLACED_SCALE 0.82` (8 overflows — that's why Level 2's split is **(7,3)**
-not (2,8)). The chooser banner is set per part by `enterChooser` (`Screen1Intro.setText`, a
-cancellable typer): Part 1 "Scroll and tap a bot to charge it.", Part 2 "Oh no! These bots
-are overcharged — tap one to fix it."
+`gameStage` 1→4 as each level is completed (each level = ONE bot). **Fit-to-slot scale:**
+groups placed in a SMALL slot use `window.batteryFitScale(count)` (defined in
+`batteries.js`, used by `part2.js` + `concept.js`) = `min(PLACED_SCALE, 407·0.96 /
+groupWidth(count))` — so a 7-battery group (506px native, 415px at 0.82 > the 407px slot,
+which used to overflow) shrinks to ~0.77 and always fits. Big-slot placement stays at
+`PLACED_SCALE` (the 501px big slot fits the widest group). The chooser banner is set per
+part by `enterChooser` (`Screen1Intro.setText`, a cancellable typer): Part 1 "Scroll and
+tap a bot to charge it.", Part 2 "Oh no! These bots are overcharged — tap one to fix it."
 
 ### Batteries & drag-drop (`batteries.js`)
 - Two **groups** (single draggable units, NOT individual batteries); counts come from
@@ -422,12 +432,14 @@ blue group glides tray→small-left slot, `.is-ghost`) → dragging enabled.
 
 > **Chooser levels (`currentLevel === 2`) = play solo.** Only the **tutorials**
 > (`currentLevel === 1`, the guided flow) show the ghost hint + the concept screens.
-> In the chooser levels both are skipped: `playHint()` just enables dragging, and the
-> finale goes **straight back to the chooser** via `returnToChooser()` — Part 1
-> (`batteries.js`) charge → `returnToChooser()` (no Screen 4 concept, no Screen 3 dance;
-> the carousel bot dances in place), and Part 2 (`part2.js onFixed`) split →
-> `returnToChooser()` (no Screen 8/7). The tutorials still show the ghost hint and the
-> concept, then hand off to that part's levels.
+> In the chooser levels the ghost hint and concepts are skipped, but the **full-screen
+> dance always plays**: Part 1 (`batteries.js`) charge finale → sets the Screen 3
+> `.charged-bot img` to `<scheme>_bot_charged.webp` → `GameFx.exitBot()` (zoom-out
+> reveal) → dances ~3s → `returnToChooser()`; Part 2 (`part2.js onFixed`) split → sets
+> the Screen 7 bot the same way → `zoomOutTo("screen-6","screen-7")` → ~3s →
+> `returnToChooser()`. So every fixed bot celebrates full-screen before the
+> level-complete curtain. (The tutorial dance bots: Screen 3 via `setupLevel`,
+> Screen 7 = `White_purple_bot_charged.webp`, restored in `onFixed`'s tutorial branch.)
 
 ---
 
