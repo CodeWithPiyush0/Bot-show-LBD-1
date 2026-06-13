@@ -276,21 +276,22 @@ body.qa-intercept-on #stage *::after {
 }
 .turn-video {
     position: absolute;
-    /* Scaled to ~72% so Bite reads at the same height as the other bots
-       (full-stage made him oversized). Bottom-left anchored so he still
-       walks in from the very left edge and the rope sits centre-right. */
+    /* Scaled to ~72% so Bite reads at the same height as the other bots.
+       Bottom-LEFT anchored — Bite flies IN FROM THE LEFT edge and lands
+       left-of-centre (centring made him look like he flew from mid-screen);
+       the transparent right side shows the room bg / where the bots slide in. */
     left: 0;
     bottom: 0;
     width: 72%;
     height: auto;
     z-index: 1;
 }
-/* Cartoon speech bubble above Bite's head while it talks (Bite stands around
-   28% of the stage width, head top ~20% down, when talking). */
+/* Cartoon speech bubble above Bite's head while it talks (Bite lands at
+   ~36% of the stage width, head top ~38% down). */
 .turn-bubble {
     position: absolute;
-    left: 30%;
-    top: 7%;
+    left: 37%;
+    top: 22%;
     transform: translateX(-50%) scale(0.6);
     background: #fff;
     color: #2a1a47;
@@ -334,21 +335,42 @@ body.qa-intercept-on #stage *::after {
     100% { opacity: 0; transform: translateX(-50%) scale(0.6); }
 }
 
-/* Rope-pull transition: as Bite pulls the rope and walks out the LEFT, the
-   chooser (screen-1, with all the bots) is dragged IN from the RIGHT, sliding
-   OVER the still-playing clip — so the rope appears to feed into the incoming
-   bots. z-index keeps it above #screen-turn (which is later in the DOM). The
-   3.9s drag is synced to the pull (starts ~video 5.8s, lands ~9.7s). */
-.screen.turn-slide-prep {
-    opacity: 1 !important;
-    transform: translateX(100%);
-    z-index: 42;
+/* Bots entrance: after Bite taps his wrist (~clip 6.5s), the next screen's
+   bots slide IN from the right along the floor (no rope — this clip has none).
+   They settle centred, then a gentle opacity crossfade (default GameNav.show)
+   hands off to the live chooser, which shows the same bots. */
+.turn-pull {
+    position: absolute;
+    inset: 0;
+    z-index: 2; /* above the clip */
+    transform: translateX(125%); /* parked off the right edge */
+    pointer-events: none;
 }
-.screen.turn-slide-in {
-    opacity: 1 !important;
-    transform: translateX(0);
-    transition: transform 3.9s cubic-bezier(0.33, 0.04, 0.36, 1); /* steady rope drag */
-    z-index: 42;
+.screen--turn.is-pulling .turn-pull {
+    transform: translateX(0); /* slid into centre */
+    /* slow + gentle: the bots ease in gradually as Bite walks out, so they
+       never rush in or overlap him */
+    transition: transform 3.4s cubic-bezier(0.25, 0.5, 0.3, 1);
+}
+.turn-bots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8%; /* feet on the floor (matches the carousel bots) */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 4cqw;
+}
+.turn-bots img {
+    height: 40cqh;
+    width: auto;
+    filter: drop-shadow(0 1cqh 0.7cqw rgba(0, 0, 0, 0.35)); /* floor shadow */
+}
+/* outer bots a touch smaller for a little depth */
+.turn-bots img:first-child,
+.turn-bots img:last-child {
+    height: 34cqh;
 }
 
 /* ---------- Level Transition Screen ---------- */

@@ -107,89 +107,135 @@
 
     // Tutorial → levels handoff: a TEXTLESS curtain closes over the dancing
     // bot, parts on the bare stage, then the "your turn" CLIP plays IN FULL —
-    // Bite walks in, says the line (speech bubble), then pulls a rope and walks
-    // out the LEFT. As he pulls, the chooser (with all the bots) is dragged IN
-    // from the RIGHT over the still-playing clip, so the rope feeds straight
-    // into the incoming bots and nothing cuts.
+    // Bite FLIES in, does a superhero LANDING, says the line (speech bubble),
+    // then TAPS HIS WRIST, which summons the NEXT SCREEN'S BOTS to slide IN from
+    // the right along the floor — on the SAME stage (not a screen-panel swap,
+    // which felt abrupt). Once they settle, a gentle opacity crossfade hands off
+    // to the live chooser.
     //
-    // Timeline (ms from this call):
-    //   0     curtain closes;  ~950 swap to screen-turn (clip paused at f0)
-    //   ~2200 curtains parted → play the FULL clip (Bite walks in)
-    //   clip ~1.2s  bubble pops;  ~4.8s  bubble hides
-    //   clip ~5.8s  Bite pulls → chooser slides in over the clip (3.9s drag)
-    //   clip ~8.7s  Bite has walked off-left; ~9.9s chooser fully in → settle
+    // The choreography is driven by the CLIP'S OWN playback time (timeupdate),
+    // NOT wall-clock timers — playback has start latency, and timing it by
+    // wall-clock fired cues out of sync. We only hand off when the clip ENDS.
     const TURN_VIDEO_AT = 2200; // when the clip starts (after curtains part)
+    const TURN_PULL_AT = 7.6;   // clip time (s) Bite turns to walk OUT → start the bots
+                                // sliding in (after the wrist tap, as he leaves, so they
+                                // never overlap him)
+    const TURN_SLIDE_MS = 3400; // bots slide-in duration (matches the CSS transition)
+    // The bots that get pulled in match the part: charge = low bots, split =
+    // overcharged bots (same sprites the chooser then shows).
+    const TURN_BOTS = {
+        1: ["orange_bot", "blue_bot_low", "purple_bot_low", "pink_bot_low"],
+        2: ["red_bot_overcharged", "green_bot_overcharged", "teal_bot_overcharged", "yellow_bot_overcharged"],
+    };
+
+    function fillTurnBots(part) {
+        const wrap = document.getElementById("turn-bots");
+        if (!wrap) return;
+        wrap.innerHTML = "";
+        (TURN_BOTS[part] || TURN_BOTS[1]).forEach(function (name) {
+            const img = document.createElement("img");
+            img.src = "assets/images/" + name + ".webp";
+            img.alt = "";
+            img.draggable = false;
+            wrap.appendChild(img);
+        });
+    }
+
     function showYourTurn(part) {
         const video = document.getElementById("turn-video");
         const bubble = document.getElementById("turn-bubble");
+        const screenTurn = document.getElementById("screen-turn");
         if (bubble) bubble.classList.remove("is-shown", "is-hidden");
+        if (screenTurn) screenTurn.classList.remove("is-pulling");
+        fillTurnBots(part); // parked off-right, ready to be dragged in
         if (video) { try { video.pause(); video.currentTime = 0; } catch (e) {} }
 
         playCurtain("", "", function () {
             window.GameNav.show("screen-turn");
         }, 1500);
 
-        // Curtains parted → play the full clip (Bite walks in).
+        // Curtains parted → play the full clip and wire the time-driven cues.
         window.setTimeout(function () {
             if (video) {
                 try { video.currentTime = 0; } catch (e) {}
                 const p = video.play();
                 if (p && p.catch) p.catch(function () {});
             }
+            wireTurnTimeline(part, video, bubble);
         }, TURN_VIDEO_AT);
-
-        // Speech bubble while Bite talks.
-        window.setTimeout(function () {
-            if (bubble) bubble.classList.add("is-shown");
-        }, TURN_VIDEO_AT + 1200);
-        window.setTimeout(function () {
-            if (bubble) { bubble.classList.remove("is-shown"); bubble.classList.add("is-hidden"); }
-        }, TURN_VIDEO_AT + 4800);
-
-        // Bite starts pulling the rope → drag the bots in from the right.
-        window.setTimeout(function () {
-            startChooserSlide(part);
-        }, TURN_VIDEO_AT + 5800);
-
-        // Clip nearly done (Bite gone, chooser fully in) → settle.
-        window.setTimeout(function () {
-            finalizeTurn(part);
-        }, TURN_VIDEO_AT + 9900);
     }
     window.showYourTurn = showYourTurn;
 
-    // Build the chooser off-screen-right and slide it IN over the playing clip,
-    // as if the rope is dragging the bots into view. The clip keeps playing
-    // underneath (Bite finishes pulling + walking out).
-    function startChooserSlide(part) {
-        const screen1 = document.getElementById("screen-1");
+    // Fire each cue off the clip's real currentTime, with wall-clock fallbacks
+    // in case playback never advances (e.g. autoplay blocked).
+    function wireTurnTimeline(part, video, bubble) {
+        let bubbleShown = false, bubbleHidden = false, pulling = false, done = false;
+
+        function doPull() {
+            if (pulling) return;
+            pulling = true;
+            startBotsPull(part);
+            // Hand off only AFTER the bots have finished sliding in (not on the
+            // clip's `ended` — that fired while the slide was still running and
+            // looked abrupt). Bite has already walked out by now.
+            window.setTimeout(doFinish, TURN_SLIDE_MS + 350);
+        }
+        function doFinish() {
+            if (done) return;
+            done = true;
+            if (video) video.removeEventListener("timeupdate", onTime);
+            finalizeTurn(part);
+        }
+        function onTime() {
+            const t = (video && video.currentTime) || 0;
+            // bubble after the landing + stand-up; hide before the wrist tap
+            if (!bubbleShown && t >= 3.0) { bubbleShown = true; if (bubble) bubble.classList.add("is-shown"); }
+            if (!bubbleHidden && t >= 6.0) {
+                bubbleHidden = true;
+                if (bubble) { bubble.classList.remove("is-shown"); bubble.classList.add("is-hidden"); }
+            }
+            if (!pulling && t >= TURN_PULL_AT) doPull();
+        }
+
+        if (video) {
+            video.addEventListener("timeupdate", onTime);
+            // If the clip ends before the pull somehow started, start it then.
+            video.addEventListener("ended", function () { if (!pulling) doPull(); });
+        }
+        // Fallbacks (clip-relative, from NOW): start the bots and hand off even
+        // if the clip never reports time, so the game can't get stuck here.
+        window.setTimeout(function () { if (!pulling) doPull(); }, 8200);
+        window.setTimeout(doFinish, 13500);
+    }
+
+    // Bite walks out → slide the next screen's bots in from the right along the
+    // floor (slowly, so they don't overlap him), and meanwhile build the chooser
+    // ready behind for the crossfade.
+    function startBotsPull(part) {
+        const screenTurn = document.getElementById("screen-turn");
+        if (screenTurn) screenTurn.classList.add("is-pulling"); // slide the bot row in
         window.gamePart = part;
         setupLevel(2);
-        if (window.BotChooser) window.BotChooser.reset();
-        if (screen1) screen1.classList.add("turn-slide-prep"); // parked off-right, on top
-        if (window.BotChooser) window.BotChooser.enterChooser(false); // populate + centre
-
-        window.setTimeout(function () { // next frame: animate the drag
-            if (screen1) {
-                screen1.classList.remove("turn-slide-prep");
-                screen1.classList.add("turn-slide-in");
-            }
-        }, 40);
+        if (window.BotChooser) {
+            window.BotChooser.reset();
+            window.BotChooser.enterChooser(false); // populate + centre (still hidden)
+        }
     }
 
-    // Settle screen-1 as the live screen once it has fully slid in. We do NOT
-    // call Screen1Intro.play() — that restarts the banner unroll / re-centre,
-    // which reads as an abrupt reset. The carousel is already built/centred and
-    // its taps are wired (init); a final enterChooser re-centres smoothly.
+    // Bots have settled and Bite is gone → crossfade to the live chooser. The
+    // default GameNav.show opacity transition blends the dragged-in bots into
+    // the carousel (same sprites), so there's no abrupt swap. We do NOT call
+    // Screen1Intro.play() (its banner-unroll/re-centre reads as a reset); the
+    // carousel is already built and its taps are wired (init).
     function finalizeTurn(part) {
         const video = document.getElementById("turn-video");
-        const screen1 = document.getElementById("screen-1");
+        const screenTurn = document.getElementById("screen-turn");
         if (video) { try { video.pause(); } catch (e) {} }
-        window.GameNav.show("screen-1"); // real active + letterbox
-        if (screen1) screen1.classList.remove("turn-slide-in", "turn-slide-prep");
+        window.GameNav.show("screen-1"); // crossfade in + letterbox
         if (window.BotChooser) window.BotChooser.enterChooser(false);
+        if (screenTurn) screenTurn.classList.remove("is-pulling"); // reset for next time
     }
-    window.startChooserSlide = startChooserSlide;
+    window.startBotsPull = startBotsPull;
     window.finalizeTurn = finalizeTurn;
 
 

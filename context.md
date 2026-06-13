@@ -53,9 +53,11 @@ LBD-1/
     ├── images/             # see §9
     └── videos/
         ├── bite_talking.mp4      # talking mascot (720×480, 10s) — live avatar in banners
-        ├── bite_explaining.mp4   # SOURCE: Bite walks in, talks, pulls a rope (1920×1080,
-        │                         #   10s, 24fps, GREEN SCREEN ~#0ED531). Keep as the master.
-        └── bite_explaining.webm  # USED: transparent VP9 (green removed) — the "your turn" clip
+        ├── bite_explaining.mp4   # SOURCE (old): Bite walks in + pulls a rope (green ~#0ED531)
+        ├── bite_explaining.webm  # old "your turn" clip — kept but NO LONGER USED
+        ├── bite_talking2.mp4     # SOURCE: Bite flies in, superhero landing, talks, wrist tap
+        │                         #   (752×480, 10s, 24fps, GREEN SCREEN #00AB1D). The master.
+        └── bite_talking2.webm    # USED: transparent VP9 (green removed) — the "your turn" clip
 ```
 
 > **Transparent-video recipe** (green screen → web alpha). ffmpeg isn't preinstalled;
@@ -174,31 +176,43 @@ then parts them to reveal the next — matching the auditorium-stage theme. (The
 > optional 4th arg `openAt` re-opens early for the no-message case), parts on
 > `#screen-turn` (`.screen--turn`, the room bg). Earlier text/letters/confetti versions
 > were all rejected as bland; the current version uses a **video of Bite (the mascot)**:
-> - `#turn-video` = **`assets/videos/bite_explaining.webm`** — a **transparent** VP9
->   clip (green removed) over the room bg. Bite walks in from the left, talks, then
->   **pulls a rope** on the ground. SIZED `width:72%`, **bottom-LEFT anchored** so Bite
->   reads at the same height as the other bots (full-stage `cover` made him oversized)
->   and still enters from the very left edge; rope ends up centre-right.
-> - A cartoon **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in
->   (`bubblePop`) at clip+1.2s and hides (`bubbleHide`) at clip+4.8s. Placed `left:30%
->   top:7%` (above Bite's head when he's centre-talking at ~28% stage-x).
-> - The clip plays **IN FULL** (not cut early): Bite talks, then pulls the rope and
->   **walks out the left edge** (~clip 9s). At clip+5.8s (`startChooserSlide`) the chooser
->   (`screen-1`, all the bots) is parked off-right (`.turn-slide-prep`) and slides IN from
->   the right **over the still-playing clip** (`.turn-slide-in`, z-index 42 so it stacks
->   above `#screen-turn` which is later in the DOM; forced `opacity:1`). 3.9s steady drag
->   synced to the pull, so the rope feeds straight into the incoming bots — no static
->   "cut" rope, no abrupt screen swap. `screen-turn` does NOT slide (the clip plays in
->   place and gets covered). At clip+9.9s (`finalizeTurn`) the chooser is fully in →
->   `GameNav.show("screen-1")` + `BotChooser.enterChooser(false)` settle it interactive
->   (NOT `Screen1Intro.play()`, which re-ran the banner unroll/re-centre and read as a
->   reset). Earlier mistakes that were fixed: cutting the clip at 6s (missed the pull +
->   walk-out), and sliding the whole `screen-turn` out (made the rope look cut at the
->   72% video edge with empty space).
-> - The clip starts at `TURN_VIDEO_AT` (~2200ms, after curtains part) so the walk-in is
->   seen; `video.currentTime=0` + `play()` each visit (no `loop`). NOTE: headless snaps
->   CSS transitions to their end state, so the slide looks instant in screenshots —
->   it animates over 3.9s in a real browser.
+> - `#turn-video` = **`assets/videos/bite_talking2.webm`** - a **transparent** VP9 clip.
+>   KEY: `chromakey=color=0x00AB1D:similarity=0.09:blend=0.04` (NO despill). similarity must
+>   be TIGHT (~0.09): Bite has vivid CYAN/BLUE accents close to the green in chroma space, so
+>   a looser key (0.15) partially keyed them and they came out **gray** - 0.09 removes the
+>   flat green cleanly while keeping the blue. Bite **flies in FROM THE LEFT, does a superhero
+>   LANDING**, talks, then **taps his wrist**. SIZED `width:72%`, **bottom-LEFT** (`left:0`) so
+>   he flies in from the left edge and lands at ~36% stage (centring made him look like he flew
+>   from mid-screen); transparent right side = room bg / where the bots slide in. Same height
+>   as the other bots. (The old `bite_explaining.webm` rope-pull clip is kept but unused.)
+> - A cartoon **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in (`bubblePop`)
+>   at clip ~3.0s (after the landing/stand-up) and hides (`bubbleHide`) ~6.0s, before the
+>   wrist tap. Placed `left:37% top:22%` (above Bite's head, who lands at ~36% stage-x).
+> - Cues are driven by the **clip's own `currentTime`** (`wireTurnTimeline`'s `timeupdate`),
+>   NOT wall-clock timers (those fired out of sync). Bite taps his wrist ~6.5s then **TURNS
+>   and walks OUT to the LEFT** (gone ~9.5s). The bots start at **`TURN_PULL_AT` (7.6s)** —
+>   i.e. as Bite is leaving, NOT at the wrist tap — and slide in SLOWLY (`TURN_SLIDE_MS`
+>   3400ms, CSS `.is-pulling` transition 3.4s) so they ease in gradually and never overlap
+>   him (he exits left, they enter from the right; he's gone before they reach centre).
+>   Handoff (`doFinish`) fires **`TURN_SLIDE_MS`+350 after the pull starts** — i.e. once the
+>   bots have SETTLED — NOT on the clip's `ended` (that fired mid-slide and looked abrupt).
+> - **BOTS ENTRANCE** (`startBotsPull`): the wrist tap summons the next screen's bots to
+>   slide IN from the right **along the floor, on the SAME stage** (no rope - this clip has
+>   none; and no screen-panel swap, which read as abrupt). `#turn-pull` (the rig) holds
+>   `#turn-bots` (flex row, populated per part by `fillTurnBots` - `TURN_BOTS[1]` low bots /
+>   `TURN_BOTS[2]` overcharged); bots stand **on the floor** (`bottom:8%`). The rig parks
+>   off-right (`translateX(125%)`) and slides to centre via `.screen--turn.is-pulling` (2.8s).
+>   Meanwhile the real chooser (`screen-1`) is built behind (`setupLevel(2)` + `enterChooser`).
+> - **HANDOFF** (`finalizeTurn`, on the clip's `ended` event): `GameNav.show("screen-1")` is a
+>   plain **opacity crossfade** (default `.screen` 0.35s) that blends the slid-in bots into
+>   the carousel (same sprites) - no panel swap - then `enterChooser` re-centres. NOT
+>   `Screen1Intro.play()` (its banner unroll re-read as a reset).
+> - WHY currentTime/ended, not timers: wall-clock cues fired during playback latency and
+>   landed out of sync. FALLBACKS in `wireTurnTimeline` use **clip-relative** delays (`7000` /
+>   `10600`, NOT `TURN_VIDEO_AT + ...`) so the game can't get stuck if playback never advances.
+> - The clip starts at `TURN_VIDEO_AT` (~2200ms, after curtains part); `video.currentTime=0` +
+>   `play()` each visit (no `loop`). NOTE: headless snaps CSS transitions to end-state AND
+>   `<video>` timing is unreliable, so screenshots show settled states, not the live motion.
 > NOTE: under headless virtual-time the `<video>` plays but specific-timepoint
 > screenshots desync (a stray frame may show the start screen) — trust the end states.
 > Wired in BOTH tutorials: Part 1 `concept.js revealDancingBot` → `showYourTurn(1)`;
