@@ -227,22 +227,22 @@ body.qa-intercept-on #stage *::after {
     }
 }
 
-/* ---------- Pre-LBD play button (the play_btn.webp image) ---------- */
+/* ---------- Pre-LBD play button (the play_btn2.webp image) ---------- */
 .play-btn--icon {
     position: absolute;
     left: 50%;
     bottom: 6.5%;
     transform: translateX(-50%);
-    width: 15cqw;
+    width: 17cqw;
     height: auto;
     padding: 0;
     border: 0;
     background: none;
     cursor: pointer;
-    animation: playBob 1.25s ease-in-out infinite;
-    transition: filter 0.15s ease;
-    filter: drop-shadow(0 0.8cqw 1.1cqw rgba(0, 0, 0, 0.35));
     z-index: 2;
+    animation: playBob 1.3s ease-in-out infinite;
+    transition: filter 0.15s ease;
+    filter: drop-shadow(0 0.9cqw 1.1cqw rgba(0, 0, 0, 0.4));
 }
 .play-btn--icon img {
     display: block;
@@ -252,14 +252,14 @@ body.qa-intercept-on #stage *::after {
     -webkit-user-drag: none;
 }
 .play-btn--icon:hover {
-    filter: brightness(1.05) drop-shadow(0 0.8cqw 1.1cqw rgba(0, 0, 0, 0.35));
+    filter: brightness(1.06) drop-shadow(0 0.9cqw 1.1cqw rgba(0, 0, 0, 0.4));
 }
 .play-btn--icon:active {
     transform: translateX(-50%) scale(0.95);
 }
 @keyframes playBob {
     0%, 100% { transform: translateX(-50%) scale(1) translateY(0); }
-    50% { transform: translateX(-50%) scale(1.05) translateY(-0.6cqw); }
+    50% { transform: translateX(-50%) scale(1.04) translateY(-0.7cqw); }
 }
 
 /* ---------- "Your turn" interstitial ----------

@@ -127,11 +127,12 @@ empty breakpoint stubs for future per-device tweaks (none needed so far).
 
 The **first** screen on load (`is-active`). Full-screen `Pre_LBD.webp` splash
 ("FIX-A-BOT" title + the two bots + battery) with a big **play button** on the floor:
-`.play-btn--icon` (`#play-btn`) is now the **`play_btn.webp` image** (a glossy orange 3D
-disc with a white ▶ triangle, converted from `assets/images/play_btn.svg` via sharp →
-400×363 webp) — a transparent `<button>` wrapping `<img>`, with a `playBob` bob loop +
-drop-shadow (the old CSS-drawn gradient disc/triangle + glow-ring were replaced).
-Clicking it (`main.js`) → `startGame()` → Part 1 charging tutorial. Because of this,
+`.play-btn--icon` (`#play-btn`) is the **`play_btn2.webp` image** (a glossy GOLD rounded
+play button with a white ▶ triangle, converted from `assets/images/play_btn2.png` via
+sharp → 520×352 webp) — a transparent `<button>` wrapping `<img>`, sized `width:17cqw`,
+with a `playBob` bounce + drop-shadow. (Replaced the earlier CSS green circle / the older
+`play_btn.webp` orange disc — both unused now.) Clicking it (`main.js`) → `startGame()` →
+Part 1 charging tutorial. Because of this,
 Screen 1's intro is **on-demand**: its CSS animations are scoped to `.screen--1.is-intro`
 and the typewriter runs from `Screen1Intro.play()` (NOT on page load).
 
