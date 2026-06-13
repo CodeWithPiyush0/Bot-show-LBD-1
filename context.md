@@ -60,6 +60,15 @@ LBD-1/
         └── bite_talking2.webm    # USED: transparent VP9 (green removed) — the "your turn" clip
 ```
 
+> ⚠️ **CASE-SENSITIVITY (deploy gotcha):** all asset folders/files are referenced in
+> **lowercase** (`assets/videos/…`, `assets/images/…`). Windows is case-insensitive so any
+> case works locally, but a Linux deploy server is **case-sensitive** — a `Videos/` vs
+> `videos/` mismatch 404s the files and they silently don't load (this exactly broke BOTH
+> the question-avatar `.mp4` and the "your turn" `.webm` once: the git folder was tracked as
+> `assets/Videos/`). Keep every path lowercase and matching the on-disk/git case. If you add
+> a file, verify `git ls-files` shows the case you reference. (Also: some hosts need the
+> `video/webm` MIME type configured for `.webm` to play.)
+
 > **Transparent-video recipe** (green screen → web alpha). ffmpeg isn't preinstalled;
 > got it via `winget install Gyan.FFmpeg` (binary under
 > `~/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg*/ffmpeg-*/bin/`). The web
@@ -185,9 +194,13 @@ then parts them to reveal the next — matching the auditorium-stage theme. (The
 >   he flies in from the left edge and lands at ~36% stage (centring made him look like he flew
 >   from mid-screen); transparent right side = room bg / where the bots slide in. Same height
 >   as the other bots. (The old `bite_explaining.webm` rope-pull clip is kept but unused.)
-> - A cartoon **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in (`bubblePop`)
->   at clip ~3.0s (after the landing/stand-up) and hides (`bubbleHide`) ~6.0s, before the
->   wrist tap. Placed `left:37% top:22%` (above Bite's head, who lands at ~36% stage-x).
+> - A glossy comic **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in
+>   (`bubblePop`, rotate/overshoot) at clip ~3.0s (after the landing/stand-up) and hides
+>   (`bubbleHide`) ~6.0s, before the wrist tap. STYLE (per a user-supplied reference): white
+>   body, thick rounded **BLUE** outline (`border` + inset gloss highlight + solid blue 3D
+>   bottom edge), bold blue text, two white `.turn-bubble__shine` streaks on the outline, and
+>   a chunky `.turn-bubble__tail`. Blue matches the FIX-A-BOT title / Bite's accents and pops
+>   on the warm stage. Placed `left:37% top:18%` (above Bite's head, who lands at ~36% stage-x).
 > - Cues are driven by the **clip's own `currentTime`** (`wireTurnTimeline`'s `timeupdate`),
 >   NOT wall-clock timers (those fired out of sync). Bite taps his wrist ~6.5s then **TURNS
 >   and walks OUT to the LEFT** (gone ~9.5s). The bots start at **`TURN_PULL_AT` (7.6s)** —

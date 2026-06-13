@@ -286,49 +286,83 @@ body.qa-intercept-on #stage *::after {
     height: auto;
     z-index: 1;
 }
-/* Cartoon speech bubble above Bite's head while it talks (Bite lands at
-   ~36% of the stage width, head top ~38% down). */
+/* Glossy comic speech bubble above Bite's head while it talks (Bite lands at
+   ~36% of the stage width, head top ~38% down). Sticker look: white candy
+   body, chunky golden ring, 3D bottom edge, top gloss, and a bordered tail. */
+/* Glossy comic speech bubble (à la the reference): white body, thick rounded
+   BLUE outline with light shines, a chunky tail, and bold blue text — matching
+   the FIX-A-BOT title / Bite's blue accents, popping on the warm stage. */
 .turn-bubble {
     position: absolute;
     left: 37%;
-    top: 22%;
+    top: 18%;
     transform: translateX(-50%) scale(0.6);
-    background: #fff;
-    color: #2a1a47;
+    background: #ffffff;
+    color: #2f7ed4;
     font-weight: 800;
-    font-size: 3.2cqw;
+    font-size: 3.5cqw;
     line-height: 1.15;
-    padding: 1.8cqw 2.8cqw;
-    border-radius: 2.4cqw;
-    border: 0.4cqw solid #ffd23d;
-    box-shadow: 0 0.8cqw 1.6cqw rgba(0, 0, 0, 0.35);
+    letter-spacing: 0.01em;
+    text-align: center;
+    padding: 2.2cqw 3.6cqw;
+    border-radius: 4cqw / 3.4cqw; /* gently oval-rounded */
+    border: 0.85cqw solid #2f86d8; /* thick blue outline */
+    box-shadow:
+        inset 0 0.55cqw 0 rgba(255, 255, 255, 0.85), /* glossy tube highlight (top) */
+        inset 0 -0.6cqw 0 rgba(35, 110, 190, 0.18),  /* faint bottom shade */
+        0 1.5cqw 0 #1f63b4,                           /* solid 3D bottom edge */
+        0 2.4cqw 3cqw rgba(10, 40, 80, 0.42);         /* soft drop shadow */
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
 }
-/* little tail pointing down toward Bite */
-.turn-bubble::after {
-    content: "";
+/* chunky rounded tail pointing down toward Bite, blue-outlined like the body */
+.turn-bubble__tail {
     position: absolute;
-    left: 32%;
-    bottom: -1.7cqw;
-    width: 2.4cqw;
-    height: 2.4cqw;
+    left: 30%;
+    bottom: -2.1cqw;
+    width: 3cqw;
+    height: 3cqw;
     background: #fff;
-    border-right: 0.4cqw solid #ffd23d;
-    border-bottom: 0.4cqw solid #ffd23d;
-    transform: rotate(45deg);
+    border-right: 0.85cqw solid #2f86d8;
+    border-bottom: 0.85cqw solid #2f86d8;
+    border-bottom-right-radius: 0.9cqw;
+    transform: rotate(52deg) skewX(-8deg);
+    pointer-events: none;
+}
+/* white glossy shines sitting on the blue outline */
+.turn-bubble__shine {
+    position: absolute;
+    background: #fff;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0.95;
+}
+.turn-bubble__shine.s1 { /* long streak, top-left */
+    left: 7%;
+    top: -0.1cqw;
+    width: 24%;
+    height: 0.7cqw;
+    transform: rotate(-7deg);
+}
+.turn-bubble__shine.s2 { /* short dash, top-right */
+    right: 9%;
+    top: 0.1cqw;
+    width: 7%;
+    height: 0.6cqw;
+    transform: rotate(8deg);
 }
 .turn-bubble.is-shown {
-    animation: bubblePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: bubblePop 0.5s cubic-bezier(0.34, 1.7, 0.5, 1) forwards;
 }
 .turn-bubble.is-hidden {
     animation: bubbleHide 0.3s ease forwards;
 }
 @keyframes bubblePop {
-    0% { opacity: 0; transform: translateX(-50%) scale(0.4); }
-    100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    0% { opacity: 0; transform: translateX(-50%) scale(0.3) rotate(-6deg); }
+    70% { opacity: 1; transform: translateX(-50%) scale(1.06) rotate(1.5deg); }
+    100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
 }
 @keyframes bubbleHide {
     0% { opacity: 1; transform: translateX(-50%) scale(1); }
