@@ -52,8 +52,24 @@ LBD-1/
 └── assets/
     ├── images/             # see §9
     └── videos/
-        └── bite_talking.mp4  # talking mascot (720×480, 10s) — used as the live avatar
+        ├── bite_talking.mp4      # talking mascot (720×480, 10s) — live avatar in banners
+        ├── bite_explaining.mp4   # SOURCE: Bite walks in, talks, pulls a rope (1920×1080,
+        │                         #   10s, 24fps, GREEN SCREEN ~#0ED531). Keep as the master.
+        └── bite_explaining.webm  # USED: transparent VP9 (green removed) — the "your turn" clip
 ```
+
+> **Transparent-video recipe** (green screen → web alpha). ffmpeg isn't preinstalled;
+> got it via `winget install Gyan.FFmpeg` (binary under
+> `~/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg*/ffmpeg-*/bin/`). The web
+> needs **VP9 + alpha in WebM** (MP4 has no usable alpha). Recipe used:
+> `ffmpeg -i bite_explaining.mp4 -filter_complex
+> "[0:v]chromakey=color=0x0ED531:similarity=0.16:blend=0.06,despill=type=green:mix=0.5,scale=1280:-2[v]"
+> -map "[v]" -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 0 -crf 32 -row-mt 1 -an out.webm`
+> → 1280×720, ~2.3MB (from 4.8MB). `chromakey` keys the flat green, `despill` kills the
+> green fringe; sample the exact key colour from a corner pixel first. ffprobe shows the
+> main plane as `yuv420p` (VP9 stores alpha as a hidden stream) — that's normal; browsers
+> composite it. NOTE: ffmpeg (like sharp) **can't write to `F:` from the sandbox** — write
+> to `$TEMP` then `cp` into the project.
 
 **Script load order (in `index.html`, all `defer`):** `navigation.js`, `intro.js`,
 `batteries.js`, `main.js`. They communicate via globals: `window.GameNav`,
@@ -152,8 +168,41 @@ then parts them to reveal the next — matching the auditorium-stage theme. (The
 >
 > Flow functions in `main.js`: `startGame()` (play button → Part 1 tutorial),
 > `startLevels(part)` (enter a part's chooser; resets the chooser), `startPart2Tutorial()`
-> (Screen 5). The tutorials hand off automatically: Part 1 concept (`concept.js`) →
-> `startLevels(1)`; Part 2 concept (`part2.js playConcept2`) → `startLevels(2)`.
+> (Screen 5), `showYourTurn(part)` (see below). The tutorials hand off via the
+> **"your turn" interstitial** (`showYourTurn(part)` in main.js): after the tutorial's
+> dancing bot, a **TEXTLESS curtain** closes (`playCurtain("", "", swap, 1500)` — the
+> optional 4th arg `openAt` re-opens early for the no-message case), parts on
+> `#screen-turn` (`.screen--turn`, the room bg). Earlier text/letters/confetti versions
+> were all rejected as bland; the current version uses a **video of Bite (the mascot)**:
+> - `#turn-video` = **`assets/videos/bite_explaining.webm`** — a **transparent** VP9
+>   clip (green removed) over the room bg. Bite walks in from the left, talks, then
+>   **pulls a rope** on the ground. SIZED `width:72%`, **bottom-LEFT anchored** so Bite
+>   reads at the same height as the other bots (full-stage `cover` made him oversized)
+>   and still enters from the very left edge; rope ends up centre-right.
+> - A cartoon **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in
+>   (`bubblePop`) at clip+1.2s and hides (`bubbleHide`) at clip+4.8s. Placed `left:30%
+>   top:7%` (above Bite's head when he's centre-talking at ~28% stage-x).
+> - The clip plays **IN FULL** (not cut early): Bite talks, then pulls the rope and
+>   **walks out the left edge** (~clip 9s). At clip+5.8s (`startChooserSlide`) the chooser
+>   (`screen-1`, all the bots) is parked off-right (`.turn-slide-prep`) and slides IN from
+>   the right **over the still-playing clip** (`.turn-slide-in`, z-index 42 so it stacks
+>   above `#screen-turn` which is later in the DOM; forced `opacity:1`). 3.9s steady drag
+>   synced to the pull, so the rope feeds straight into the incoming bots — no static
+>   "cut" rope, no abrupt screen swap. `screen-turn` does NOT slide (the clip plays in
+>   place and gets covered). At clip+9.9s (`finalizeTurn`) the chooser is fully in →
+>   `GameNav.show("screen-1")` + `BotChooser.enterChooser(false)` settle it interactive
+>   (NOT `Screen1Intro.play()`, which re-ran the banner unroll/re-centre and read as a
+>   reset). Earlier mistakes that were fixed: cutting the clip at 6s (missed the pull +
+>   walk-out), and sliding the whole `screen-turn` out (made the rope look cut at the
+>   72% video edge with empty space).
+> - The clip starts at `TURN_VIDEO_AT` (~2200ms, after curtains part) so the walk-in is
+>   seen; `video.currentTime=0` + `play()` each visit (no `loop`). NOTE: headless snaps
+>   CSS transitions to their end state, so the slide looks instant in screenshots —
+>   it animates over 3.9s in a real browser.
+> NOTE: under headless virtual-time the `<video>` plays but specific-timepoint
+> screenshots desync (a stray frame may show the start screen) — trust the end states.
+> Wired in BOTH tutorials: Part 1 `concept.js revealDancingBot` → `showYourTurn(1)`;
+> Part 2 `part2.js playConcept2` → `showYourTurn(2)`.
 > `currentLevel` is kept as a coarse mode flag (1 = guided tutorial, 2 = chooser/levels);
 > `setupLevel(1|2)` toggles it + `.level-2`.
 

@@ -212,11 +212,12 @@
                 later(phaseWhole, phaseBAt);
 
                 // Part 1 concept taught -> zoom OUT to the celebrating bot
-                // (Screen 3), let it dance, then begin the Part 1 charge
-                // LEVELS (the kid now charges the bots in the chooser).
+                // (Screen 3), let it dance, then the "your turn" interstitial
+                // leads into the Part 1 charge LEVELS.
                 later(function () {
                     revealDancingBot(function () {
-                        if (global.startLevels) global.startLevels(1);
+                        if (global.showYourTurn) global.showYourTurn(1);
+                        else if (global.startLevels) global.startLevels(1);
                     });
                 }, phaseBAt + 3000);
             }, 650); // after the banner unrolls

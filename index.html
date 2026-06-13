@@ -447,6 +447,18 @@
 
             </section>
 
+            <!-- ===== "YOUR TURN" interstitial — Bite walks in, says the line
+                 (speech bubble), then pulls the rope to drag in the next
+                 screen. Transparent WebM over the stage background. ===== -->
+            <section class="screen screen--turn" id="screen-turn" data-screen="turn">
+                <video class="turn-video" id="turn-video"
+                    src="assets/videos/bite_explaining.webm"
+                    muted playsinline preload="auto"></video>
+                <div class="turn-bubble" id="turn-bubble" aria-hidden="true">
+                    <span>Now, it's your turn!</span>
+                </div>
+            </section>
+
             <!-- ===== LEVEL TRANSITION SCREEN (legacy card; the curtain
                  overlay below is the actual transition) ===== -->
             <section class="screen screen--transition" id="screen-transition" data-screen="transition">

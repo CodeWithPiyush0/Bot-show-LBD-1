@@ -683,12 +683,13 @@
                 }, 2400);
 
                 // Part 2 concept taught -> zoom OUT to reveal the bot
-                // celebrating (Screen 7), let it dance, then begin the Part 2
-                // split LEVELS (the kid now fixes the overcharged bots).
+                // celebrating (Screen 7), let it dance, then the "your turn"
+                // interstitial leads into the Part 2 split LEVELS.
                 global.setTimeout(function () {
                     zoomOutTo("screen-8", "screen-7", function () {
                         global.setTimeout(function () {
-                            if (global.startLevels) global.startLevels(2);
+                            if (global.showYourTurn) global.showYourTurn(2);
+                            else if (global.startLevels) global.startLevels(2);
                         }, 3000);
                     });
                 }, 6500);

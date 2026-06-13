@@ -77,7 +77,10 @@
 
     // Theatre-curtain transition: close the curtains over the message, run
     // `onSwap` behind them, then part to reveal the next screen.
-    function playCurtain(title, sub, onSwap) {
+    // openAt (optional): when the curtains start re-opening — default 2600ms
+    // holds the message; pass ~1500 for a quick textless close-and-part.
+    function playCurtain(title, sub, onSwap, openAt) {
+        const OPEN = openAt || 2600;
         const curtains = document.getElementById("curtains");
         const titleEl = document.getElementById("curtain-title");
         const subEl = document.getElementById("curtain-sub");
@@ -95,12 +98,100 @@
         window.setTimeout(onSwap, 950); // swap behind the closed curtains
         window.setTimeout(function () {
             curtains.classList.remove("is-closed");
-        }, 2600); // hold the message, then open
+        }, OPEN); // hold the message, then open
         window.setTimeout(function () {
             curtains.classList.remove("is-active");
-        }, 3600);
+        }, OPEN + 1000);
     }
     window.playCurtain = playCurtain;
+
+    // Tutorial → levels handoff: a TEXTLESS curtain closes over the dancing
+    // bot, parts on the bare stage, then the "your turn" CLIP plays IN FULL —
+    // Bite walks in, says the line (speech bubble), then pulls a rope and walks
+    // out the LEFT. As he pulls, the chooser (with all the bots) is dragged IN
+    // from the RIGHT over the still-playing clip, so the rope feeds straight
+    // into the incoming bots and nothing cuts.
+    //
+    // Timeline (ms from this call):
+    //   0     curtain closes;  ~950 swap to screen-turn (clip paused at f0)
+    //   ~2200 curtains parted → play the FULL clip (Bite walks in)
+    //   clip ~1.2s  bubble pops;  ~4.8s  bubble hides
+    //   clip ~5.8s  Bite pulls → chooser slides in over the clip (3.9s drag)
+    //   clip ~8.7s  Bite has walked off-left; ~9.9s chooser fully in → settle
+    const TURN_VIDEO_AT = 2200; // when the clip starts (after curtains part)
+    function showYourTurn(part) {
+        const video = document.getElementById("turn-video");
+        const bubble = document.getElementById("turn-bubble");
+        if (bubble) bubble.classList.remove("is-shown", "is-hidden");
+        if (video) { try { video.pause(); video.currentTime = 0; } catch (e) {} }
+
+        playCurtain("", "", function () {
+            window.GameNav.show("screen-turn");
+        }, 1500);
+
+        // Curtains parted → play the full clip (Bite walks in).
+        window.setTimeout(function () {
+            if (video) {
+                try { video.currentTime = 0; } catch (e) {}
+                const p = video.play();
+                if (p && p.catch) p.catch(function () {});
+            }
+        }, TURN_VIDEO_AT);
+
+        // Speech bubble while Bite talks.
+        window.setTimeout(function () {
+            if (bubble) bubble.classList.add("is-shown");
+        }, TURN_VIDEO_AT + 1200);
+        window.setTimeout(function () {
+            if (bubble) { bubble.classList.remove("is-shown"); bubble.classList.add("is-hidden"); }
+        }, TURN_VIDEO_AT + 4800);
+
+        // Bite starts pulling the rope → drag the bots in from the right.
+        window.setTimeout(function () {
+            startChooserSlide(part);
+        }, TURN_VIDEO_AT + 5800);
+
+        // Clip nearly done (Bite gone, chooser fully in) → settle.
+        window.setTimeout(function () {
+            finalizeTurn(part);
+        }, TURN_VIDEO_AT + 9900);
+    }
+    window.showYourTurn = showYourTurn;
+
+    // Build the chooser off-screen-right and slide it IN over the playing clip,
+    // as if the rope is dragging the bots into view. The clip keeps playing
+    // underneath (Bite finishes pulling + walking out).
+    function startChooserSlide(part) {
+        const screen1 = document.getElementById("screen-1");
+        window.gamePart = part;
+        setupLevel(2);
+        if (window.BotChooser) window.BotChooser.reset();
+        if (screen1) screen1.classList.add("turn-slide-prep"); // parked off-right, on top
+        if (window.BotChooser) window.BotChooser.enterChooser(false); // populate + centre
+
+        window.setTimeout(function () { // next frame: animate the drag
+            if (screen1) {
+                screen1.classList.remove("turn-slide-prep");
+                screen1.classList.add("turn-slide-in");
+            }
+        }, 40);
+    }
+
+    // Settle screen-1 as the live screen once it has fully slid in. We do NOT
+    // call Screen1Intro.play() — that restarts the banner unroll / re-centre,
+    // which reads as an abrupt reset. The carousel is already built/centred and
+    // its taps are wired (init); a final enterChooser re-centres smoothly.
+    function finalizeTurn(part) {
+        const video = document.getElementById("turn-video");
+        const screen1 = document.getElementById("screen-1");
+        if (video) { try { video.pause(); } catch (e) {} }
+        window.GameNav.show("screen-1"); // real active + letterbox
+        if (screen1) screen1.classList.remove("turn-slide-in", "turn-slide-prep");
+        if (window.BotChooser) window.BotChooser.enterChooser(false);
+    }
+    window.startChooserSlide = startChooserSlide;
+    window.finalizeTurn = finalizeTurn;
+
 
     // ---- Game flow --------------------------------------------------------
     // Two separated halves, each = a guided TUTORIAL then 4 chooser LEVELS:
