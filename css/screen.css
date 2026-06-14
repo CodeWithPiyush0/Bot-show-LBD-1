@@ -178,6 +178,36 @@
     height: auto;
 }
 
+/* ---- Closed-banner art (the closing screens 2/3/4/5/6/8) ----
+   CLOSED = the dedicated badge image (`Question_template_close.webp`); OPEN =
+   the full `Question_template.webp`. To feel like the banner CLOSING (not just
+   a fade-swap), the full template ROLLS shut via clip-path (see the per-screen
+   `.question__template` rules) while this badge image fades in ON TOP of the
+   rolled-up cap. Screen 1's banner is always-open, so it's excluded. */
+.screen--2 .question::before,
+.screen--3 .question::before,
+.screen--4 .question::before,
+.screen--5 .question::before,
+.screen--6 .question::before,
+.screen--8 .question::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("../assets/images/Question_template_close.webp") no-repeat left center / 100% 100%;
+    opacity: 1; /* closed: badge visible */
+    transition: opacity 0.45s ease;
+    pointer-events: none;
+    z-index: 1; /* above the rolling template, below the avatar */
+}
+.screen--2 .question.is-open::before,
+.screen--3 .question.is-open::before,
+.screen--4 .question.is-open::before,
+.screen--5 .question.is-open::before,
+.screen--6 .question.is-open::before,
+.screen--8 .question.is-open::before {
+    opacity: 0; /* open: badge hidden, full banner shows */
+}
+
 /* Talking mascot video overlaid on the template's avatar face.
    Sits inside the badge frame; the template image provides the
    surrounding border. */
@@ -191,7 +221,7 @@
     object-position: center 32%;
     border-radius: 0.9cqw;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2; /* above the close-badge image so the bot shows */
 }
 
 /* Screen 1 intro (plays when `.is-intro` is added on "Let's Play").

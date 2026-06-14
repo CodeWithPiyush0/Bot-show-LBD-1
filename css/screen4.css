@@ -21,8 +21,8 @@
 
 /* Banner open/close (same as Screen 2, scoped to Screen 4) */
 .screen--4 .question__template {
-    clip-path: inset(0 91.7% 0 0); /* closed: mascot only */
-    transition: clip-path 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    clip-path: inset(0 100% 0 0); /* closed: rolled shut to the badge */
+    transition: clip-path 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .screen--4 .question.is-open .question__template {
     clip-path: inset(0 0 0 0); /* open */

@@ -276,8 +276,20 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
     Part 1 = "Scroll and tap a bot to charge it.", Part 2 = "Oh no! These bots are
     overcharged — tap one to fix it." (`intro.js` no longer auto-types `data-text2` in
     chooser mode, which used to clobber this.)
-  - **Closed banner:** the question template's closed clip is `inset(0 91.7% 0 0)` (was
-    91.2%, which left a cream sliver with a hard cut to the right of the mascot badge).
+  - **Open/close banner (screens 2/3/4/5/6/8):** the **open** art is `Question_template.webp`
+    (`.question__template`), which **rolls** open/shut via `clip-path` — closed = `inset(0 91% 0 0)`
+    (rolled to the badge), open = `inset(0 0 0 0)`, `transition: clip-path 0.5s cubic-bezier(0.2,0.8,0.2,1)`
+    (the per-screen `.screen--N .question__template` / `.is-open` rules). The **closed** art is a
+    dedicated badge image **`Question_template_close.webp`** (a self-contained orange-bordered
+    octagon + bot, from `Question_template_close.svg`) shown via `.screen--N .question::before`
+    (`z-index:1`, opacity 1 closed → 0 when `.is-open`, fade 0.45s) **on top of** the rolling
+    template's cap, so the closing reads as the body retracting INTO the badge (not a flat
+    crossfade). The closed clip is **`inset(0 100% 0 0)`** (template fully rolled away) — the
+    badge is an octagon whose chamfered top/bottom corners narrow inward, so any partial clip
+    (e.g. 9%) left a vertical sliver of the open template poking past those corners; rolling
+    the template fully shut and letting the badge image be the entire closed visual removes it. The talking-video
+    avatar (`.question__avatar`, `z-index:2`) sits on top of the badge in both states. Screen 1's
+    banner is always-open (uses `templateUnroll` + `.is-intro`) and is excluded.
 
 ### Chooser carousel (`carousel.js`, `index.html`, `screen.css`)
 Horizontal **scrollable row** (`.bot-carousel__track`, only under `.level-2`), staged like
@@ -360,12 +372,14 @@ Used on **both** screens (any template with dialogue). Markup:
   <p class="question__text" data-text="...the line..."></p>
 </div>
 ```
-- `Question_template.webp` = the cream banner art with a mascot badge baked in at
-  the left. The banner is positioned by Figma coords (left 1.458%, top 4.167%,
-  width 97.135%).
+- `Question_template.webp` = the **open** cream banner art (mascot cap baked in at the
+  left). `Question_template_close.webp` = the **closed** art (a self-contained octagon
+  badge, from `Question_template_close.svg`). Positioned by Figma coords (left 1.458%,
+  top 4.167%, width 97.135%). Open/close = an opacity **crossfade** between the two (see
+  §"Open/close banner" above) — NOT clip-path.
 - **`.question__avatar`** (in `screen.css`) overlays the **`bite_talking.mp4`** video
-  on the badge face (muted, looping) → the mascot looks alive and talks. This
-  replaces the static face. Same for all dialogue templates.
+  on the badge face (muted, looping) → the mascot looks alive and talks, in both the
+  open cap and the closed badge. Same for all dialogue templates.
 - **`.question__text`**: Rajdhani **Bold**, color `#4f2b0f`, `font-size: 2.344cqw`
   (= 45px at design), positioned over the cream bar. Text is stored in `data-text`
   and starts empty (no flash); JS types it in.
