@@ -332,7 +332,10 @@
         const playBtn = document.getElementById("play-btn");
         if (playBtn) {
             playBtn.addEventListener("click", function () {
-                if (window.SFX) window.SFX.play("uiTap");
+                if (window.SFX) {
+                    window.SFX.play("uiTap");
+                    window.SFX.play("bgMusic", { loop: true }); // quiet looping music bed
+                }
                 startGame();
             });
         }

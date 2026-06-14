@@ -789,7 +789,7 @@ files no-op silently. Loaded first in index.html; autoplay unlocked by the Play-
 | `celebrate` | celebrate.mp3 | cheer when a fixed bot dances (screens 3 & 7); **`stop`ped when the next curtain starts** |
 | `type` | **one_type.mp3** | **one tick PER CHARACTER** — all JS typewriters AND the "your turn" speech bubble (synced to its CSS reveal via `typeBubbleSfx`) |
 | `curtain` | level.mp3 | theatre-curtain swish on EVERY `playCurtain`. Curtains reuse the level effect — no separate file |
-| `bgMusic` | bg_music.mp3 | available in `FILES` but **not auto-played** (no music bed wired yet) |
+| `bgMusic` | bg_music.mp3 | **gapless looping music bed**, started on the Play-button tap; quiet (~22% = `MASTER 0.85 × PER 0.26`) so it never fights the SFX |
 | `win` | win.mp3 ✗ WANTED | (extra) fanfare on Part/Game-complete — silent until added |
 
 **Carousel scroll detection** (`carousel.js`, `trackScrollSfx`): on each `scroll` event the
@@ -799,9 +799,19 @@ a burst that matches the fling speed. The arrows and the scroll-hint feed throug
 (no separate sound). Programmatic **centring** (selecting a bot, entering the chooser) sets
 `suppressScrollSfx` so it stays silent.
 
-To add `win`: drop `win.mp3` into `assets/audios/`. To enable background music: wire
-`SFX.play("bgMusic",{loop:true})` (e.g. on the Play tap). Per-sound volume trims live in
-`PER`; master volume `MASTER = 0.85`.
+**Gapless music loop**: bgMusic does NOT use the native `loop` attribute (it reseeks and the
+MP3's encoder padding shows up as an audible gap). Instead a dedicated **2-element ping-pong
+looper** (`bgEnsure`/`startBg`) watches the lead element's clock and launches the other
+element `BG_LOOKAHEAD` (0.32s) before the current pass ends, so the next pass is already
+sounding at the seam — no delay. `stopBg` stops both.
+
+**Tab visibility**: on `visibilitychange→hidden` (or `pagehide`), `suspendAll()` pauses every
+audio element (music + any SFX) — nothing plays while the game tab is in the background; on
+return, `resumeBg()` continues the music bed from where it paused (SFX stay paused and just
+replay on their next trigger). `bgWanted` tracks whether the bed should be on.
+
+To add `win`: drop `win.mp3` into `assets/audios/`. Per-sound volume trims live in `PER`;
+master volume `MASTER = 0.85`.
 
 ---
 

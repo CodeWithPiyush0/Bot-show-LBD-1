@@ -64,20 +64,31 @@
     var MASTER = 0.85;                 // overall volume
     var PER = {                        // per-sound volume trims (× MASTER)
         type: 0.5, ready: 0.6, place: 0.7, energy: 0.7, electricity: 0.55,
-        oneScroll: 0.85, fullScroll: 0.85, bgMusic: 0.35
+        oneScroll: 0.85, fullScroll: 0.85,
+        bgMusic: 0.26                  // quiet bed: 0.85 × 0.26 ≈ 22% — won't fight the SFX
     };
 
     var pools = {};                    // name -> [Audio]
     var idx = {};                      // name -> round-robin cursor
     var loopEls = {};                  // name -> the looping Audio (so it can be stopped)
     var muted = false;
+    var bgWanted = false;              // is the background-music loop meant to be on?
     var unavailable = {};              // names whose file failed to load (avoid retry spam)
+
+    // Background music uses a dedicated 2-element GAPLESS looper (NOT the native
+    // `loop` attribute, which reseeks + exposes MP3 encoder padding as a gap).
+    // We start the next pass a hair before the current ends so they overlap and
+    // there is no audible delay at the seam.
+    var bgEls = null;                  // [Audio, Audio] ping-pong pair
+    var bgActive = 0;                  // index currently the "lead" element
+    var BG_LOOKAHEAD = 0.32;           // seconds before end to launch the next pass
 
     function url(name) { return BASE + encodeURI(FILES[name]); }
     function poolSize(name) { return POOL[name] || POOL_DEFAULT; }
 
     function ensure(name) {
         if (!FILES[name] || unavailable[name]) return null;
+        if (name === "bgMusic") return null; // bgMusic uses its own gapless looper, not a pool
         if (!pools[name]) {
             var arr = [];
             for (var i = 0; i < poolSize(name); i++) {
@@ -97,9 +108,47 @@
         return Math.max(0, Math.min(1, MASTER * b));
     }
 
+    /* ---- gapless background-music looper ---- */
+    function bgEnsure() {
+        if (bgEls || !FILES.bgMusic || unavailable.bgMusic) return bgEls;
+        bgEls = [new Audio(url("bgMusic")), new Audio(url("bgMusic"))];
+        bgEls.forEach(function (a) {
+            a.preload = "auto";
+            a.addEventListener("error", function () { unavailable.bgMusic = true; });
+            // each pass watches its own clock; when the LEAD nears the end, it
+            // launches the other element so the next pass is already sounding
+            // before this one finishes (no gap).
+            a.addEventListener("timeupdate", function () {
+                if (a !== bgEls[bgActive] || muted) return;        // only the lead schedules
+                if (!a.duration || isNaN(a.duration)) return;
+                if (a.duration - a.currentTime <= BG_LOOKAHEAD) {
+                    var next = bgEls[1 - bgActive];
+                    try { next.currentTime = 0; } catch (e) {}
+                    next.volume = vol("bgMusic");
+                    var p = next.play(); if (p && p.catch) p.catch(function () {});
+                    bgActive = 1 - bgActive;                       // hand the lead over
+                }
+            });
+        });
+        return bgEls;
+    }
+    function startBg() {
+        if (!bgEnsure()) return null;
+        bgWanted = true;
+        var a = bgEls[bgActive];
+        a.volume = vol("bgMusic");
+        var p = a.play(); if (p && p.catch) p.catch(function () {});
+        return a;
+    }
+    function stopBg() {
+        bgWanted = false;
+        if (bgEls) bgEls.forEach(function (a) { try { a.pause(); a.currentTime = 0; } catch (e) {} });
+    }
+
     function play(name, opts) {
         opts = opts || {};
         if (muted) return null;
+        if (name === "bgMusic") return startBg();   // dedicated gapless looper
         var arr = ensure(name);
         if (!arr) return null;
 
@@ -127,6 +176,7 @@
     }
 
     function stop(name) {
+        if (name === "bgMusic") { stopBg(); return; }
         var arr = pools[name];
         if (arr) arr.forEach(function (a) {
             try { a.pause(); a.currentTime = 0; a.loop = false; } catch (e) {}
@@ -134,11 +184,33 @@
         delete loopEls[name];
     }
 
-    function stopAll() { Object.keys(pools).forEach(stop); }
+    function stopAll() { Object.keys(pools).forEach(stop); stopBg(); }
+
+    /* ---- Tab visibility: silence everything when the game isn't the active
+       tab; resume the music bed on return. (SFX are transient, so they just
+       stay paused — the next play() resets and replays them.) ---- */
+    function suspendAll() {
+        Object.keys(pools).forEach(function (name) {
+            pools[name].forEach(function (a) { try { a.pause(); } catch (e) {} });
+        });
+        if (bgEls) bgEls.forEach(function (a) { try { a.pause(); } catch (e) {} });
+    }
+    function resumeBg() {
+        if (!bgWanted || muted || !bgEls) return;
+        var a = bgEls[bgActive];                 // continue the lead from where it paused
+        var p = a.play(); if (p && p.catch) p.catch(function () {});
+    }
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden) suspendAll();   // left the tab → cut all sound
+        else resumeBg();                     // back on the tab → music resumes where it paused
+    });
+    // Also stop on the page being hidden/unloaded (covers bfcache / mobile).
+    global.addEventListener("pagehide", suspendAll);
 
     function setMuted(m) {
         muted = !!m;
-        if (muted) stopAll();
+        if (muted) suspendAll();  // pause all (keeps bg intent so unmute can resume)
+        else resumeBg();          // unmute → the music bed continues
     }
     function toggleMute() { setMuted(!muted); return muted; }
 
@@ -151,6 +223,7 @@
     // loaded (no first-play delay). Runs after the start screen is up.
     function preload() {
         Object.keys(FILES).forEach(function (name) { ensure(name); });
+        bgEnsure(); // preload the music bed's looper pair too
     }
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", preload);
