@@ -41,7 +41,7 @@
         { label: "Split puzzle (level 1)", go: function () { chooserPuzzle(1, 2, "red"); } },
 
         { label: "—  misc  —", go: null },
-        { label: "Level-complete curtain", go: function () { if (global.playCurtain) global.playCurtain("Level 1 Complete!", "Get ready for Level 2…", function () { chooser(2, 1); }); } },
+        { label: "Level-complete curtain", go: function () { if (global.playCurtain) global.playCurtain("", "", function () { chooser(2, 1); }, 1500); } },
         { label: "Game-complete curtain", go: function () { if (global.playCurtain) global.playCurtain("All Bots Fixed!", "Fantastic work!", function () { global.gamePart = 1; setLvl(1); nav("screen-pre"); }); } },
     ];
 

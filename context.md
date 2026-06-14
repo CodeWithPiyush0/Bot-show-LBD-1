@@ -139,9 +139,11 @@ and the typewriter runs from `Screen1Intro.play()` (NOT on page load).
 **Level transition = theatre curtains.** `#curtains` sits **outside `#stage`** (direct
 child of `#game`) and is `position: fixed` so it covers the **whole viewport** including
 the letterbox bars. Two velvet curtain halves. `playCurtain(title, sub, onSwap)` (main.js,
-the shared helper) closes them over a finished level (showing "Level N Complete!" /
-"Part 1 Complete!" / "All Bots Fixed!"), runs `onSwap` to swap the screen behind them,
-then parts them to reveal the next — matching the auditorium-stage theme. (The legacy
+the shared helper) closes them over a finished level, runs `onSwap` to swap the screen
+behind them, then parts them to reveal the next — matching the auditorium-stage theme.
+The per-level transition is **TEXTLESS** (by request — no "Level N Complete" text; uses
+`playCurtain("", "", swap, 1500)`); only the **part-complete** ("Part 1 Complete!", →
+Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a message. (The legacy
 `#screen-transition` card is no longer used.)
 
 ---
@@ -289,8 +291,8 @@ Part 1 low — see §5); fixed bots of the current state keep dancing.
   where `part` = `phase === "charge" ? "1" : "2"`.
 - **After a puzzle**, `returnToChooser()` (main.js) → `BotChooser.onFixed(scheme)`: marks
   that bot fixed (swaps to charged art + dances) and **advances `gameStage`** — each solve
-  completes a level. Then: if `gameStage <= 4` → `playCurtain("Level N Complete!", …)` →
-  `enterChooser(false)` for the next level; if `gameStage > 4` → the part is done →
+  completes a level. Then: if `gameStage <= 4` → **TEXTLESS** `playCurtain("", "", …, 1500)`
+  → `enterChooser(false)` for the next level; if `gameStage > 4` → the part is done →
   `gamePart 1`: `playCurtain("Part 1 Complete!", …)` → `startPart2Tutorial()`; `gamePart 2`:
   `playCurtain("All Bots Fixed!", …)` → start screen.
 - **`startLevels(part)`** calls `BotChooser.reset()` so each part begins with all of its

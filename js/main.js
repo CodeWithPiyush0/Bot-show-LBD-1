@@ -365,7 +365,6 @@
         // is ONE bot now, so every fix completes a level.
         function returnToChooser() {
             if (window.BotChooser) window.BotChooser.onFixed(window.currentScheme);
-            const justFinished = (window.gameStage || 2) - 1; // level just completed
 
             if ((window.gameStage || 1) > 4) {
                 // All 4 bots of this part are fixed.
@@ -383,11 +382,11 @@
                     });
                 }
             } else {
-                // Next level of the same part.
-                playCurtain("Level " + justFinished + " Complete!", "Get ready for Level " + window.gameStage + "…", function () {
+                // Next level of the same part — TEXTLESS curtain (no level text).
+                playCurtain("", "", function () {
                     window.GameNav.show("screen-1");
                     if (window.BotChooser) window.BotChooser.enterChooser(false);
-                });
+                }, 1500);
             }
         }
         window.returnToChooser = returnToChooser;
