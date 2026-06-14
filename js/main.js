@@ -87,7 +87,9 @@
         if (titleEl) titleEl.textContent = title;
         if (subEl) subEl.textContent = sub;
 
-        if (window.SFX) window.SFX.play("curtain");
+        // The curtain uses the level-transition swish everywhere. Cut off the
+        // (long) celebrate cheer the moment the curtain begins to close.
+        if (window.SFX) { window.SFX.stop("celebrate"); window.SFX.play("curtain"); }
 
         if (!curtains) {
             onSwap();
@@ -168,10 +170,34 @@
     }
     window.showYourTurn = showYourTurn;
 
+    // The bubble text reveals via a CSS typewriter (steps, 1.4s after a 0.5s
+    // delay). Fire one `type` tick per character, synced to that reveal.
+    function typeBubbleSfx(bubble) {
+        if (!bubble || !window.SFX) return;
+        const span = bubble.querySelector(".turn-bubble__text");
+        const len = (span && span.textContent) ? span.textContent.length : 20;
+        const DELAY = 500, DUR = 1400, step = DUR / Math.max(1, len);
+        for (let k = 0; k < len; k++) {
+            window.setTimeout(function () { window.SFX.play("type"); }, DELAY + k * step);
+        }
+    }
+
     // Fire each cue off the clip's real currentTime, with wall-clock fallbacks
     // in case playback never advances (e.g. autoplay blocked).
     function wireTurnTimeline(part, video, bubble) {
-        let bubbleShown = false, bubbleHidden = false, pulling = false, done = false;
+        let bubbleShown = false, bubbleHidden = false, wristTapped = false, pulling = false, done = false;
+        let flyStarted = false;
+
+        // The flying whoosh must line up with Bite actually flying on screen, so
+        // start it on the video's `playing` event (real playback start, after any
+        // buffering) — NOT a wall-clock timer, which would drift from the frames.
+        function startFly() {
+            if (flyStarted) return;
+            flyStarted = true;
+            if (window.SFX) window.SFX.play("flying");
+        }
+        function stopFly() { if (window.SFX) window.SFX.stop("flying"); }
+        if (video) video.addEventListener("playing", startFly, { once: true });
 
         function doPull() {
             if (pulling) return;
@@ -185,17 +211,26 @@
         function doFinish() {
             if (done) return;
             done = true;
+            stopFly(); // safety: never let the whoosh linger past the clip
             if (video) video.removeEventListener("timeupdate", onTime);
             finalizeTurn(part);
         }
         function onTime() {
             const t = (video && video.currentTime) || 0;
+            if (!flyStarted && t > 0) startFly(); // fallback if `playing` didn't fire
             // bubble after the landing + stand-up; hide before the wrist tap
-            if (!bubbleShown && t >= 3.0) { bubbleShown = true; if (bubble) bubble.classList.add("is-shown"); }
+            if (!bubbleShown && t >= 3.0) {
+                bubbleShown = true;
+                stopFly(); // Bite has landed and starts talking — end the flying whoosh
+                if (bubble) bubble.classList.add("is-shown");
+                typeBubbleSfx(bubble); // type ticks synced to the CSS reveal
+            }
             if (!bubbleHidden && t >= 6.0) {
                 bubbleHidden = true;
                 if (bubble) { bubble.classList.remove("is-shown"); bubble.classList.add("is-hidden"); }
             }
+            // Bite taps his wrist-watch (~6.7s) → a tap click
+            if (!wristTapped && t >= 6.7) { wristTapped = true; if (window.SFX) window.SFX.play("uiTap"); }
             if (!pulling && t >= TURN_PULL_AT) doPull();
         }
 
@@ -216,6 +251,7 @@
     function startBotsPull(part) {
         const screenTurn = document.getElementById("screen-turn");
         if (screenTurn) screenTurn.classList.add("is-pulling"); // slide the bot row in
+        if (window.SFX) window.SFX.play("fullScroll"); // the bots sweep in from the right
         window.gamePart = part;
         setupLevel(2);
         if (window.BotChooser) {
@@ -395,7 +431,6 @@
                 }
             } else {
                 // Next level of the same part — TEXTLESS curtain (no level text).
-                if (window.SFX) window.SFX.play("levelDone");
                 playCurtain("", "", function () {
                     window.GameNav.show("screen-1");
                     if (window.BotChooser) window.BotChooser.enterChooser(false);

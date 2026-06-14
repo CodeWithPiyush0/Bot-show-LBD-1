@@ -758,38 +758,50 @@ Key tunables:
 
 ## 10c. Audio / SFX (`js/audio.js`, `window.SFX`)
 
-A tiny SFX manager. `window.SFX.play("<event>", {volume, loop})` clones a template
-`Audio` per call (so rapid repeats overlap); `SFX.stop("<event>")` stops a loop;
-`SFX.toggleMute()` (also bound to the **M** key). Missing files **no-op silently**
-(a one-time 404, no crash) — so unrecorded "WANTED" sounds can be dropped in any time
-and start playing automatically. Loaded first (before the other game scripts) in
-index.html. Autoplay is unlocked by the Play-button tap (first user gesture).
+SFX manager. **Reliability**: each sound keeps a small **pool of pre-loaded `<audio>`
+elements** reused round-robin (`POOL` sizes per name; default 4, `type`=12). The earlier
+build cloned a template per play, which **re-loaded the file each time** → dropped /
+delayed / missing sounds; pools fixed that. Pools load via the media loader, so they work
+from `file://` AND http (no fetch/CORS). All pools are pre-built on DOMContentLoaded so the
+first use has no load delay. `SFX.play("<event>",{volume,loop})`; `SFX.stop("<event>")`
+stops all of that name (incl. the loop); `SFX.toggleMute()` (also the **M** key). Missing
+files no-op silently. Loaded first in index.html; autoplay unlocked by the Play-btn tap.
 
-**Event → file map** (`FILES` in audio.js, all under `assets/audios/`):
+**Event → file map** (`FILES` in audio.js, all under `assets/audios/`, all ✓ present except `win`):
 
-| event | file (✓ = present) | fires when |
+| event | file | fires when |
 |---|---|---|
-| `uiTap` | tap.mp3 ✓ | Play btn, carousel arrows, bot tap, next-level btn |
-| `bannerOpen` | pop.mp3 ✓ | any speech banner unrolls open (screens 1/2/3/4/5/6/8) |
-| `pickup` | Pick_Up_Battery.mp3 ✓ | grab a battery group (drag start, both parts) |
-| `place` | pop.mp3 ✓ | battery group snaps into a slot |
-| `spotlight` | spotlight.mp3 ✓ | stage spotlight falls (chooser select, Screen-5 phase B) |
-| `electricity` | electricity.mp3 ✓ | charge current crackle — **loops**, stopped at green |
-| `energy` | Energy Travelling.mp3 ✓ | batteries travel up into the big slot |
-| `powerUp` | pwlpl-power-up…mp3 ✓ | top slot turns green / charged |
-| `ready` | soundshelfstudio-ui-hyperdrive-ready-ping…mp3 ✓ | concept slot-glow pings (screens 4 & 8) |
-| `success` | universfield-happy-message-ping…mp3 ✓ | a bot is fixed (Part 2 split complete) |
-| `levelDone` | level.mp3 ✓ | per-level textless curtain transition |
-| `zoom` | **zoom.mp3** ✗ WANTED | diving INTO / OUT of a bot (every screen↔screen zoom) |
-| `curtain` | **curtain.mp3** ✗ WANTED | theatre-curtain swish (every `playCurtain`) |
-| `reject` | **reject.mp3** ✗ WANTED | wrong-slot buzz (Part 1 big-slot rejection) |
-| `celebrate` | **celebrate.mp3** ✗ WANTED | cheer/applause when a fixed bot starts dancing (screens 3 & 7) |
-| `win` | **win.mp3** ✗ WANTED | fanfare on Part Complete / All Bots Fixed |
-| `type` | **type.mp3** ✗ WANTED (optional) | soft typewriter tick (not yet wired to typer) |
+| `uiTap` | tap.mp3 | Play btn, bot tap, next-level btn, **Bite's wrist-tap (~6.7s in the clip)** |
+| `bannerOpen` | pop.mp3 | any speech banner unrolls open (screens 1/2/3/4/5/6/8) |
+| `pickup` | Pick_Up_Battery.mp3 | grab a battery group (drag start, both parts) |
+| `place` | pop.mp3 | battery group snaps into a slot |
+| `spotlight` | spotlight.mp3 | spotlight falls — **tutorial Screen-1 (`is-lit`)**, chooser select, Screen-5 phase B |
+| `electricity` | electricity.mp3 | charge current crackle — **loops**, stopped at green |
+| `energy` | Energy Travelling.mp3 | batteries travel up into the big slot |
+| `powerUp` | pwlpl-power-up…mp3 | top slot turns green / charged |
+| `ready` | soundshelfstudio…ready-ping…mp3 | concept slot-glow pings (screens 4 & 8) |
+| `success` | universfield-happy…ping…mp3 | a bot is fixed (Part 2 split complete) |
+| `oneScroll` | one_scroll.mp3 | **one tick per bot crossed** as the carousel scrolls (arrows, hint, manual) |
+| `fullScroll` | full_scroll.mp3 | the bots **slide in from the right** after the Bite clip (`startBotsPull`) |
+| `zoom` | zoom.mp3 | diving INTO / OUT of a bot (every screen↔screen zoom) |
+| `flying` | flying.mp3 | Bite flies in (your-turn clip) — started on the video's `playing` event (synced to real playback), stopped when he lands (bubble shows) |
+| `reject` | reject.mp3 | wrong-slot buzz (Part 1 big-slot rejection) |
+| `celebrate` | celebrate.mp3 | cheer when a fixed bot dances (screens 3 & 7); **`stop`ped when the next curtain starts** |
+| `type` | **one_type.mp3** | **one tick PER CHARACTER** — all JS typewriters AND the "your turn" speech bubble (synced to its CSS reveal via `typeBubbleSfx`) |
+| `curtain` | level.mp3 | theatre-curtain swish on EVERY `playCurtain`. Curtains reuse the level effect — no separate file |
+| `bgMusic` | bg_music.mp3 | available in `FILES` but **not auto-played** (no music bed wired yet) |
+| `win` | win.mp3 ✗ WANTED | (extra) fanfare on Part/Game-complete — silent until added |
 
-To add a WANTED sound: drop a file named as above into `assets/audios/` — it plays
-automatically. Different filename? update the one line in `FILES`. Per-sound volume
-trims live in `PER` (audio.js); master volume `MASTER = 0.85`.
+**Carousel scroll detection** (`carousel.js`, `trackScrollSfx`): on each `scroll` event the
+centred-bot index is recomputed; whenever it changes, one `oneScroll` plays **per bot
+crossed** (capped at 4 for big flings). So a 1-bot move = one tick, a fast multi-bot sweep =
+a burst that matches the fling speed. The arrows and the scroll-hint feed through this too
+(no separate sound). Programmatic **centring** (selecting a bot, entering the chooser) sets
+`suppressScrollSfx` so it stays silent.
+
+To add `win`: drop `win.mp3` into `assets/audios/`. To enable background music: wire
+`SFX.play("bgMusic",{loop:true})` (e.g. on the Play tap). Per-sound volume trims live in
+`PER`; master volume `MASTER = 0.85`.
 
 ---
 

@@ -57,6 +57,7 @@
         (function tick() {
             if (i >= text.length) return;
             el.textContent += text.charAt(i);
+            if (global.SFX) global.SFX.play("type"); // one tick per character
             i += 1;
             later(tick, speed);
         })();

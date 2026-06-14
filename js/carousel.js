@@ -21,6 +21,49 @@
     let lastFixed = null; // the bot just fixed — centred so it's seen dancing
     let hintShown = false; // one-time scroll hint at the first level of a part
 
+    /* ---- scroll SFX: one `one_scroll` tick PER BOT crossed ----
+       As the row scrolls, every time a new bot passes the centre we play one
+       `one_scroll`. So a 1-bot move = one tick; a fast multi-bot sweep = a burst
+       of ticks that naturally matches the scroll speed (each `scroll` event
+       advances the centre by ~1, spaced by how fast the user flings). The arrows
+       (one bot) and the scroll-hint (sweeps all) both feed through this, so they
+       tick to their own motion — no separate sound. Programmatic CENTRING
+       (selecting a bot / entering the chooser) sets `suppressScrollSfx` so it
+       stays silent (it's not a browse). */
+    let suppressScrollSfx = false;
+    let supTimer = null;
+    let lastCenterIdx = -1;
+    function suppressScroll(ms) {
+        suppressScrollSfx = true;
+        if (supTimer) global.clearTimeout(supTimer);
+        supTimer = global.setTimeout(function () { suppressScrollSfx = false; }, ms || 500);
+    }
+    function centerIndex() {
+        const t = track();
+        if (!t) return -1;
+        const vb = bots().filter(function (b) { return b.getBoundingClientRect().width > 0; });
+        if (!vb.length) return -1;
+        const tr = t.getBoundingClientRect();
+        const cx = tr.left + tr.width / 2;
+        let nearest = -1, best = Infinity;
+        vb.forEach(function (b, i) {
+            const r = b.getBoundingClientRect();
+            const d = Math.abs(r.left + r.width / 2 - cx);
+            if (d < best) { best = d; nearest = i; }
+        });
+        return nearest;
+    }
+    function trackScrollSfx() {
+        const idx = centerIndex();
+        if (idx < 0 || idx === lastCenterIdx) return;
+        // play one tick per bot crossed since the last centre (capped for big flings)
+        if (lastCenterIdx >= 0 && !suppressScrollSfx && global.SFX) {
+            const steps = Math.min(4, Math.abs(idx - lastCenterIdx));
+            for (let k = 0; k < steps; k++) global.SFX.play("oneScroll");
+        }
+        lastCenterIdx = idx;
+    }
+
     const CHARGED = {
         // low set
         orange: "assets/images/orange_bot_charged.webp",
@@ -65,6 +108,7 @@
         });
     }
     function onScroll() {
+        trackScrollSfx();
         if (rafPending) return;
         rafPending = true;
         global.requestAnimationFrame(function () {
@@ -79,7 +123,8 @@
     function nudge(dir) {
         const t = track();
         if (!t) return;
-        if (global.SFX) global.SFX.play("uiTap");
+        // not suppressed: the tween crosses one bot, so the crossing detector
+        // (trackScrollSfx) ticks `one_scroll` once on its own.
         const vb = bots().filter(function (b) {
             return b.getBoundingClientRect().width > 0; // only this phase's bots
         });
@@ -173,6 +218,8 @@
         }
         if (hintRunning) return;
         hintRunning = true;
+        // not suppressed: as the hint sweeps across the row, the crossing
+        // detector ticks `one_scroll` per bot — matching the pan's motion.
         const max = t.scrollWidth - t.clientWidth;
         const center = Math.round(max / 2);
         const car = document.getElementById("bot-carousel");
@@ -242,7 +289,7 @@
                 return b.dataset.state === wantState() && !b.classList.contains("is-fixed") && !b.classList.contains("is-locked");
             })[0];
         }
-        if (focus) focus.scrollIntoView({ inline: "center", block: "nearest" });
+        if (focus) { suppressScroll(600); focus.scrollIntoView({ inline: "center", block: "nearest" }); }
         global.requestAnimationFrame(layout);
         global.setTimeout(layout, 60);
     }
@@ -252,6 +299,7 @@
         if (btn.dataset.state !== wantState() || btn.classList.contains("is-fixed") || btn.classList.contains("is-locked")) return;
         const screen1 = document.getElementById("screen-1");
         if (global.SFX) global.SFX.play("uiTap");
+        suppressScroll(800); // centring the tapped bot is programmatic, not a browse
         btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
         bots().forEach(function (b) {
             b.classList.toggle("is-selected", b === btn);

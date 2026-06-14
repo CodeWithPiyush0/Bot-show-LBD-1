@@ -19,6 +19,7 @@
                 return;
             }
             el.textContent += text.charAt(i);
+            if (window.SFX) window.SFX.play("type"); // one tick per character
             i += 1;
             window.setTimeout(tick, speed);
         })();
@@ -35,6 +36,7 @@
         (function tick() {
             if (token !== s1Token || i >= text.length) return;
             el.textContent += text.charAt(i);
+            if (window.SFX) window.SFX.play("type"); // one tick per character
             i += 1;
             window.setTimeout(tick, TYPE_SPEED);
         })();
@@ -67,6 +69,7 @@
             // L1 tutorial: bring the spotlight up onto the centre bot after a beat.
             window.setTimeout(function () {
                 screen1.classList.add("is-lit");
+                if (window.SFX) window.SFX.play("spotlight");
             }, 1000);
         }
 
