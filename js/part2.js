@@ -77,6 +77,7 @@
         textEl.textContent = "";
         global.setTimeout(function () {
             q.classList.add("is-open");
+            if (global.SFX) global.SFX.play("bannerOpen");
             global.setTimeout(function () {
                 typewriter(textEl, msg1, TYPE, function () {
                     if (msg2) {
@@ -96,6 +97,7 @@
         const from = byId(fromId);
         const to = byId(toId);
         from.classList.add("is-zooming");
+        if (global.SFX) global.SFX.play("zoom");
         global.setTimeout(function () {
             global.GameNav.show(toId);
             to.classList.add("is-entering");
@@ -111,9 +113,11 @@
         const from = byId(fromId);
         const to = byId(toId);
         from.classList.add("is-zooming-out");
+        if (global.SFX) global.SFX.play("zoom");
         global.setTimeout(function () {
             global.GameNav.show(toId);
             to.classList.add("is-revealing");
+            if (toId === "screen-7" && global.SFX) global.SFX.play("celebrate");
         }, 150);
         global.setTimeout(function () {
             to.classList.remove("is-revealing");
@@ -166,6 +170,7 @@
         // Phase A: all bots equally lit; type "Oh no! ..."
         global.setTimeout(function () {
             q.classList.add("is-open");
+            if (global.SFX) global.SFX.play("bannerOpen");
             global.setTimeout(function () {
                 typewriter(textEl, msg1, TYPE, function () {
                     global.setTimeout(phaseB, 1400);
@@ -176,6 +181,7 @@
         // Phase B: spotlight on the centre, sides darken; "Let's start fixing this bot."
         function phaseB() {
             screen5.classList.add("is-spotlit");
+            if (global.SFX) global.SFX.play("spotlight");
             typewriter(textEl, msg2, TYPE, function () {
                 global.setTimeout(phaseC, 1400);
             });
@@ -215,6 +221,7 @@
         const s6 = byId("screen-6");
         stage5.style.transition = "transform 0.6s cubic-bezier(0.42, 0, 1, 1)";
         stage5.style.transform = "scale(4.5)";
+        if (global.SFX) global.SFX.play("zoom");
         global.setTimeout(function () {
             global.GameNav.show("screen-6"); // screen-5 fades out
             s6.classList.add("is-entering");
@@ -515,6 +522,7 @@
         group.style.top = pctY(r.y + r.h / 2);
         setTransform(group, fitScale(group.children.length));
         updateBigSlotState();
+        if (global.SFX) global.SFX.play("place");
 
         if (slotOccupant["small-left"] && slotOccupant["small-right"] && !fixed) {
             onFixed();
@@ -534,6 +542,7 @@
             if (!splitEnabled || fixed) return;
             e.preventDefault();
             dragging = true;
+            if (global.SFX) global.SFX.play("pickup");
             rect = stage.getBoundingClientRect();
             startX = e.clientX;
             startY = e.clientY;
@@ -568,6 +577,7 @@
         splitEnabled = false;
         abortHint();
         cancelIdle();
+        if (global.SFX) global.SFX.play("success");
 
         // The Screen 7 celebrating bot: in chooser levels it's the chosen
         // bot's charged art; in the tutorial it's the white/purple bot.
@@ -669,11 +679,13 @@
 
         global.setTimeout(function () {
             if (q) q.classList.add("is-open");
+            if (global.SFX) global.SFX.play("bannerOpen");
             global.setTimeout(function () {
                 if (textEl) typewriter(textEl, full, TYPE);
 
                 // Phase A — "This whole": the whole (big slot) glows.
                 if (c2BigGlow) c2BigGlow.classList.add("is-charged");
+                if (global.SFX) global.SFX.play("ready");
 
                 // Phase B — "...is made of these 2 parts": parts light up one by one.
                 global.setTimeout(function () {
@@ -685,8 +697,10 @@
                         b.classList.remove("is-dim");
                     });
                     if (c2GlowL) c2GlowL.classList.add("is-charged");
+                    if (global.SFX) global.SFX.play("ready");
                     global.setTimeout(function () {
                         if (c2GlowR) c2GlowR.classList.add("is-charged");
+                        if (global.SFX) global.SFX.play("ready");
                     }, 600);
                 }, 2400);
 

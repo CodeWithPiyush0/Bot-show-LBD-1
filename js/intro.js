@@ -78,6 +78,7 @@
         const startTyping = function () {
             if (started || !full) return;
             started = true;
+            if (window.SFX) window.SFX.play("bannerOpen");
             typeScreen1(textEl, full);
         };
 
@@ -123,6 +124,7 @@
         // Open the banner, then type once it has unrolled.
         window.setTimeout(function () {
             q.classList.add("is-open");
+            if (window.SFX) window.SFX.play("bannerOpen");
             window.setTimeout(function () {
                 typewriter(textEl, full, TYPE_SPEED, function () {
                     window.setTimeout(closeScreen2Intro, HOLD_AFTER_TEXT);
@@ -154,6 +156,7 @@
         const textEl = q.querySelector(".question__text");
         textEl.textContent = "";
         q.classList.add("is-open");
+        if (window.SFX) window.SFX.play("bannerOpen");
         window.setTimeout(function () {
             typewriter(textEl, text, TYPE_SPEED);
         }, 650); // after the unroll transition
@@ -176,6 +179,7 @@
         textEl.textContent = "";
         window.setTimeout(function () {
             q.classList.add("is-open");
+            if (window.SFX) window.SFX.play("bannerOpen");
             window.setTimeout(function () {
                 typewriter(textEl, text, TYPE_SPEED);
             }, 650); // after the unroll transition

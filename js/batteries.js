@@ -150,6 +150,7 @@
         group.style.left = pctX(r.x + r.w / 2);
         group.style.top = pctY(r.y + r.h / 2);
         setTransform(group, fitScale(group.children.length));
+        if (global.SFX) global.SFX.play("place");
     }
 
     /* ---- the charge sequence ---- */
@@ -254,9 +255,11 @@
             chargeFx.classList.add("is-flowing");
             chargeFx.classList.add("is-active");
         }
+        if (global.SFX) global.SFX.play("electricity", { loop: true });
 
         // 1) move batteries up
         global.setTimeout(function () {
+            if (global.SFX) global.SFX.play("energy");
             let delay = 0;
             for (let id of ["small-left", "small-right"]) {
                 const group = slotOccupant[id];
@@ -273,6 +276,7 @@
             if (chargeFx) chargeFx.classList.add("is-green");
             const panelBig = document.querySelector(".panel--big");
             if (panelBig) panelBig.classList.add("is-green");
+            if (global.SFX) { global.SFX.stop("electricity"); global.SFX.play("powerUp"); }
         }, 2000);
 
         // 4) finale: trays slide away and the board moves down to fill the
@@ -506,6 +510,7 @@
     function rejectBig(group) {
         sendHome(group); // animated bounce back (the group's left/top transition)
         if (!bigGlow || charged) return;
+        if (global.SFX) global.SFX.play("reject");
         bigGlow.src = "assets/images/Bigger_Slot_Red.svg";
         bigGlow.classList.remove("is-rejected");
         void bigGlow.offsetWidth; // restart the shake on rapid re-drops
@@ -531,6 +536,7 @@
             if (charged || !enabled) return; // locked after charging / during intro
             e.preventDefault();
             dragging = true;
+            if (global.SFX) global.SFX.play("pickup");
             stageRect = stage.getBoundingClientRect();
             startX = e.clientX;
             startY = e.clientY;
@@ -600,6 +606,7 @@
         abortHint();
         cancelIdle();
         clearReject();
+        if (global.SFX) global.SFX.stop("electricity"); // safety: kill any loop
 
         // Reset elements class lists
         contentEl.classList.remove("is-charged-final");

@@ -756,6 +756,43 @@ Key tunables:
 
 ---
 
+## 10c. Audio / SFX (`js/audio.js`, `window.SFX`)
+
+A tiny SFX manager. `window.SFX.play("<event>", {volume, loop})` clones a template
+`Audio` per call (so rapid repeats overlap); `SFX.stop("<event>")` stops a loop;
+`SFX.toggleMute()` (also bound to the **M** key). Missing files **no-op silently**
+(a one-time 404, no crash) — so unrecorded "WANTED" sounds can be dropped in any time
+and start playing automatically. Loaded first (before the other game scripts) in
+index.html. Autoplay is unlocked by the Play-button tap (first user gesture).
+
+**Event → file map** (`FILES` in audio.js, all under `assets/audios/`):
+
+| event | file (✓ = present) | fires when |
+|---|---|---|
+| `uiTap` | tap.mp3 ✓ | Play btn, carousel arrows, bot tap, next-level btn |
+| `bannerOpen` | pop.mp3 ✓ | any speech banner unrolls open (screens 1/2/3/4/5/6/8) |
+| `pickup` | Pick_Up_Battery.mp3 ✓ | grab a battery group (drag start, both parts) |
+| `place` | pop.mp3 ✓ | battery group snaps into a slot |
+| `spotlight` | spotlight.mp3 ✓ | stage spotlight falls (chooser select, Screen-5 phase B) |
+| `electricity` | electricity.mp3 ✓ | charge current crackle — **loops**, stopped at green |
+| `energy` | Energy Travelling.mp3 ✓ | batteries travel up into the big slot |
+| `powerUp` | pwlpl-power-up…mp3 ✓ | top slot turns green / charged |
+| `ready` | soundshelfstudio-ui-hyperdrive-ready-ping…mp3 ✓ | concept slot-glow pings (screens 4 & 8) |
+| `success` | universfield-happy-message-ping…mp3 ✓ | a bot is fixed (Part 2 split complete) |
+| `levelDone` | level.mp3 ✓ | per-level textless curtain transition |
+| `zoom` | **zoom.mp3** ✗ WANTED | diving INTO / OUT of a bot (every screen↔screen zoom) |
+| `curtain` | **curtain.mp3** ✗ WANTED | theatre-curtain swish (every `playCurtain`) |
+| `reject` | **reject.mp3** ✗ WANTED | wrong-slot buzz (Part 1 big-slot rejection) |
+| `celebrate` | **celebrate.mp3** ✗ WANTED | cheer/applause when a fixed bot starts dancing (screens 3 & 7) |
+| `win` | **win.mp3** ✗ WANTED | fanfare on Part Complete / All Bots Fixed |
+| `type` | **type.mp3** ✗ WANTED (optional) | soft typewriter tick (not yet wired to typer) |
+
+To add a WANTED sound: drop a file named as above into `assets/audios/` — it plays
+automatically. Different filename? update the one line in `FILES`. Per-sound volume
+trims live in `PER` (audio.js); master volume `MASTER = 0.85`.
+
+---
+
 ## 11. Coordinate quick-reference (1920×1080 design px)
 
 | Thing | x | y | w | h |

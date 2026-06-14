@@ -141,11 +141,13 @@
         if (glowSmallLeft) {
             later(function () {
                 glowSmallLeft.classList.add("is-charged");
+                if (global.SFX) global.SFX.play("ready");
             }, 0);
         }
         if (glowSmallRight) {
             later(function () {
                 glowSmallRight.classList.add("is-charged");
+                if (global.SFX) global.SFX.play("ready");
             }, SLOT_GLOW_STAGGER);
         }
     }
@@ -161,6 +163,7 @@
             b.classList.remove("is-dim");
         });
         if (bigGlow) bigGlow.classList.add("is-charged");
+        if (global.SFX) global.SFX.play("ready");
     }
 
     // Zoom OUT of the concept board to reveal the whole charged bot
@@ -170,9 +173,11 @@
         const from = document.getElementById("screen-4");
         const screen3 = document.getElementById("screen-3");
         if (from) from.classList.add("is-zooming-out");
+        if (global.SFX) global.SFX.play("zoom");
         later(function () {
             if (global.GameNav) global.GameNav.show("screen-3");
             if (screen3) screen3.classList.add("is-revealing");
+            if (global.SFX) global.SFX.play("celebrate");
         }, 150);
         later(function () {
             if (screen3) screen3.classList.remove("is-revealing");
@@ -201,6 +206,7 @@
         // the text begins, so the glow lines up with "These 2 parts".
         later(function () {
             if (q) q.classList.add("is-open");
+            if (global.SFX) global.SFX.play("bannerOpen");
             later(function () {
                 if (textEl) typewriter(textEl, full, TYPE_SPEED);
 

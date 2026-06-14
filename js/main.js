@@ -87,6 +87,8 @@
         if (titleEl) titleEl.textContent = title;
         if (subEl) subEl.textContent = sub;
 
+        if (window.SFX) window.SFX.play("curtain");
+
         if (!curtains) {
             onSwap();
             return;
@@ -294,6 +296,7 @@
         const playBtn = document.getElementById("play-btn");
         if (playBtn) {
             playBtn.addEventListener("click", function () {
+                if (window.SFX) window.SFX.play("uiTap");
                 startGame();
             });
         }
@@ -302,6 +305,7 @@
         const nextLevelBtn = document.getElementById("next-level-btn");
         if (nextLevelBtn) {
             nextLevelBtn.addEventListener("click", function () {
+                if (window.SFX) window.SFX.play("uiTap");
                 window.gamePart = 1;
                 setupLevel(1);
                 window.GameNav.show("screen-pre");
@@ -320,6 +324,7 @@
         function enterBotTo(targetId, onSettled) {
             if (!screen1 || screen1.classList.contains("is-zooming")) return;
             screen1.classList.add("is-zooming");
+            if (window.SFX) window.SFX.play("zoom");
             const target = document.getElementById(targetId);
 
             // Hand off when Screen 1 has zoomed to ~2x, which is exactly the
@@ -374,6 +379,7 @@
 
             if ((window.gameStage || 1) > 4) {
                 // All 4 bots of this part are fixed.
+                if (window.SFX) window.SFX.play("win");
                 if (window.gamePart === 1) {
                     // Part 1 (charge) done → on to the Part 2 (split) tutorial.
                     playCurtain("Part 1 Complete!", "Now let's fix the overcharged bots…", function () {
@@ -389,6 +395,7 @@
                 }
             } else {
                 // Next level of the same part — TEXTLESS curtain (no level text).
+                if (window.SFX) window.SFX.play("levelDone");
                 playCurtain("", "", function () {
                     window.GameNav.show("screen-1");
                     if (window.BotChooser) window.BotChooser.enterChooser(false);
@@ -415,10 +422,12 @@
         function exitBot() {
             if (!screen2 || screen2.classList.contains("is-zooming-out")) return;
             screen2.classList.add("is-zooming-out");
+            if (window.SFX) window.SFX.play("zoom");
 
             window.setTimeout(function () {
                 window.GameNav.show("screen-3");
                 if (screen3) screen3.classList.add("is-revealing");
+                if (window.SFX) window.SFX.play("celebrate");
             }, 150);
 
             window.setTimeout(function () {

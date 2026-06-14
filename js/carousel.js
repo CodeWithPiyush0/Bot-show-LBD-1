@@ -79,6 +79,7 @@
     function nudge(dir) {
         const t = track();
         if (!t) return;
+        if (global.SFX) global.SFX.play("uiTap");
         const vb = bots().filter(function (b) {
             return b.getBoundingClientRect().width > 0; // only this phase's bots
         });
@@ -250,6 +251,7 @@
         // only the current phase's un-fixed, un-locked bots are tappable
         if (btn.dataset.state !== wantState() || btn.classList.contains("is-fixed") || btn.classList.contains("is-locked")) return;
         const screen1 = document.getElementById("screen-1");
+        if (global.SFX) global.SFX.play("uiTap");
         btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
         bots().forEach(function (b) {
             b.classList.toggle("is-selected", b === btn);
@@ -257,6 +259,7 @@
         // the spotlight falls on it
         global.setTimeout(function () {
             if (screen1) screen1.classList.add("is-choosing", "is-lit");
+            if (global.SFX) global.SFX.play("spotlight");
         }, 350);
         // then enter the matching puzzle (charge = Part 1, split = Part 2)
         global.setTimeout(function () {
