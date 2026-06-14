@@ -108,6 +108,14 @@
         bots().forEach(function (btn) {
             const img = btn.querySelector("img");
             if (img) img.dataset.orig = img.getAttribute("src"); // for reset()
+            // Overheated steam rising off each overcharged bot's head.
+            if (btn.dataset.state === "overcharged" && !btn.querySelector(".heat-steam")) {
+                const steam = document.createElement("span");
+                steam.className = "heat-steam";
+                steam.setAttribute("aria-hidden", "true");
+                steam.innerHTML = "<i></i><i></i><i></i><i></i><i></i>";
+                btn.appendChild(steam);
+            }
             btn.addEventListener("click", function () {
                 select(btn);
             });

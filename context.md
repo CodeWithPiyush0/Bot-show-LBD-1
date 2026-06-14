@@ -255,6 +255,20 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
   glow** is layered on in the chooser (`.carousel-bot[data-state="overcharged"]::after`,
   screen-blend over the chest, + a red rim glow on the img) so it always reads "overcharged
   red". *(For a perfect baked red glow, swap in Figma-made art — keyed by `data-scheme`.)*
+  **Overheated marks:** each overcharged carousel bot shows a small fan of cyan **steam
+  squiggle marks** hugging the top of its head — matching the Screen-5 white bot's BAKED look.
+  A `.heat-steam` span (5 short wavy `<i>`, SVG data-uri, `#84c8cf`) is injected by
+  `carousel.js` `init()` into every `[data-state="overcharged"]` button, styled in screen.css
+  (`bottom:74%` of the button = right above the head; `height:13%`, marks fanned via per-child
+  `--r` tilt ±12°/±6°/0 and varied heights). **Per-bot `bottom` overrides** because each image
+  bakes a different head height/top-padding: red 74% (base), green 64%, teal 78.5%, yellow 78.5%
+  (`.carousel-bot[data-scheme="…"] .heat-steam`). These were **derived from each webp's alpha
+  bounding box** (content-top ÷ height → head-top as a % of the bottom-aligned button: red 74.1 /
+  green 64.0 / teal 78.7 / yellow 78.4 — yellow's geometry is ~identical to teal, both tall
+  images, so they share ~78.5%; an earlier eyeballed yellow=71% was wrong). They are **static** — NOT a rising/emitting steam;
+  the only motion is a faint in-place `heatShimmer` (opacity 0.7↔1 + 6% bob). Scales with the
+  coverflow `transform` (it's a button child). Hidden on `.is-fixed`. (The Screen-5 white bot
+  keeps its baked-in version.)
   **Grounding:** the 4 `_bot_overcharged.webp` (and `blue_bot_low/charged`,
   `green_bot_charged`) had large transparent BOTTOM padding baked in (green was 16.5% of
   its height!), which made them float above the floor in the bottom-aligned carousel —

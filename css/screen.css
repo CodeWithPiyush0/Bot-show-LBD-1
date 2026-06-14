@@ -525,4 +525,53 @@
     50% { filter: drop-shadow(0 0 1.6cqw rgba(255, 45, 30, 1)); }
 }
 
+/* ---- "Overheated" squiggle marks sitting around an overcharged bot's head ----
+   Matches the Screen-5 white bot's BAKED look: a small fan of short cyan wavy
+   marks hugging the top of the head — static (they do NOT rise/emit from the
+   head), with only a faint in-place shimmer. A `.heat-steam` span (5 `<i>`
+   marks) is injected by carousel.js into every `[data-state="overcharged"]`
+   button. Hidden once the bot is fixed. */
+.heat-steam {
+    position: absolute;
+    left: 50%;
+    bottom: 74%; /* hug the top of the head (bots are bottom-aligned) */
+    transform: translateX(-50%);
+    width: 36%;
+    height: 13%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 3; /* above the bot image and the red chest glow */
+}
+.heat-steam i {
+    display: block;
+    width: 15%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 30'%3E%3Cpath d='M7 30 C13 24 1 21 7 15 C13 9 1 6 7 0' fill='none' stroke='%2384c8cf' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center bottom / contain;
+    transform-origin: bottom center;
+    /* faint breathing shimmer in place — keeps the tilt (--r), never rises */
+    animation: heatShimmer 2.2s ease-in-out infinite;
+}
+/* Fan the marks out in a shallow arc, like the white bot's: outer ones tilt
+   outward + sit a touch shorter, the centre one stands tallest. */
+.heat-steam i:nth-child(1) { --r: -12deg; height: 82%;  animation-delay: 0s;   }
+.heat-steam i:nth-child(2) { --r: -6deg;  height: 94%;  animation-delay: 0.4s; }
+.heat-steam i:nth-child(3) { --r: 0deg;   height: 100%; animation-delay: 0.8s; }
+.heat-steam i:nth-child(4) { --r: 6deg;   height: 94%;  animation-delay: 0.2s; }
+.heat-steam i:nth-child(5) { --r: 12deg;  height: 82%;  animation-delay: 0.6s; }
+@keyframes heatShimmer {
+    0%, 100% { opacity: 0.7; transform: rotate(var(--r)) translateY(0); }
+    50%      { opacity: 1;   transform: rotate(var(--r)) translateY(-6%); }
+}
+/* Per-bot head height differs (each image bakes a different amount of top
+   transparent padding / dome height), so nudge each scheme so the marks hug
+   ITS head. Base (74%) suits red; the others override. */
+.carousel-bot[data-scheme="green"]  .heat-steam { bottom: 64%; }
+.carousel-bot[data-scheme="teal"]   .heat-steam { bottom: 78.5%; }
+.carousel-bot[data-scheme="yellow"] .heat-steam { bottom: 78.5%; }
+
+/* Once fixed (charged + dancing), the bot is no longer overheating */
+.carousel-bot.is-fixed .heat-steam { display: none; }
+
 
