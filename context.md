@@ -289,6 +289,11 @@ Part 1 low — see §5); fixed bots of the current state keep dancing.
   rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
   zooms in (`enterBotTo`) → charge (`screen-2`, part "1") or split (`screen-6`, part "2"),
   where `part` = `phase === "charge" ? "1" : "2"`.
+  - ⚠️ BUG FIX: `enterBotTo` reveals the puzzle screen at ~380ms but its setup used to run
+    only on settle (~1200ms), so the PREVIOUS level's filled/charged board flashed for
+    ~0.8s. `chooseBotEnter` now resets the board **immediately, before the zoom** —
+    `Batteries.setup()` (charge) / `Part2.resetSplit()` (split, extracted from `startSplit`)
+    — so each level starts visibly empty. (Full setup still re-runs on settle; harmless.)
 - **After a puzzle**, `returnToChooser()` (main.js) → `BotChooser.onFixed(scheme)`: marks
   that bot fixed (swaps to charged art + dances) and **advances `gameStage`** — each solve
   completes a level. Then: if `gameStage <= 4` → **TEXTLESS** `playCurtain("", "", …, 1500)`

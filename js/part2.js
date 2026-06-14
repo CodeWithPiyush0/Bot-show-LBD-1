@@ -375,7 +375,10 @@
         scheduleIdle();
     }
 
-    function startSplit() {
+    // Reset the split board to its fresh state (groups full in the big slot,
+    // small slots empty). Called BOTH on entry (startSplit) and EARLY — before
+    // the zoom reveals screen-6 — so the previous level's batteries never flash.
+    function resetSplit() {
         stage = byId("stage");
         s6 = byId("s6-content");
         if (!s6) return;
@@ -383,15 +386,6 @@
         splitEnabled = false;
         abortHint();
         cancelIdle();
-
-        // Inactivity tracking for the levels' looping ghost nudge (wired once).
-        const screen6 = byId("screen-6");
-        if (screen6 && !screen6.dataset.idleWired) {
-            screen6.dataset.idleWired = "1";
-            ["pointerdown", "pointermove"].forEach(function (ev) {
-                screen6.addEventListener(ev, onActivity, { passive: true });
-            });
-        }
 
         DROPPABLE.forEach(function (id) {
             slotOccupant[id] = null;
@@ -407,14 +401,28 @@
         GROUPS[0].count = c.blue;
         GROUPS[1].count = c.yellow;
 
-        // Rebuild the battery groups
+        // Rebuild the battery groups (all in the big slot)
         GROUPS.forEach(function (g) {
             const el = makeGroup(g);
             s6.appendChild(el);
             attachDrag(el);
         });
-        
+
         updateBigSlotState();
+    }
+
+    function startSplit() {
+        resetSplit();
+        if (!s6) return;
+
+        // Inactivity tracking for the levels' looping ghost nudge (wired once).
+        const screen6 = byId("screen-6");
+        if (screen6 && !screen6.dataset.idleWired) {
+            screen6.dataset.idleWired = "1";
+            ["pointerdown", "pointermove"].forEach(function (ev) {
+                screen6.addEventListener(ev, onActivity, { passive: true });
+            });
+        }
 
         // Keep the board at full size the whole time.
         const q = byId("question-6");
@@ -700,6 +708,7 @@
     global.Part2 = {
         startIntro: startIntro,
         startSplit: startSplit,
+        resetSplit: resetSplit,
         playConcept2: playConcept2,
     };
     document.addEventListener("DOMContentLoaded", function () {

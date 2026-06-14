@@ -350,11 +350,17 @@
             window.currentScheme = scheme;
             if (part === "2") {
                 if (window.setPanelScheme) window.setPanelScheme(["screen-6", "screen-8"], scheme);
+                // Reset the split board to its fresh state NOW — before the zoom
+                // reveals screen-6 — so the previous level's batteries don't flash
+                // in the slots for a moment (full setup re-runs on settle).
+                if (window.Part2 && window.Part2.resetSplit) window.Part2.resetSplit();
                 enterBotTo("screen-6", function () {
                     if (window.Part2) window.Part2.startSplit();
                 });
             } else {
                 if (window.setPanelScheme) window.setPanelScheme(["screen-2", "screen-4"], scheme);
+                // Same for the charge board (screen-2): clear it before it's shown.
+                if (window.Batteries && window.Batteries.setup) window.Batteries.setup();
                 enterBot();
             }
         }
