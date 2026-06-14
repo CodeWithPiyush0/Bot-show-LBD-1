@@ -195,13 +195,19 @@ then parts them to reveal the next — matching the auditorium-stage theme. (The
 >   he flies in from the left edge and lands at ~36% stage (centring made him look like he flew
 >   from mid-screen); transparent right side = room bg / where the bots slide in. Same height
 >   as the other bots. (The old `bite_explaining.webm` rope-pull clip is kept but unused.)
-> - A glossy comic **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in
->   (`bubblePop`, rotate/overshoot) at clip ~3.0s (after the landing/stand-up) and hides
->   (`bubbleHide`) ~6.0s, before the wrist tap. STYLE (per a user-supplied reference): white
->   body, thick rounded **BLUE** outline (`border` + inset gloss highlight + solid blue 3D
->   bottom edge), bold blue text, two white `.turn-bubble__shine` streaks on the outline, and
->   a chunky `.turn-bubble__tail`. Blue matches the FIX-A-BOT title / Bite's accents and pops
->   on the warm stage. Placed `left:37% top:18%` (above Bite's head, who lands at ~36% stage-x).
+> - The **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in (`bubblePop`,
+>   rotate/overshoot) at clip ~3.0s (after the landing/stand-up) and hides (`bubbleHide`)
+>   ~6.0s, before the wrist tap. It's the **`Speech_bubble.webp`** art (a user-supplied SVG
+>   `Speech_bubble.svg`, 1423×604, converted via sharp → 720×306 webp) — a glossy blue
+>   bubble with sparkles + a tail — set as the `.turn-bubble` background (`aspect-ratio:
+>   1423/604`). Placed **HIGH** at `left:44% top:3%` (well ABOVE Bite — at his head it
+>   looked cramped). The **`.turn-bubble__text`** line (bold blue) is **absolutely centred
+>   in the bubble BODY** — `left:50% top:43%` + `translate(-50%,-50%)` (43%, not 50%, since
+>   the tail occupies the bottom). ANIMATIONS: bubble = `bubblePop` in then idle
+>   `bubbleFloat` (gentle bob/tilt loop); text = **typewriter** `turnTypewriter` — a
+>   `clip-path: inset(0 100% 0 0)→inset(0)` reveal with `steps(20, end)` (= the 20 chars),
+>   left→right, ending centred. (Earlier CSS-drawn bubble + the flex-centred / pulse text
+>   were replaced.)
 > - Cues are driven by the **clip's own `currentTime`** (`wireTurnTimeline`'s `timeupdate`),
 >   NOT wall-clock timers (those fired out of sync). Bite taps his wrist ~6.5s then **TURNS
 >   and walks OUT to the LEFT** (gone ~9.5s). The bots start at **`TURN_PULL_AT` (7.6s)** —

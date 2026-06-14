@@ -289,84 +289,66 @@ body.qa-intercept-on #stage *::after {
 /* Glossy comic speech bubble above Bite's head while it talks (Bite lands at
    ~36% of the stage width, head top ~38% down). Sticker look: white candy
    body, chunky golden ring, 3D bottom edge, top gloss, and a bordered tail. */
-/* Glossy comic speech bubble (à la the reference): white body, thick rounded
-   BLUE outline with light shines, a chunky tail, and bold blue text — matching
-   the FIX-A-BOT title / Bite's blue accents, popping on the warm stage. */
+/* Speech bubble = the Speech_bubble.webp art (glossy blue bubble + sparkles +
+   tail). Sits HIGH above Bite (not crowding his head); the line is centred in
+   the bubble body (above the tail). Both bubble and text get an idle animation. */
 .turn-bubble {
     position: absolute;
-    left: 37%;
-    top: 18%;
+    left: 44%;
+    top: 3%;
     transform: translateX(-50%) scale(0.6);
-    background: #ffffff;
-    color: #2f7ed4;
-    font-weight: 800;
-    font-size: 3.5cqw;
-    line-height: 1.15;
-    letter-spacing: 0.01em;
-    text-align: center;
-    padding: 2.2cqw 3.6cqw;
-    border-radius: 4cqw / 3.4cqw; /* gently oval-rounded */
-    border: 0.85cqw solid #2f86d8; /* thick blue outline */
-    box-shadow:
-        inset 0 0.55cqw 0 rgba(255, 255, 255, 0.85), /* glossy tube highlight (top) */
-        inset 0 -0.6cqw 0 rgba(35, 110, 190, 0.18),  /* faint bottom shade */
-        0 1.5cqw 0 #1f63b4,                           /* solid 3D bottom edge */
-        0 2.4cqw 3cqw rgba(10, 40, 80, 0.42);         /* soft drop shadow */
-    white-space: nowrap;
+    width: 39cqw;
+    aspect-ratio: 1423 / 604;
+    background: url("../assets/images/Speech_bubble.webp") no-repeat center / 100% 100%;
     opacity: 0;
     pointer-events: none;
     z-index: 3;
 }
-/* chunky rounded tail pointing down toward Bite, blue-outlined like the body */
-.turn-bubble__tail {
+/* The line, centred BOTH axes in the bubble BODY (the tail is below, so the
+   body centre is ~43% down, not 50%). Typed in via a typewriter reveal. */
+.turn-bubble__text {
     position: absolute;
-    left: 30%;
-    bottom: -2.1cqw;
-    width: 3cqw;
-    height: 3cqw;
-    background: #fff;
-    border-right: 0.85cqw solid #2f86d8;
-    border-bottom: 0.85cqw solid #2f86d8;
-    border-bottom-right-radius: 0.9cqw;
-    transform: rotate(52deg) skewX(-8deg);
-    pointer-events: none;
+    left: 50%;
+    top: 43%;
+    transform: translate(-50%, -50%);
+    color: #2f7ed4; /* blue, matching the bubble outline */
+    font-weight: 800;
+    font-size: 3.5cqw;
+    line-height: 1.1;
+    text-align: center;
+    white-space: nowrap;
+    clip-path: inset(0 100% 0 0); /* hidden until the typewriter reveals it */
 }
-/* white glossy shines sitting on the blue outline */
-.turn-bubble__shine {
-    position: absolute;
-    background: #fff;
-    border-radius: 999px;
-    pointer-events: none;
-    opacity: 0.95;
-}
-.turn-bubble__shine.s1 { /* long streak, top-left */
-    left: 7%;
-    top: -0.1cqw;
-    width: 24%;
-    height: 0.7cqw;
-    transform: rotate(-7deg);
-}
-.turn-bubble__shine.s2 { /* short dash, top-right */
-    right: 9%;
-    top: 0.1cqw;
-    width: 7%;
-    height: 0.6cqw;
-    transform: rotate(8deg);
-}
+/* Bubble: pop in, then a gentle idle float/tilt. */
 .turn-bubble.is-shown {
-    animation: bubblePop 0.5s cubic-bezier(0.34, 1.7, 0.5, 1) forwards;
+    animation:
+        bubblePop 0.5s cubic-bezier(0.34, 1.7, 0.5, 1) both,
+        bubbleFloat 2.6s ease-in-out 0.55s infinite;
 }
 .turn-bubble.is-hidden {
     animation: bubbleHide 0.3s ease forwards;
+}
+/* Text: TYPEWRITER — reveal left→right in character-width steps, after the
+   bubble has popped in. ("Now, it's your turn!" = 20 chars → steps(20).) */
+.turn-bubble.is-shown .turn-bubble__text {
+    animation: turnTypewriter 1.4s steps(20, end) 0.5s both;
 }
 @keyframes bubblePop {
     0% { opacity: 0; transform: translateX(-50%) scale(0.3) rotate(-6deg); }
     70% { opacity: 1; transform: translateX(-50%) scale(1.06) rotate(1.5deg); }
     100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
 }
+@keyframes bubbleFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0) scale(1) rotate(0deg); }
+    50% { transform: translateX(-50%) translateY(-1cqw) scale(1.015) rotate(-1.2deg); }
+}
 @keyframes bubbleHide {
     0% { opacity: 1; transform: translateX(-50%) scale(1); }
     100% { opacity: 0; transform: translateX(-50%) scale(0.6); }
+}
+@keyframes turnTypewriter {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
 }
 
 /* Bots entrance: after Bite taps his wrist (~clip 6.5s), the next screen's
