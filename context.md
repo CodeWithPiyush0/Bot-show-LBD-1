@@ -295,6 +295,12 @@ Part 1 low — see §5); fixed bots of the current state keep dancing.
   → `enterChooser(false)` for the next level; if `gameStage > 4` → the part is done →
   `gamePart 1`: `playCurtain("Part 1 Complete!", …)` → `startPart2Tutorial()`; `gamePart 2`:
   `playCurtain("All Bots Fixed!", …)` → start screen.
+- **Prev / Next arrow buttons** (`#carousel-prev` / `#carousel-next`, inside `.bot-carousel`
+  so they only show in chooser mode): for **desktop play / kids who don't scroll**. Gold
+  button art `next_button.webp` (from `next_button.png`, left chevron); `--next` is mirrored
+  (`scaleX(-1)`) to point right. `carousel.js nudge(dir)` finds the bot nearest centre and
+  `tweenScroll`s to centre its neighbour (snap off during the tween). Hidden during a
+  selection (`.screen--1.is-choosing .carousel-nav`).
 - **`startLevels(part)`** calls `BotChooser.reset()` so each part begins with all of its
   bots fresh (un-fixed, original art) and the scroll hint re-armed.
 - Counts per puzzle come from `window.STAGES[gameStage]` via `getCounts(1|2)` (see §8).

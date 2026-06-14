@@ -73,6 +73,34 @@
         });
     }
 
+    // Scroll one bot left (-1) / right (+1) — driven by the prev/next arrow
+    // buttons, so desktop players (or kids who don't know to scroll) can browse.
+    // Centres the neighbour of whichever bot is currently nearest the centre.
+    function nudge(dir) {
+        const t = track();
+        if (!t) return;
+        const vb = bots().filter(function (b) {
+            return b.getBoundingClientRect().width > 0; // only this phase's bots
+        });
+        if (!vb.length) return;
+        const tr = t.getBoundingClientRect();
+        const cx = tr.left + tr.width / 2;
+        let nearest = 0, best = Infinity;
+        vb.forEach(function (b, i) {
+            const r = b.getBoundingClientRect();
+            const d = Math.abs(r.left + r.width / 2 - cx);
+            if (d < best) { best = d; nearest = i; }
+        });
+        const target = vb[Math.max(0, Math.min(vb.length - 1, nearest + dir))];
+        const to = target.offsetLeft - (t.clientWidth - target.offsetWidth) / 2;
+        const car = document.getElementById("bot-carousel");
+        if (car) car.classList.add("no-snap"); // let the tween run, snap can't fight it
+        tweenScroll(t, to, 380, function () {
+            if (car) car.classList.remove("no-snap");
+            layout();
+        });
+    }
+
     function init() {
         const t = track();
         if (!t || wired) return;
@@ -84,6 +112,10 @@
                 select(btn);
             });
         });
+        const prevBtn = document.getElementById("carousel-prev");
+        const nextBtn = document.getElementById("carousel-next");
+        if (prevBtn) prevBtn.addEventListener("click", function () { nudge(-1); });
+        if (nextBtn) nextBtn.addEventListener("click", function () { nudge(1); });
         t.addEventListener("scroll", onScroll, { passive: true });
         global.addEventListener("resize", onScroll);
     }
