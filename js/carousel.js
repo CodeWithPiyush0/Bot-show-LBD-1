@@ -19,7 +19,6 @@
     let wired = false;
     let phase = "charge"; // "charge" (low bots) | "split" (overcharged bots)
     let lastFixed = null; // the bot just fixed — centred so it's seen dancing
-    let hintShown = false; // one-time scroll hint at the first level of a part
 
     /* ---- scroll SFX: one `one_scroll` tick PER BOT crossed ----
        As the row scrolls, every time a new bot passes the centre we play one
@@ -179,7 +178,6 @@
     // enterChooser; here we just clear fixed/selected state and restore images.
     function reset() {
         lastFixed = null;
-        hintShown = false; // replay the scroll hint at the new part's level 1
         bots().forEach(function (b) {
             b.classList.remove("is-fixed", "is-selected", "is-locked");
             const img = b.querySelector("img");
@@ -203,37 +201,6 @@
             else if (done) done();
         }
         global.setTimeout(step, 16);
-    }
-
-    // Hint at the start of the chooser: pan the row left→right→left and settle
-    // in the centre (a few bots on each side), so the kid sees it scrolls.
-    let hintRunning = false;
-    function scrollHint(tries) {
-        const t = track();
-        tries = tries || 0;
-        // wait until the row is laid out and actually overflows (scrollable)
-        if (!t || t.clientWidth === 0 || t.scrollWidth <= t.clientWidth + 5) {
-            if (tries < 12) global.setTimeout(function () { scrollHint(tries + 1); }, 150);
-            return;
-        }
-        if (hintRunning) return;
-        hintRunning = true;
-        // not suppressed: as the hint sweeps across the row, the crossing
-        // detector ticks `one_scroll` per bot — matching the pan's motion.
-        const max = t.scrollWidth - t.clientWidth;
-        const center = Math.round(max / 2);
-        const car = document.getElementById("bot-carousel");
-        if (car) car.classList.add("no-snap"); // don't let snap fight the tween
-        const legs = [0, max, center]; // left edge → right edge → centre
-        let i = 0;
-        (function next() {
-            if (i >= legs.length) {
-                if (car) car.classList.remove("no-snap");
-                hintRunning = false;
-                return;
-            }
-            tweenScroll(t, legs[i], 700, function () { i += 1; next(); });
-        })();
     }
 
     function setPhase(p) {
@@ -262,11 +229,8 @@
         // Part 2 splits the overcharged ones.
         setPhase((global.gamePart === 2) ? "split" : "charge");
 
-        // First level of the part: nudge the row so the kid sees it scrolls.
-        if (!hintShown && (global.gameStage || 1) === 1) {
-            hintShown = true;
-            global.setTimeout(scrollHint, 900);
-        }
+        // (Auto-scroll hint removed — the prev/next arrow buttons make it clear
+        // the row is browsable, so the row no longer auto-pans on the first level.)
 
         // Banner text per part, so the player knows what to do. Use the
         // cancellable Screen 1 typer so it can't be clobbered.

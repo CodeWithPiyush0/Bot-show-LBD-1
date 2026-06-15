@@ -389,6 +389,31 @@ body.qa-intercept-on #stage *::after {
     height: 34cqh;
 }
 
+/* Hand-off from the "your turn" clip — ELEMENT-WISE merge: the turn screen (room
+   + Bite walking out) stays as the backdrop; Screen 1 sits ON TOP but TRANSPARENT,
+   and only its foreground elements (the question banner + the bot carousel & its
+   arrows) slide IN from the right. Because the room is baked into the turn clip and
+   is identical on Screen 1, the background never moves — the two screens merge
+   smoothly. After the elements settle, GameNav makes Screen 1 the active screen. */
+.screen--1.is-elements-in {
+    background: none;       /* transparent → the turn screen (room + Bite) shows through */
+    opacity: 1;
+    pointer-events: none;
+    z-index: 10;
+}
+.screen--1.is-elements-in .question,
+.screen--1.is-elements-in .bot-carousel {
+    /* SLOW + gentle so the elements ease in gradually as Bite walks OUT to the
+       left — they enter from the right and trail behind him, so they never
+       overlap/cover his exit (he's gone before they reach centre). */
+    animation: elemSlideIn 3.4s cubic-bezier(0.25, 0.5, 0.3, 1) both;
+}
+.screen--1.is-elements-in .bot-carousel { animation-delay: 0.25s; } /* slight stagger */
+@keyframes elemSlideIn {
+    from { transform: translateX(125%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+
 /* ---------- Level Transition Screen ---------- */
 .screen--transition {
     background: radial-gradient(ellipse at 50% 42%, #140526 0%, #05010a 82%);

@@ -202,10 +202,10 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
 >   the video-recipe note above for the why + the compositing command.) `.turn-video` is
 >   full-screen (`inset:0; object-fit:cover`); Bite sits at the same ~72%-width bottom-left
 >   spot, so the speech-bubble/cue positions are unchanged. Bite **flies in FROM THE LEFT, does a superhero
->   LANDING**, talks, then **taps his wrist**. SIZED `width:72%`, **bottom-LEFT** (`left:0`) so
->   he flies in from the left edge and lands at ~36% stage (centring made him look like he flew
->   from mid-screen); transparent right side = room bg / where the bots slide in. Same height
->   as the other bots. (The old `bite_explaining.webm` rope-pull clip is kept but unused.)
+>   LANDING**, talks, then **taps his wrist**. He's baked at ~72% width, bottom-LEFT (lands at
+>   ~36% stage), so he flies in from the left edge and the right side is open room (where the
+>   chooser screen then slides in). (The old `bite_explaining.webm` rope-pull clip is kept but
+>   unused.)
 > - The **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in (`bubblePop`,
 >   rotate/overshoot) at clip ~3.0s (after the landing/stand-up) and hides (`bubbleHide`)
 >   ~6.0s, before the wrist tap. It's the **`Speech_bubble.webp`** art (a user-supplied SVG
@@ -222,22 +222,26 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
 > - Cues are driven by the **clip's own `currentTime`** (`wireTurnTimeline`'s `timeupdate`),
 >   NOT wall-clock timers (those fired out of sync). Bite taps his wrist ~6.5s then **TURNS
 >   and walks OUT to the LEFT** (gone ~9.5s). The bots start at **`TURN_PULL_AT` (7.6s)** —
->   i.e. as Bite is leaving, NOT at the wrist tap — and slide in SLOWLY (`TURN_SLIDE_MS`
->   3400ms, CSS `.is-pulling` transition 3.4s) so they ease in gradually and never overlap
->   him (he exits left, they enter from the right; he's gone before they reach centre).
->   Handoff (`doFinish`) fires **`TURN_SLIDE_MS`+350 after the pull starts** — i.e. once the
->   bots have SETTLED — NOT on the clip's `ended` (that fired mid-slide and looked abrupt).
-> - **BOTS ENTRANCE** (`startBotsPull`): the wrist tap summons the next screen's bots to
->   slide IN from the right **along the floor, on the SAME stage** (no rope - this clip has
->   none; and no screen-panel swap, which read as abrupt). `#turn-pull` (the rig) holds
->   `#turn-bots` (flex row, populated per part by `fillTurnBots` - `TURN_BOTS[1]` low bots /
->   `TURN_BOTS[2]` overcharged); bots stand **on the floor** (`bottom:8%`). The rig parks
->   off-right (`translateX(125%)`) and slides to centre via `.screen--turn.is-pulling` (2.8s).
->   Meanwhile the real chooser (`screen-1`) is built behind (`setupLevel(2)` + `enterChooser`).
-> - **HANDOFF** (`finalizeTurn`, on the clip's `ended` event): `GameNav.show("screen-1")` is a
->   plain **opacity crossfade** (default `.screen` 0.35s) that blends the slid-in bots into
->   the carousel (same sprites) - no panel swap - then `enterChooser` re-centres. NOT
->   `Screen1Intro.play()` (its banner unroll re-read as a reset).
+>   i.e. as Bite is leaving, NOT at the wrist tap. Handoff (`doFinish`) fires
+>   **`TURN_SLIDE_MS`+350 after the pull starts** — once the chooser screen has slid fully in.
+> - **CHOOSER ENTRANCE — element-wise merge** (`startBotsPull`): the wrist tap → Bite walks out
+>   → the chooser's FOREGROUND elements (the **question banner** + the **bot carousel & its
+>   arrows**) slide IN from the right, while the turn screen (room + Bite) stays as the backdrop
+>   so the shared room never moves and the two screens "merge". (Evolution: old `#turn-pull` bot-
+>   row rig → whole-screen slide → this element-wise slide, per the user.) `startBotsPull` builds
+>   the chooser (`setupLevel(2)` + `enterChooser`, still behind), then adds `.screen--1.is-
+>   elements-in`, which makes Screen 1 a **transparent overlay** (`background:none; opacity:1;
+>   z-index:10`, NOT yet `.is-active`) so the turn screen shows through, and animates `.question`
+>   + `.bot-carousel` via `elemSlideIn` (`translateX(125%)→0`). It's **SLOW (3.4s, gentle
+>   cubic-bezier(0.25,0.5,0.3,1), carousel staggered +0.25s)** — deliberately, so the elements
+>   ease in trailing Bite as he walks OUT to the left and **never overlap/cover him** (he exits
+>   left, they enter from the right, he's gone before they reach centre — same pacing the old
+>   bots-rig used). A faster slide rushed in over his exit. `#turn-pull`/`#turn-bots`/`fillTurnBots`
+>   are now unused.
+> - **HANDOFF** (`finalizeTurn`, `TURN_SLIDE_MS` 1.4s+350 after the slide starts): `GameNav.show(
+>   "screen-1")` makes it the active screen (deactivates the turn screen), then `is-elements-in`
+>   is removed (room bg returns; elements already at x=0 → no jump) and `enterChooser` re-centres.
+>   NOT `Screen1Intro.play()` (its banner unroll re-read as a reset).
 > - WHY currentTime/ended, not timers: wall-clock cues fired during playback latency and
 >   landed out of sync. FALLBACKS in `wireTurnTimeline` use **clip-relative** delays (`7000` /
 >   `10600`, NOT `TURN_VIDEO_AT + ...`) so the game can't get stuck if playback never advances.
@@ -290,11 +294,10 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
   `.bot-carousel.phase-split` hides all `low` (so Part 1's charged-and-dancing low bots don't
   leak into Part 2). `enterChooser` sets `phase` from `gamePart` each entry. (The old
   per-level two-phase `chargedColor`/`.is-locked` exclusion was **removed**.)
-  - **Scroll hint:** the first level of EACH part the row pans **left → right → centre**
-    (`scrollHint()` → `tweenScroll`, a `setTimeout`-stepped tween that's reliable; retries
-    until laid out, adds `.no-snap` so scroll-snap doesn't fight it), ending centred with
-    bots peeking both sides. (setTimeout-stepping, NOT rAF/`performance.now`, which don't
-    advance under headless virtual-time and made the old `scrollTo` version flaky.)
+  - **Scroll hint: REMOVED.** The row used to auto-pan left→right→centre on the first level of
+    each part (`scrollHint()`); now that prev/next **arrow buttons** make browsing obvious, the
+    auto-pan was removed (and its `hintShown`/`hintRunning` state). `tweenScroll`/`.no-snap`
+    remain — `nudge()` (the arrows) still uses them.
   - **Banner per part** (`enterChooser`, via `Screen1Intro.setText`, a cancellable typer):
     Part 1 = "Scroll and tap a bot to charge it.", Part 2 = "Oh no! These bots are
     overcharged — tap one to fix it." (`intro.js` no longer auto-types `data-text2` in
@@ -342,7 +345,7 @@ Part 1 low — see §5); fixed bots of the current state keep dancing.
   `tweenScroll`s to centre its neighbour (snap off during the tween). Hidden during a
   selection (`.screen--1.is-choosing .carousel-nav`).
 - **`startLevels(part)`** calls `BotChooser.reset()` so each part begins with all of its
-  bots fresh (un-fixed, original art) and the scroll hint re-armed.
+  bots fresh (un-fixed, original art).
 - Counts per puzzle come from `window.STAGES[gameStage]` via `getCounts(1|2)` (see §8).
 - `intro.js Screen1Intro.play()` is chooser-aware: in chooser mode (`currentLevel === 2`) it
   skips the auto-spotlight and calls `BotChooser.enterChooser()`, which OWNS the banner text.
@@ -801,7 +804,7 @@ optional `win.mp3`.)
 | `ready` | soundshelfstudio…ready-ping…mp3 | concept slot-glow pings (screens 4 & 8) |
 | `success` | universfield-happy…ping…mp3 | a bot is fixed (Part 2 split complete) |
 | `oneScroll` | one_scroll.mp3 | **one tick per bot crossed** as the carousel scrolls (arrows, hint, manual) |
-| `fullScroll` | full_scroll.mp3 | the bots **slide in from the right** after the Bite clip (`startBotsPull`) |
+| `fullScroll` | full_scroll.mp3 | the **chooser elements slide in from the right** after the Bite clip (`startBotsPull`) |
 | `zoom` | zoom.mp3 | diving INTO / OUT of a bot (every screen↔screen zoom) |
 | `flying` | flying.mp3 | Bite flies in (your-turn clip) — started on the video's `playing` event (synced to real playback), stopped when he lands (bubble shows) |
 | `reject` | reject.mp3 | wrong-slot buzz (Part 1 big-slot rejection) |

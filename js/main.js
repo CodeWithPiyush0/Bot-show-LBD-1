@@ -121,10 +121,9 @@
     // NOT wall-clock timers — playback has start latency, and timing it by
     // wall-clock fired cues out of sync. We only hand off when the clip ENDS.
     const TURN_VIDEO_AT = 2200; // when the clip starts (after curtains part)
-    const TURN_PULL_AT = 7.6;   // clip time (s) Bite turns to walk OUT → start the bots
-                                // sliding in (after the wrist tap, as he leaves, so they
-                                // never overlap him)
-    const TURN_SLIDE_MS = 3400; // bots slide-in duration (matches the CSS transition)
+    const TURN_PULL_AT = 7.6;   // clip time (s) Bite turns to walk OUT → start sliding the
+                                // chooser screen in from the right (after the wrist tap)
+    const TURN_SLIDE_MS = 3400; // slow element slide-in (elemSlideIn 3.4s), paced to Bite's exit
     // The bots that get pulled in match the part: charge = low bots, split =
     // overcharged bots (same sprites the chooser then shows).
     const TURN_BOTS = {
@@ -148,10 +147,9 @@
     function showYourTurn(part) {
         const video = document.getElementById("turn-video");
         const bubble = document.getElementById("turn-bubble");
-        const screenTurn = document.getElementById("screen-turn");
+        const screen1 = document.getElementById("screen-1");
         if (bubble) bubble.classList.remove("is-shown", "is-hidden");
-        if (screenTurn) screenTurn.classList.remove("is-pulling");
-        fillTurnBots(part); // parked off-right, ready to be dragged in
+        if (screen1) screen1.classList.remove("is-elements-in"); // reset the element-slide for replay
         if (video) { try { video.pause(); video.currentTime = 0; } catch (e) {} }
 
         playCurtain("", "", function () {
@@ -245,33 +243,36 @@
         window.setTimeout(doFinish, 13500);
     }
 
-    // Bite walks out → slide the next screen's bots in from the right along the
-    // floor (slowly, so they don't overlap him), and meanwhile build the chooser
-    // ready behind for the crossfade.
+    // Bite walks out → build the chooser, then slide its ELEMENTS (banner +
+    // carousel/arrows) in from the right over the turn screen, which stays as the
+    // (shared room) backdrop so the two screens merge. (Replaces the bots-row rig.)
     function startBotsPull(part) {
-        const screenTurn = document.getElementById("screen-turn");
-        if (screenTurn) screenTurn.classList.add("is-pulling"); // slide the bot row in
-        if (window.SFX) window.SFX.play("fullScroll"); // the bots sweep in from the right
         window.gamePart = part;
         setupLevel(2);
         if (window.BotChooser) {
             window.BotChooser.reset();
-            window.BotChooser.enterChooser(false); // populate + centre (still hidden)
+            window.BotChooser.enterChooser(false); // populate + centre (still behind)
         }
+        const screen1 = document.getElementById("screen-1");
+        if (screen1) {
+            screen1.classList.remove("is-elements-in");
+            void screen1.offsetWidth;                 // restart the element-slide animations
+            screen1.classList.add("is-elements-in");  // transparent overlay; elements slide in
+        }
+        if (window.SFX) window.SFX.play("fullScroll"); // whoosh as the elements sweep in
     }
 
-    // Bots have settled and Bite is gone → crossfade to the live chooser. The
-    // default GameNav.show opacity transition blends the dragged-in bots into
-    // the carousel (same sprites), so there's no abrupt swap. We do NOT call
-    // Screen1Intro.play() (its banner-unroll/re-centre reads as a reset); the
-    // carousel is already built and its taps are wired (init).
+    // Elements have slid fully in → make Screen 1 the real active screen and drop
+    // the transparent-overlay class (room bg returns; elements are already at x=0,
+    // so no jump). We do NOT call Screen1Intro.play() (its banner-unroll re-reads as
+    // a reset); the carousel is already built + wired.
     function finalizeTurn(part) {
         const video = document.getElementById("turn-video");
-        const screenTurn = document.getElementById("screen-turn");
+        const screen1 = document.getElementById("screen-1");
         if (video) { try { video.pause(); } catch (e) {} }
-        window.GameNav.show("screen-1"); // crossfade in + letterbox
-        if (window.BotChooser) window.BotChooser.enterChooser(false);
-        if (screenTurn) screenTurn.classList.remove("is-pulling"); // reset for next time
+        window.GameNav.show("screen-1");                        // becomes active (deactivates turn screen)
+        if (screen1) screen1.classList.remove("is-elements-in"); // restore bg + clear element transforms
+        if (window.BotChooser) window.BotChooser.enterChooser(false); // re-centre, fully shown
     }
     window.startBotsPull = startBotsPull;
     window.finalizeTurn = finalizeTurn;
