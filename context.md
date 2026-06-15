@@ -758,14 +758,24 @@ Key tunables:
 
 ## 10c. Audio / SFX (`js/audio.js`, `window.SFX`)
 
-SFX manager. **Reliability**: each sound keeps a small **pool of pre-loaded `<audio>`
-elements** reused round-robin (`POOL` sizes per name; default 4, `type`=12). The earlier
-build cloned a template per play, which **re-loaded the file each time** → dropped /
-delayed / missing sounds; pools fixed that. Pools load via the media loader, so they work
-from `file://` AND http (no fetch/CORS). All pools are pre-built on DOMContentLoaded so the
-first use has no load delay. `SFX.play("<event>",{volume,loop})`; `SFX.stop("<event>")`
-stops all of that name (incl. the loop); `SFX.toggleMute()` (also the **M** key). Missing
-files no-op silently. Loaded first in index.html; autoplay unlocked by the Play-btn tap.
+SFX manager, built on the **Web Audio API** (`AudioContext`). **Why** (mobile fix): the
+older `<audio>`-element pool (~70 elements, plus a `.play()` per typed character) was fine on
+desktop but **janked real phones** — mobile browsers cap simultaneous media elements and each
+`.play()` is costly, so typing lagged and SFX dropped. Web Audio decodes each file **once**
+into an `AudioBuffer` (via `fetch`→`decodeAudioData` on load); playing is a cheap
+`BufferSourceNode` through a per-sound gain → a `masterGain` (`MASTER` 0.85) → destination.
+Dozens of overlapping / rapid sounds cost almost nothing and behave **identically on
+mobile / tablet / desktop**. (Verified over http: 19/20 files decode; the 1 miss is the
+optional `win.mp3`.)
+- **Autoplay**: `AudioContext` starts suspended on mobile; `ctx.resume()` runs on the first
+  `pointerdown`/`touchstart`/`keydown` (and inside `play()`), so the Play-btn tap unlocks it.
+- **Fallback**: if Web Audio is missing, or files can't be fetched (opened from `file://`,
+  where `fetch` is blocked — e.g. local headless tests), each sound lazily falls back to a
+  single `<audio>` element so dev still has sound. Served over http(s) → always Web Audio.
+- `SFX.play("<event>",{volume,loop})` (volume 0..1, relative to master); `SFX.stop("<event>")`
+  stops all active sources of that name (incl. loops/long one-shots — tracked in `active{}`);
+  `SFX.toggleMute()` / **M** key sets `masterGain` to 0. Missing files no-op silently.
+  Loaded first in index.html.
 
 **Event → file map** (`FILES` in audio.js, all under `assets/audios/`, all ✓ present except `win`):
 
@@ -799,16 +809,15 @@ a burst that matches the fling speed. The arrows and the scroll-hint feed throug
 (no separate sound). Programmatic **centring** (selecting a bot, entering the chooser) sets
 `suppressScrollSfx` so it stays silent.
 
-**Gapless music loop**: bgMusic does NOT use the native `loop` attribute (it reseeks and the
-MP3's encoder padding shows up as an audible gap). Instead a dedicated **2-element ping-pong
-looper** (`bgEnsure`/`startBg`) watches the lead element's clock and launches the other
-element `BG_LOOKAHEAD` (0.32s) before the current pass ends, so the next pass is already
-sounding at the seam — no delay. `stopBg` stops both.
+**Gapless music loop**: `bgMusic` plays as a `BufferSourceNode` with `src.loop = true` —
+sample-accurate, so it loops with **no gap** (no MP3-padding seam, no ping-pong needed).
+Started on the Play-btn tap.
 
-**Tab visibility**: on `visibilitychange→hidden` (or `pagehide`), `suspendAll()` pauses every
-audio element (music + any SFX) — nothing plays while the game tab is in the background; on
-return, `resumeBg()` continues the music bed from where it paused (SFX stay paused and just
-replay on their next trigger). `bgWanted` tracks whether the bed should be on.
+**Tab visibility**: on `visibilitychange→hidden` (or `pagehide`) → `ctx.suspend()` freezes ALL
+Web Audio at once (cheap) so nothing plays off-tab; on return → `ctx.resume()` and the looping
+music continues seamlessly. SFX are transient (no restore needed). The `<audio>` fallback path
+pauses/replays its elements analogously. Mute sets `masterGain` to 0 (loops keep running
+silently, so unmute is instant).
 
 To add `win`: drop `win.mp3` into `assets/audios/`. Per-sound volume trims live in `PER`;
 master volume `MASTER = 0.85`.
