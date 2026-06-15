@@ -87,8 +87,8 @@
         if (titleEl) titleEl.textContent = title;
         if (subEl) subEl.textContent = sub;
 
-        // The curtain uses the level-transition swish everywhere. Cut off the
-        // (long) celebrate cheer the moment the curtain begins to close.
+        // Play the curtain swish on every transition. Cut off the (long)
+        // celebrate cheer the moment the curtain begins to close.
         if (window.SFX) { window.SFX.stop("celebrate"); window.SFX.play("curtain"); }
 
         if (!curtains) {

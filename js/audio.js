@@ -30,26 +30,26 @@
 
     // logical event name -> filename in assets/audios/
     var FILES = {
-        uiTap:       "tap.mp3",
-        bannerOpen:  "pop.mp3",
-        pickup:      "Pick_Up_Battery.mp3",
-        place:       "pop.mp3",
-        spotlight:   "spotlight.mp3",
-        electricity: "electricity.mp3",                                  // loops during charge
-        energy:      "Energy Travelling.mp3",
-        powerUp:     "pwlpl-power-up-game-sound-effect-359227.mp3",
-        ready:       "soundshelfstudio-ui-hyperdrive-ready-ping-537581.mp3",
-        success:     "universfield-happy-message-ping-351298.mp3",
-        oneScroll:   "one_scroll.mp3",
-        fullScroll:  "full_scroll.mp3",
-        zoom:        "zoom.mp3",
-        flying:      "flying.mp3",
-        reject:      "reject.mp3",
-        celebrate:   "celebrate.mp3",
-        type:        "one_type.mp3",                                     // per-character tick
-        curtain:     "level.mp3",                                         // theatre-curtain swish
-        bgMusic:     "bg_music.mp3",                                     // looping music bed (gapless)
-        win:         "win.mp3"                                            // WANTED (optional)
+        uiTap:       "tap.mp3",          // button / bot taps, Bite wrist-tap
+        bannerOpen:  "pop.mp3",          // a speech banner unrolls open
+        pickup:      "pickup.mp3",       // grab a battery group
+        place:       "pop.mp3",          // battery group snaps into a slot
+        spotlight:   "spotlight.mp3",    // stage spotlight falls on a bot
+        electricity: "electricity.mp3",  // charge current crackle (loops)
+        energy:      "energy.mp3",       // batteries travel up into the slot
+        powerUp:     "power_up.mp3",     // slot turns green / charged
+        ready:       "success.mp3",      // concept slot-glow highlight (same happy ping as success)
+        success:     "success.mp3",      // a bot is fixed
+        oneScroll:   "one_scroll.mp3",   // carousel crosses one bot (per bot)
+        fullScroll:  "full_scroll.mp3",  // chooser elements slide in after the Bite clip
+        zoom:        "zoom.mp3",         // diving INTO / OUT of a bot
+        flying:      "flying.mp3",       // Bite flies in (your-turn clip)
+        reject:      "reject.mp3",       // wrong-slot buzz (Part 1 big slot)
+        celebrate:   "celebrate.mp3",    // cheer when a fixed bot dances
+        type:        "one_type.mp3",     // per-character typewriter tick
+        curtain:     "curtain.mp3",      // theatre-curtain swish on every transition
+        bgMusic:     "bg_music.mp3",     // looping music bed (gapless)
+        win:         "win.mp3"           // WANTED (optional) — fanfare on Part/Game complete
     };
 
     var MASTER = 0.85;                 // overall volume (the master gain node)

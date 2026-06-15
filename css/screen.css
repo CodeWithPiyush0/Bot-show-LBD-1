@@ -396,7 +396,7 @@
     cursor: pointer;
     z-index: 20; /* above the bots */
     filter: drop-shadow(0 0.5cqw 0.6cqw rgba(0, 0, 0, 0.35));
-    transition: transform 0.12s ease, filter 0.12s ease;
+    transition: transform 0.12s ease, filter 0.12s ease, opacity 0.4s ease;
 }
 .carousel-nav--prev {
     left: 3cqw;
@@ -414,6 +414,13 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease;
+}
+/* The arrows appear only AFTER all the bots have arrived: while the chooser's
+   elements slide in from the right (`is-elements-in`) the arrows stay hidden,
+   then fade in when that class is removed (finalizeTurn) and the row is settled. */
+.screen--1.is-elements-in .carousel-nav {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Staged like Screen 1: the centred bot is big & in front, the bots to the
