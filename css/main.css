@@ -231,7 +231,7 @@ body.qa-intercept-on #stage *::after {
 .play-btn--icon {
     position: absolute;
     left: 50%;
-    bottom: 6.5%;
+    bottom: 2%; /* lowered so it clears the battery icon in the background */
     transform: translateX(-50%);
     width: 17cqw;
     height: auto;

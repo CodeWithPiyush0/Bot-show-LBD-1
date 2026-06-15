@@ -138,7 +138,8 @@ The **first** screen on load (`is-active`). Full-screen `Pre_LBD.webp` splash
 `.play-btn--icon` (`#play-btn`) is the **`play_btn2.webp` image** (a glossy GOLD rounded
 play button with a white ▶ triangle, converted from `assets/images/play_btn2.png` via
 sharp → 520×352 webp) — a transparent `<button>` wrapping `<img>`, sized `width:17cqw`,
-with a `playBob` bounce + drop-shadow. (Replaced the earlier CSS green circle / the older
+anchored `bottom:2%` (lowered so it clears the background battery icon), with a `playBob`
+bounce + drop-shadow. (Replaced the earlier CSS green circle / the older
 `play_btn.webp` orange disc — both unused now.) Clicking it (`main.js`) → `startGame()` →
 Part 1 charging tutorial. Because of this,
 Screen 1's intro is **on-demand**: its CSS animations are scoped to `.screen--1.is-intro`
