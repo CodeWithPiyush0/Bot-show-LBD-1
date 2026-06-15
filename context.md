@@ -56,8 +56,11 @@ LBD-1/
         ├── bite_explaining.mp4   # SOURCE (old): Bite walks in + pulls a rope (green ~#0ED531)
         ├── bite_explaining.webm  # old "your turn" clip — kept but NO LONGER USED
         ├── bite_talking2.mp4     # SOURCE: Bite flies in, superhero landing, talks, wrist tap
-        │                         #   (752×480, 10s, 24fps, GREEN SCREEN #00AB1D). The master.
-        └── bite_talking2.webm    # USED: transparent VP9 (green removed) — the "your turn" clip
+        │                         #   (752×480, 10s, GREEN SCREEN #00AA1C). The master.
+        ├── bite_talking2.webm    # OLD: transparent VP9 (green removed) — NO LONGER USED
+        │                         #   (showed GREEN on iOS/Safari: no VP9-alpha support)
+        └── bite_turn.mp4         # USED: full-screen OPAQUE composite — Bite keyed over BG.webp,
+                                  #   baked in (1920×1080, H.264). Plays on ALL devices.
 ```
 
 > ⚠️ **CASE-SENSITIVITY (deploy gotcha):** all asset folders/files are referenced in
@@ -69,17 +72,22 @@ LBD-1/
 > a file, verify `git ls-files` shows the case you reference. (Also: some hosts need the
 > `video/webm` MIME type configured for `.webm` to play.)
 
-> **Transparent-video recipe** (green screen → web alpha). ffmpeg isn't preinstalled;
-> got it via `winget install Gyan.FFmpeg` (binary under
-> `~/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg*/ffmpeg-*/bin/`). The web
-> needs **VP9 + alpha in WebM** (MP4 has no usable alpha). Recipe used:
-> `ffmpeg -i bite_explaining.mp4 -filter_complex
-> "[0:v]chromakey=color=0x0ED531:similarity=0.16:blend=0.06,despill=type=green:mix=0.5,scale=1280:-2[v]"
-> -map "[v]" -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 0 -crf 32 -row-mt 1 -an out.webm`
-> → 1280×720, ~2.3MB (from 4.8MB). `chromakey` keys the flat green, `despill` kills the
-> green fringe; sample the exact key colour from a corner pixel first. ffprobe shows the
-> main plane as `yuv420p` (VP9 stores alpha as a hidden stream) — that's normal; browsers
-> composite it. NOTE: ffmpeg (like sharp) **can't write to `F:` from the sandbox** — write
+> **⚠️ Transparent video does NOT work cross-device.** The transparent WebM (VP9 + alpha)
+> looked right on desktop Chrome but showed a **GREEN SCREEN on iOS/Safari** — iOS has no
+> VP9-alpha support, so it ignores the alpha and renders the keyed-out green RGB. (HEVC-with-
+> alpha would work on Safari but can't be encoded with ffmpeg on Windows — needs a Mac.)
+> **Fix — bake a full-screen OPAQUE composite** (`bite_turn.mp4`): key the green out and
+> overlay Bite onto the room bg, so there's no alpha to (not) support. Plays identically on
+> mobile / tablet / desktop as ordinary H.264. Recipe (Bite at the same ~72%-width bottom-left
+> spot the transparent clip used):
+> `ffmpeg -loop 1 -i assets/images/BG.webp -i bite_talking2.mp4 -filter_complex
+> "[0:v]scale=1920:1080,setsar=1,fps=30[bg];[1:v]chromakey=0x00AA1C:0.10:0.05,scale=1382:-1[fg];
+> [bg][fg]overlay=0:H-h:format=auto:shortest=1[out]" -map "[out]" -an -c:v libx264 -profile:v
+> high -pix_fmt yuv420p -crf 20 -preset medium -movflags +faststart -t 10 bite_turn.mp4`
+> → 1920×1080, ~1.9MB. `.turn-video` is now full-screen (`inset:0; object-fit:cover`). Sample
+> the exact key colour from a corner pixel first (here `#00AA1C`); keep `similarity` tight
+> (0.10) so Bite's cyan isn't keyed, and NO `despill` (it greys the blue). NOTE: ffmpeg (like
+> sharp) **can't write to `F:` from the sandbox** — write
 > to `$TEMP` then `cp` into the project.
 
 **Script load order (in `index.html`, all `defer`):** `navigation.js`, `intro.js`,
@@ -188,11 +196,12 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
 > optional 4th arg `openAt` re-opens early for the no-message case), parts on
 > `#screen-turn` (`.screen--turn`, the room bg). Earlier text/letters/confetti versions
 > were all rejected as bland; the current version uses a **video of Bite (the mascot)**:
-> - `#turn-video` = **`assets/videos/bite_talking2.webm`** - a **transparent** VP9 clip.
->   KEY: `chromakey=color=0x00AB1D:similarity=0.09:blend=0.04` (NO despill). similarity must
->   be TIGHT (~0.09): Bite has vivid CYAN/BLUE accents close to the green in chroma space, so
->   a looser key (0.15) partially keyed them and they came out **gray** - 0.09 removes the
->   flat green cleanly while keeping the blue. Bite **flies in FROM THE LEFT, does a superhero
+> - `#turn-video` = **`assets/videos/bite_turn.mp4`** — a full-screen **OPAQUE** composite
+>   (Bite keyed over the room bg, baked in), so it has no alpha to (mis)render and plays on
+>   **all devices**. (The earlier transparent `bite_talking2.webm` showed GREEN on iOS — see
+>   the video-recipe note above for the why + the compositing command.) `.turn-video` is
+>   full-screen (`inset:0; object-fit:cover`); Bite sits at the same ~72%-width bottom-left
+>   spot, so the speech-bubble/cue positions are unchanged. Bite **flies in FROM THE LEFT, does a superhero
 >   LANDING**, talks, then **taps his wrist**. SIZED `width:72%`, **bottom-LEFT** (`left:0`) so
 >   he flies in from the left edge and lands at ~36% stage (centring made him look like he flew
 >   from mid-screen); transparent right side = room bg / where the bots slide in. Same height

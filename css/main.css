@@ -276,14 +276,14 @@ body.qa-intercept-on #stage *::after {
 }
 .turn-video {
     position: absolute;
-    /* Scaled to ~72% so Bite reads at the same height as the other bots.
-       Bottom-LEFT anchored — Bite flies IN FROM THE LEFT edge and lands
-       left-of-centre (centring made him look like he flew from mid-screen);
-       the transparent right side shows the room bg / where the bots slide in. */
-    left: 0;
-    bottom: 0;
-    width: 72%;
-    height: auto;
+    /* Full-screen OPAQUE composite: the room bg + Bite (at the same ~72% size,
+       bottom-left) are baked into the clip, so no transparency is needed — it
+       plays identically on mobile/tablet/desktop. (The transparent WebM showed
+       green on iOS, which has no VP9-alpha support.) 16:9 clip on a 16:9 stage. */
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     z-index: 1;
 }
 /* Glossy comic speech bubble above Bite's head while it talks (Bite lands at
