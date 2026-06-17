@@ -329,9 +329,18 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
 ### Chooser carousel (`carousel.js`, `index.html`, `screen.css`)
 Horizontal **scrollable row** (`.bot-carousel__track`, only under `.level-2`), staged like
 Screen 1 via coverflow: `carousel.js layout()` scales each bot by distance from centre
-(centre big & front, sides small & set back), and each `.carousel-bot::before` is its floor
-shadow. CSS shows only the current part's bots (`.phase-split` = Part 2 overcharged, else
-Part 1 low — see §5); fixed bots of the current state keep dancing.
+(centre big & front, sides small & set back) — it writes the scale/lift as the **`--cf` CSS
+var** (`.carousel-bot { transform: var(--cf) }`), NOT an inline `transform`, so `:hover` can
+compose a scale on top. Each `.carousel-bot::before` is its floor shadow. CSS shows only the
+current part's bots (`.phase-split` = Part 2 overcharged, else Part 1 low — see §5); fixed
+bots of the current state keep dancing.
+- **3-bot framing:** `enterChooser` centres an INTERIOR bot (clamps the centred index to
+  `[1, n-2]` of the phase bots) so THREE bots frame on screen (one each side) rather than an
+  edge bot leaving the screen half-empty (it used to dead-centre the first bot → only ~2
+  visible + empty left). It still biases toward the first still-broken bot. More bots via drag/arrows.
+- **Hover (desktop):** `.level-2 .carousel-bot:not(.is-fixed):hover` → `transform: var(--cf) scale(1.07)`
+  + a brighten + warm glow (drop-shadows). Composes with the coverflow transform; excluded on
+  fixed (non-interactive) bots. (No effect on touch devices, which is fine.)
 - **Flow:** tap a bot → `select()` centres it, **spotlight falls** (`.is-choosing` dims the
   rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
   zooms in (`enterBotTo`) → charge (`screen-2`, part "1") or split (`screen-6`, part "2"),

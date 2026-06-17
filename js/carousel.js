@@ -101,7 +101,9 @@
             const norm = Math.min(1, Math.abs(bc - cx) / (tr.width * 0.42));
             const scale = 1 - norm * 0.4;
             const lift = -norm * 11;
-            b.style.transform = "scale(" + scale.toFixed(3) + ") translateY(" + lift.toFixed(1) + "%)";
+            // Set the coverflow transform as a CSS var so :hover can compose a
+            // scale on top of it (an inline `transform` would block the hover).
+            b.style.setProperty("--cf", "scale(" + scale.toFixed(3) + ") translateY(" + lift.toFixed(1) + "%)");
             b.style.zIndex = String(100 - Math.round(norm * 100));
             b.classList.toggle("is-centered", norm < 0.18);
         });
@@ -248,10 +250,21 @@
         if (centerFixed && lastFixed) {
             focus = lastFixed; // show the just-fixed bot dancing in front
         } else {
-            // otherwise bring the first still-broken bot of this phase to centre
-            focus = bots().filter(function (b) {
-                return b.dataset.state === wantState() && !b.classList.contains("is-fixed") && !b.classList.contains("is-locked");
-            })[0];
+            // The bots visible this phase, in row order.
+            const phaseBots = bots().filter(function (b) {
+                return b.dataset.state === wantState() && !b.classList.contains("is-locked");
+            });
+            // Centre an INTERIOR bot so THREE frame on screen (one on each side)
+            // instead of an edge bot leaving the screen half-empty. We bias toward
+            // the first still-broken bot, but clamp the centred index to [1, n-2].
+            const firstBroken = phaseBots.findIndex(function (b) {
+                return !b.classList.contains("is-fixed");
+            });
+            const want = firstBroken < 0 ? 0 : firstBroken;
+            const viewIndex = phaseBots.length >= 3
+                ? Math.max(1, Math.min(phaseBots.length - 2, want))
+                : want;
+            focus = phaseBots[viewIndex] || phaseBots[0];
         }
         if (focus) { suppressScroll(600); focus.scrollIntoView({ inline: "center", block: "nearest" }); }
         global.requestAnimationFrame(layout);

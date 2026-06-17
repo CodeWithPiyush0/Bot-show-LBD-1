@@ -439,7 +439,18 @@
     padding: 0;
     cursor: pointer;
     transform-origin: bottom center; /* shrink toward the feet */
+    /* coverflow transform comes from carousel.js as the `--cf` var, so :hover
+       can compose a scale on top of it */
+    transform: var(--cf, none);
     transition: transform 0.25s ease, filter 0.25s ease;
+}
+/* Hover (desktop): the bot lifts a touch and glows. Composes the coverflow
+   transform (`--cf`) with a scale so it works on the centred AND side bots.
+   Fixed (already-charged) bots aren't interactive, so no hover. */
+.level-2 .carousel-bot:not(.is-fixed):hover {
+    transform: var(--cf, none) scale(1.07);
+    filter: brightness(1.08) drop-shadow(0 0.6cqw 0.9cqw rgba(0, 0, 0, 0.4))
+        drop-shadow(0 0 1.4cqw rgba(255, 240, 200, 0.7));
 }
 .carousel-bot img {
     width: 100%;
