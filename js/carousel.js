@@ -64,8 +64,8 @@
     }
 
     const CHARGED = {
-        // low set
-        orange: "assets/images/orange_bot_charged.webp",
+        // low set (gold/yellow replaces orange — orange is the Part-1 TUTORIAL bot)
+        gold: "assets/images/gold_bot_charged.webp",
         blue: "assets/images/blue_bot_charged.webp",
         purple: "assets/images/purple_bot_charged.webp",
         pink: "assets/images/pink_bot_charged.webp",

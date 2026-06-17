@@ -259,8 +259,16 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
 - **The chooser** (`.level-2`, Screen 1): which bots show is decided by `gamePart` —
   **Part 1 shows the low bots, Part 2 shows the overcharged bots**. Each level fixes **ONE**
   bot; every solve advances `gameStage` and completes a level (no more two-phase per level).
-- **Low set** (Part 1): orange / blue / purple / pink — `<color>_bot[_low].webp` (red
-  battery). Fixed → `<color>_bot_charged.webp` (green filled, dances).
+- **Low set** (Part 1 LEVELS chooser): **gold** / blue / purple / pink — `<color>_bot[_low].webp`
+  (red battery). Fixed → `<color>_bot_charged.webp` (green filled, dances). **`gold` (a yellow bot)
+  replaces `orange`** here: orange is the Part-1 **tutorial** bot, so reusing it in the levels read
+  as "I already fixed that one." `gold_bot_low/charged.webp` + `panel_gold.webp` are recoloured
+  from the **orange** ones via sharp `modulate({hue:32, saturation:1.2, brightness:1.04})` — a
+  SMALL hue shift (orange body → yellow) that keeps the orange bot's nice purple→magenta limbs &
+  blue eyes, and (being small) keeps the charged bot's green battery green. (First tried teal
+  from pink — too close to the blue bot, "two blue bots"; gold/yellow is clearly distinct + kid-
+  friendly.) Scheme id is `gold` (avoids colliding with Part-2's `yellow`). The tutorial still
+  uses orange (`.bot--orange`, `panel_orange`, `orange_bot_charged`).
 - **Overcharged set** (Part 2): a DISTINCT colour set **red / green / teal / yellow** so no
   colour is reused for both states. Recoloured (hue-shift) from the low set's overcharged
   art via sharp (`red←orange -30`, `green←blue -75`, `teal←purple -125`, `yellow←pink +85`);

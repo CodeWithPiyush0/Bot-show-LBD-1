@@ -127,7 +127,7 @@
     // The bots that get pulled in match the part: charge = low bots, split =
     // overcharged bots (same sprites the chooser then shows).
     const TURN_BOTS = {
-        1: ["orange_bot", "blue_bot_low", "purple_bot_low", "pink_bot_low"],
+        1: ["gold_bot_low", "blue_bot_low", "purple_bot_low", "pink_bot_low"],
         2: ["red_bot_overcharged", "green_bot_overcharged", "teal_bot_overcharged", "yellow_bot_overcharged"],
     };
 
