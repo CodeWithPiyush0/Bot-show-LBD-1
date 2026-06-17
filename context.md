@@ -836,11 +836,21 @@ a burst that matches the fling speed. The arrows and the scroll-hint feed throug
 sample-accurate, so it loops with **no gap** (no MP3-padding seam, no ping-pong needed).
 Started on the Play-btn tap.
 
-**Tab visibility**: on `visibilitychange→hidden` (or `pagehide`) → `ctx.suspend()` freezes ALL
-Web Audio at once (cheap) so nothing plays off-tab; on return → `ctx.resume()` and the looping
-music continues seamlessly. SFX are transient (no restore needed). The `<audio>` fallback path
-pauses/replays its elements analogously. Mute sets `masterGain` to 0 (loops keep running
-silently, so unmute is instant).
+**Pause when not the active window** is owned by **`js/pause.js`** (`window.GamePause`), NOT
+audio.js. It pauses the WHOLE game on `visibilitychange→hidden` (tab switch) **AND** `window`
+`blur`/`pagehide` (minimize / alt-tab / focus loss) — `visibilitychange` alone misses some
+minimize cases, so both are used. Resume fires on `visibilitychange→visible` / `focus`, but
+only proceeds when the page is BOTH visible AND `document.hasFocus()`. On pause it:
+- `SFX.suspend()` — `ctx.suspend()` freezes all Web Audio at once; while suspended `play()` is a
+  no-op (no queued burst on resume); the looping music continues seamlessly on `SFX.resume()`.
+  (Mute is separate: sets `masterGain` to 0, loops keep running silently → unmute is instant.)
+- pauses every playing `<video>` (remembers + replays them on resume).
+- adds `is-paused` on `<html>` → CSS `animation-play-state: paused !important` freezes all animations.
+- **FREEZES the game-flow timers**: pause.js installs a pausable `setTimeout`/`setInterval` shim
+  (records each pending timer; on pause clears the real timer + stores its remaining ms; on resume
+  reschedules with the remaining ms). So the setTimeout-driven flow (transitions, charge/concept
+  sequences, the Bite timeline) does not advance while away. Shim verified transparent for normal
+  timing. (Loaded right after audio.js so the shim is installed before any module schedules a timer.)
 
 To add `win`: drop `win.mp3` into `assets/audios/`. Per-sound volume trims live in `PER`;
 master volume `MASTER = 0.85`.

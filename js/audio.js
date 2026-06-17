@@ -65,6 +65,7 @@
     var active = {};                   // name -> [{src, gain}] currently playing (so stop() works)
     var fallback = {};                 // name -> <audio> (only used when no buffer)
     var muted = false;
+    var suspended = false;             // paused by the visibility/focus manager
     var bgWanted = false;              // should the music bed be on?
 
     function url(name) { return BASE + encodeURI(FILES[name]); }
@@ -148,7 +149,7 @@
 
     function play(name, opts) {
         opts = opts || {};
-        if (muted || !FILES[name]) return null;
+        if (muted || suspended || !FILES[name]) return null; // silent while paused (no queued burst)
         if (ctx && buffers[name]) return playBuffer(name, opts);
         return playFallback(name, opts); // buffer not ready yet / no Web Audio
     }
@@ -169,27 +170,26 @@
         Object.keys(fallback).forEach(stop);
     }
 
-    /* ---- Tab visibility: silence everything off-tab; resume on return ----
-       ctx.suspend() freezes ALL Web Audio at once (cheap) and the looping music
-       continues seamlessly on resume. SFX are transient, so nothing to restore. */
+    /* ---- suspend / resume (called by the central pause manager, js/pause.js,
+       on tab-switch / minimize / focus-loss) ----
+       `suspend()` freezes ALL Web Audio at once via ctx.suspend() (cheap; the
+       looping music continues seamlessly on resume) and pauses the <audio>
+       fallback. While suspended, play() is a no-op so nothing queues up. */
     function resumeBgFallback() {
         if (!bgWanted || muted) return;
         var a = fallback.bgMusic;
         if (a) { var p = a.play(); if (p && p.catch) p.catch(function () {}); }
     }
-    document.addEventListener("visibilitychange", function () {
-        if (document.hidden) {
-            if (ctx) ctx.suspend();
-            Object.keys(fallback).forEach(function (n) { try { fallback[n].pause(); } catch (e) {} });
-        } else {
-            if (ctx && !muted) ctx.resume();
-            resumeBgFallback();
-        }
-    });
-    global.addEventListener("pagehide", function () {
-        if (ctx) ctx.suspend();
+    function suspend() {
+        suspended = true;
+        if (ctx && ctx.state === "running") ctx.suspend();
         Object.keys(fallback).forEach(function (n) { try { fallback[n].pause(); } catch (e) {} });
-    });
+    }
+    function resume() {
+        suspended = false;
+        if (ctx && ctx.state === "suspended") ctx.resume();
+        resumeBgFallback();
+    }
 
     function setMuted(m) {
         muted = !!m;
@@ -215,6 +215,8 @@
         play: play,
         stop: stop,
         stopAll: stopAll,
+        suspend: suspend,
+        resume: resume,
         setMuted: setMuted,
         toggleMute: toggleMute,
         isMuted: function () { return muted; },

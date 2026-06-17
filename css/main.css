@@ -15,6 +15,12 @@
     --letterbox-color: #5a3624;
 }
 
+/* Game paused (tab hidden / window minimized / unfocused — see js/pause.js):
+   freeze every CSS animation so nothing keeps moving in the background. */
+.is-paused, .is-paused * {
+    animation-play-state: paused !important;
+}
+
 /* Outer wrapper fills the viewport and centers the 16:9 stage.
    Any space left/right (or top/bottom) is filled with the
    background's edge color instead of black. */
