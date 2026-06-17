@@ -496,6 +496,28 @@
     transform-origin: bottom center;
 }
 
+/* The BLUE bot has thruster-feet (no legs) → it should HOVER above the floor,
+   not stand on it. Lift + gently bob its img (the img's transform is separate
+   from the button's `--cf`, so they don't fight); its floor shadow is smaller,
+   detached, and shrinks as it rises. Only while un-fixed (fixed = dancing). */
+.carousel-bot[data-scheme="blue"]:not(.is-fixed) img {
+    animation: botHover 2.6s ease-in-out infinite;
+}
+.carousel-bot[data-scheme="blue"]::before {
+    width: 54%; /* smaller, softer hover shadow */
+}
+.carousel-bot[data-scheme="blue"]:not(.is-fixed)::before {
+    animation: hoverShadow 2.6s ease-in-out infinite;
+}
+@keyframes botHover {
+    0%, 100% { transform: translateY(-8%); }
+    50%      { transform: translateY(-12%); }
+}
+@keyframes hoverShadow {
+    0%, 100% { transform: translateX(-50%) scale(1);    opacity: 1; }
+    50%      { transform: translateX(-50%) scale(0.82); opacity: 0.65; }
+}
+
 /* Phase visibility: Part 1 (charge) shows ONLY the low bots; Part 2 (split)
    shows ONLY the overcharged bots. Fixed bots of the current state keep
    dancing; off-state bots (e.g. Part 1's charged low bots during Part 2) are

@@ -341,6 +341,11 @@ bots of the current state keep dancing.
 - **Hover (desktop):** `.level-2 .carousel-bot:not(.is-fixed):hover` → `transform: var(--cf) scale(1.07)`
   + a brighten + warm glow (drop-shadows). Composes with the coverflow transform; excluded on
   fixed (non-interactive) bots. (No effect on touch devices, which is fine.)
+- **Floating blue bot:** the blue bot has thruster-feet (no legs), so in the carousel it HOVERS:
+  `.carousel-bot[data-scheme="blue"]:not(.is-fixed) img` runs `botHover` (translateY −8%↔−12% bob)
+  and its `::before` shadow is smaller (`width:54%`) + runs `hoverShadow` (scale/opacity down as it
+  rises). The img's transform is separate from the button's `--cf`, so the float + coverflow scale
+  don't fight. Only while un-fixed (fixed = `botDance`).
 - **Flow:** tap a bot → `select()` centres it, **spotlight falls** (`.is-choosing` dims the
   rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
   zooms in (`enterBotTo`) → charge (`screen-2`, part "1") or split (`screen-6`, part "2"),
