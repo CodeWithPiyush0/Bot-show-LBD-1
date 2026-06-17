@@ -487,13 +487,11 @@
     filter: none;
 }
 
-/* A fixed bot shows its charged image happily dancing and can't be re-picked. */
+/* A fixed bot shows its charged image and can't be re-picked. It stays STATIC
+   (no dance) so it doesn't draw the eye / invite a tap — the dancing celebration
+   happens full-screen on Screen 3/7 instead. */
 .carousel-bot.is-fixed {
     cursor: default;
-}
-.carousel-bot.is-fixed img {
-    animation: botDance 1.25s ease-in-out infinite;
-    transform-origin: bottom center;
 }
 
 /* The BLUE bot has thruster-feet (no legs) → it should HOVER above the floor,
@@ -501,6 +499,8 @@
    from the button's `--cf`, so they don't fight); its floor shadow is smaller,
    detached, and shrinks as it rises. Only while un-fixed (fixed = dancing). */
 .carousel-bot[data-scheme="blue"]:not(.is-fixed) img {
+    /* In the carousel it just gently HOVERS (a calm idle bob — no dance). The
+       lively floating DANCE is only on the celebration screen (`botFloatDance`). */
     animation: botHover 2.6s ease-in-out infinite;
 }
 .carousel-bot[data-scheme="blue"]::before {

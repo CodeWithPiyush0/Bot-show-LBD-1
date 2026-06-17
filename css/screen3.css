@@ -34,6 +34,19 @@
 .screen--3.is-active .charged-bot img {
     animation: botDance 1.25s ease-in-out infinite;
 }
+/* The legless (thruster-feet) blue bot celebrates with a FLOATING dance instead
+   of the planted bounce — it lifts off the floor and grooves in the air. JS adds
+   `.is-floating` on `.charged-bot` when the celebrating bot is the blue one. */
+.screen--3.is-active .charged-bot.is-floating img {
+    animation: botFloatDance 2.4s ease-in-out infinite;
+    transform-origin: center; /* tilt about its body, not its (missing) feet */
+}
+@keyframes botFloatDance {
+    0%, 100% { transform: translateY(-8%)  translateX(0)   rotate(-3deg); }
+    25%      { transform: translateY(-13%) translateX(2%)  rotate(3deg); }
+    50%      { transform: translateY(-9%)  translateX(0)   rotate(0deg); }
+    75%      { transform: translateY(-13%) translateX(-2%) rotate(-3deg); }
+}
 
 /* Banner opens/closes (class-driven, like the other screens). Starts closed
    (mascot only); "The bot is fully charged." types in while the bot dances. */

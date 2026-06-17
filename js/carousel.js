@@ -254,16 +254,20 @@
             const phaseBots = bots().filter(function (b) {
                 return b.dataset.state === wantState() && !b.classList.contains("is-locked");
             });
-            // Centre an INTERIOR bot so THREE frame on screen (one on each side)
-            // instead of an edge bot leaving the screen half-empty. We bias toward
-            // the first still-broken bot, but clamp the centred index to [1, n-2].
+            // Centre the first still-BROKEN bot (so a just-fixed bot is never the
+            // focal one the kid is tempted to re-tap). Prefer an INTERIOR position
+            // so THREE bots frame on screen — but only if that keeps an UN-FIXED bot
+            // centred; otherwise centre the broken bot itself (even if it's an edge).
             const firstBroken = phaseBots.findIndex(function (b) {
                 return !b.classList.contains("is-fixed");
             });
             const want = firstBroken < 0 ? 0 : firstBroken;
-            const viewIndex = phaseBots.length >= 3
+            let viewIndex = phaseBots.length >= 3
                 ? Math.max(1, Math.min(phaseBots.length - 2, want))
                 : want;
+            if (phaseBots[viewIndex] && phaseBots[viewIndex].classList.contains("is-fixed")) {
+                viewIndex = want; // never centre a fixed bot — show the broken one
+            }
             focus = phaseBots[viewIndex] || phaseBots[0];
         }
         if (focus) { suppressScroll(600); focus.scrollIntoView({ inline: "center", block: "nearest" }); }

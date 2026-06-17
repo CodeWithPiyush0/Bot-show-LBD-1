@@ -332,20 +332,30 @@ Screen 1 via coverflow: `carousel.js layout()` scales each bot by distance from 
 (centre big & front, sides small & set back) — it writes the scale/lift as the **`--cf` CSS
 var** (`.carousel-bot { transform: var(--cf) }`), NOT an inline `transform`, so `:hover` can
 compose a scale on top. Each `.carousel-bot::before` is its floor shadow. CSS shows only the
-current part's bots (`.phase-split` = Part 2 overcharged, else Part 1 low — see §5); fixed
-bots of the current state keep dancing.
-- **3-bot framing:** `enterChooser` centres an INTERIOR bot (clamps the centred index to
-  `[1, n-2]` of the phase bots) so THREE bots frame on screen (one each side) rather than an
-  edge bot leaving the screen half-empty (it used to dead-centre the first bot → only ~2
-  visible + empty left). It still biases toward the first still-broken bot. More bots via drag/arrows.
+current part's bots (`.phase-split` = Part 2 overcharged, else Part 1 low — see §5). Fixed
+bots show their charged art but **stay STATIC** (no dance — a dancing fixed bot drew the eye
+and invited a re-tap; the celebration dance is full-screen on Screen 3/7 instead). They're
+also not tappable (`select()` ignores `.is-fixed`) and get no hover.
+- **3-bot framing + never-centre-a-fixed-bot:** `enterChooser` centres the first still-BROKEN
+  bot (so a just-fixed bot is never the focal one inviting a re-tap), preferring an INTERIOR
+  position (clamps the index to `[1, n-2]`) so THREE bots frame on screen rather than an edge bot
+  leaving the screen half-empty. BUT if that clamped position would land on a FIXED bot, it falls
+  back to the broken bot's own index (centres it even at an edge). So the centred bot is always
+  un-fixed, and 3 frame whenever possible. More bots via drag/arrows.
 - **Hover (desktop):** `.level-2 .carousel-bot:not(.is-fixed):hover` → `transform: var(--cf) scale(1.07)`
   + a brighten + warm glow (drop-shadows). Composes with the coverflow transform; excluded on
   fixed (non-interactive) bots. (No effect on touch devices, which is fine.)
-- **Floating blue bot:** the blue bot has thruster-feet (no legs), so in the carousel it HOVERS:
-  `.carousel-bot[data-scheme="blue"]:not(.is-fixed) img` runs `botHover` (translateY −8%↔−12% bob)
-  and its `::before` shadow is smaller (`width:54%`) + runs `hoverShadow` (scale/opacity down as it
-  rises). The img's transform is separate from the button's `--cf`, so the float + coverflow scale
-  don't fight. Only while un-fixed (fixed = `botDance`).
+- **Floating blue bot:** the blue bot has thruster-feet (no legs). In the **carousel** it just
+  gently HOVERS (`botHover`, translateY −8%↔−12% bob; `::before` shadow smaller `width:54%` +
+  `hoverShadow` scale/opacity down as it rises). The img transform is separate from the button's
+  `--cf`, so hover + coverflow scale don't fight. Only while un-fixed.
+  - **Floating celebration dance:** when the blue bot is FIXED and shown dancing full-screen on
+    Screen 3, it does a **floating dance** instead of the legged `botDance`: JS adds `.is-floating`
+    on `.charged-bot` (in `batteries.js fullyCharged` when `currentScheme === "blue"`; cleared in
+    `setupLevel` for the legged tutorial bots), and `.screen--3.is-active .charged-bot.is-floating img`
+    runs **`botFloatDance`** (lifts −8%↔−13%, sways ±2% X, tilts ±3°, `transform-origin:center`) so it
+    grooves in the air rather than bouncing on (missing) feet. (Only the blue bot floats; the other
+    Part-1 bots are legged and keep `botDance`. Part-2 bots aren't the blue one, so Screen 7 is unaffected.)
 - **Flow:** tap a bot → `select()` centres it, **spotlight falls** (`.is-choosing` dims the
   rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
   zooms in (`enterBotTo`) → charge (`screen-2`, part "1") or split (`screen-6`, part "2"),

@@ -68,6 +68,12 @@
             if (purpleBot) purpleBot.src = "assets/images/purple_bot_low.webp";
             if (screen3Bot) screen3Bot.src = "assets/images/orange_bot_charged.webp";
         }
+        // The tutorial's Screen-3 bot (orange/purple) is legged — clear any
+        // floating-dance flag left over from a chooser blue-bot celebration.
+        if (screen3Bot) {
+            const cb = screen3Bot.closest(".charged-bot");
+            if (cb) cb.classList.remove("is-floating");
+        }
 
         // Panel colour scheme per bot/level.
         setPanelScheme(["screen-2", "screen-4"], level === 2 ? "purple" : "orange");
