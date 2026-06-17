@@ -543,7 +543,6 @@
             if (!splitEnabled || fixed) return;
             e.preventDefault();
             dragging = true;
-            if (global.SFX) global.SFX.play("pickup");
             rect = stage.getBoundingClientRect();
             startX = e.clientX;
             startY = e.clientY;

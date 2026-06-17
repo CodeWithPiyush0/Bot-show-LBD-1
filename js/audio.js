@@ -32,8 +32,7 @@
     var FILES = {
         uiTap:       "tap.mp3",          // button / bot taps, Bite wrist-tap
         bannerOpen:  "pop.mp3",          // a speech banner unrolls open
-        pickup:      "pickup.mp3",       // grab a battery group
-        place:       "pop.mp3",          // battery group snaps into a slot
+        place:       "pop.mp3",          // battery group snaps into a slot (drop)
         spotlight:   "spotlight.mp3",    // stage spotlight falls on a bot
         electricity: "electricity.mp3",  // charge current crackle (loops)
         energy:      "energy.mp3",       // batteries travel up into the slot

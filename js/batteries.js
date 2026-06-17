@@ -536,7 +536,6 @@
             if (charged || !enabled) return; // locked after charging / during intro
             e.preventDefault();
             dragging = true;
-            if (global.SFX) global.SFX.play("pickup");
             stageRect = stage.getBoundingClientRect();
             startX = e.clientX;
             startY = e.clientY;

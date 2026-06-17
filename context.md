@@ -807,7 +807,6 @@ optional `win.mp3`.)
 |---|---|---|
 | `uiTap` | tap.mp3 | Play btn, bot tap, next-level btn, **Bite's wrist-tap (~6.7s in the clip)** |
 | `bannerOpen` | pop.mp3 | any speech banner unrolls open (screens 1/2/3/4/5/6/8) |
-| `pickup` | pickup.mp3 | grab a battery group (drag start, both parts) |
 | `place` | pop.mp3 | battery group snaps into a slot |
 | `spotlight` | spotlight.mp3 | spotlight falls — **tutorial Screen-1 (`is-lit`)**, chooser select, Screen-5 phase B |
 | `electricity` | electricity.mp3 | charge current crackle — **loops**, stopped at green |
