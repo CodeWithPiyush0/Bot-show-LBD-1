@@ -630,6 +630,11 @@ lesson). Two uses:
   the demo **until any pointer activity** (pointerdown/pointermove listeners on the
   screen, `onActivity` → `abortHint()` + re-arm the 12s clock). Cleared on charge/fix/
   setup/leave (`cancelIdle()`).
+- **Mistake nudge (both puzzles, any mode):** a `mistakeCount` increments on each WRONG
+  drop — Part 1: big-slot rejection or a drop outside any slot; Part 2: a group released
+  outside a small slot. After **more than 2** in a row, `registerMistake()` fires
+  `ghostRun(3)` to demonstrate the correct move. A correct placement resets the counter to 0
+  (so it tracks a struggle streak), and `setupBatteries`/`resetSplit` reset it per level.
 
 > **Chooser levels (`currentLevel === 2`) = play solo.** Only the **tutorials**
 > (`currentLevel === 1`, the guided flow) show the ghost hint + the concept screens.

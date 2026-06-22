@@ -56,8 +56,19 @@
     let charged = false;
     let enabled = true; // dragging is gated off during the Screen 2 intro
     let contentEl = null;
+    let mistakeCount = 0; // consecutive wrong drops → after >2, replay the ghost hint
     const slotEls = {};
     const slotOccupant = {};
+
+    // A wrong drop (big slot or nowhere). After more than 2 in a row, demo the
+    // correct drag with the ghost hint to help the player.
+    function registerMistake() {
+        mistakeCount += 1;
+        if (mistakeCount > 2) {
+            mistakeCount = 0;
+            ghostRun(3);
+        }
+    }
 
     function groupWidth(count) {
         return count * BAT_W + (count - 1) * GROUP_GAP;
@@ -569,11 +580,14 @@
             const id = slotAtPoint(e.clientX, e.clientY);
             if (id) {
                 placeInSlot(group, id);
+                mistakeCount = 0; // progress — clear the struggle counter
                 if (bothBottomFilled() && !charged) startCharge();
             } else if (overBigSlot(e.clientX, e.clientY)) {
                 rejectBig(group); // wrong slot: shake "no" + bounce home
+                registerMistake();
             } else {
                 sendHome(group);
+                registerMistake();
             }
         }
 
@@ -605,6 +619,7 @@
         // Reset state variables
         charged = false;
         enabled = false;
+        mistakeCount = 0;
         abortHint();
         cancelIdle();
         clearReject();

@@ -48,8 +48,19 @@
     let centerTapEnabled = false;
     let splitEnabled = false;
     let fixed = false;
+    let mistakeCount = 0; // consecutive wrong drops → after >2, replay the ghost hint
     const slotOccupant = {};
     const slotEls = {};
+
+    // A wrong drop (group released outside a small slot). After more than 2 in a
+    // row, demo the correct big→small drag with the ghost hint to help.
+    function registerMistake() {
+        mistakeCount += 1;
+        if (mistakeCount > 2) {
+            mistakeCount = 0;
+            ghostRun(3);
+        }
+    }
 
     /* ---------- shared helpers ---------- */
     // Wrap the lesson keywords ("parts" / "whole") in coloured spans so they pop
@@ -401,6 +412,7 @@
         if (!s6) return;
         fixed = false;
         splitEnabled = false;
+        mistakeCount = 0;
         abortHint();
         cancelIdle();
 
@@ -574,8 +586,8 @@
             group.classList.remove("is-dragging");
             clearHover();
             const id = slotAtPoint(e.clientX, e.clientY);
-            if (id) placeInSlot(group, id);
-            else sendHome(group);
+            if (id) { placeInSlot(group, id); mistakeCount = 0; } // progress — clear counter
+            else { sendHome(group); registerMistake(); }
         }
         group.addEventListener("pointerup", end);
         group.addEventListener("pointercancel", end);
