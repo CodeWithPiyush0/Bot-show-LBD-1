@@ -454,7 +454,7 @@ Used on **both** screens (any template with dialogue). Markup:
 - **Screen 2**: class-driven, controlled by `intro.js` `playScreen2Intro()`:
   - `.screen--2 .question__template` is clipped closed (mascot only) by default;
     adding `.is-open` transitions clip-path to fully open (and removing it closes).
-  - Sequence: open → type **"Drag the batteries in a small slots."** → **brief hold
+  - Sequence: open → type **"Drag the batteries in the small slots."** → **brief hold
     `HOLD_AFTER_TEXT = 600`ms** → close to just the mascot → ghost hint (non-blocking;
     dragging is already enabled). Kept short so the player can drag almost immediately.
   - **VO TODO:** replace the 600ms hold with the audio's `ended` event when VO exists.
