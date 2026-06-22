@@ -51,14 +51,23 @@
         timers.push(global.setTimeout(fn, ms));
     }
 
+    // Wrap the lesson keywords ("parts" / "whole") in coloured spans so they pop.
+    // Only WHOLE words match, so a partly-typed word stays plain until complete.
+    function colorizeKeywords(s) {
+        return s
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\bparts\b/gi, '<span class="kw kw--parts">$&</span>')
+            .replace(/\bwhole\b/gi, '<span class="kw kw--whole">$&</span>');
+    }
+
     function typewriter(el, text, speed) {
-        el.textContent = "";
+        el.innerHTML = "";
         let i = 0;
         (function tick() {
             if (i >= text.length) return;
-            el.textContent += text.charAt(i);
-            if (global.SFX) global.SFX.play("type"); // one tick per character
             i += 1;
+            el.innerHTML = colorizeKeywords(text.slice(0, i)); // colours keywords as they complete
+            if (global.SFX) global.SFX.play("type"); // one tick per character
             later(tick, speed);
         })();
     }

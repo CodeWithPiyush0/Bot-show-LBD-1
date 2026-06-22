@@ -272,6 +272,18 @@
     white-space: nowrap;
 }
 
+/* Concept-lesson keywords highlighted for impact ("These 2 parts make this whole."
+   / "This whole is made of these 2 parts."): parts = blue, whole = green. */
+.question__text .kw {
+    font-weight: 800;
+}
+.question__text .kw--parts {
+    color: #1565d8; /* blue — the two parts */
+}
+.question__text .kw--whole {
+    color: #1f9e4d; /* green — the whole */
+}
+
 /* ===========================================================
    Level 2 Overrides
    =========================================================== */

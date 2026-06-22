@@ -52,17 +52,26 @@
     const slotEls = {};
 
     /* ---------- shared helpers ---------- */
+    // Wrap the lesson keywords ("parts" / "whole") in coloured spans so they pop
+    // (used by the Screen-8 concept line; other prompts have no such words).
+    function colorizeKeywords(s) {
+        return s
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\bparts\b/gi, '<span class="kw kw--parts">$&</span>')
+            .replace(/\bwhole\b/gi, '<span class="kw kw--whole">$&</span>');
+    }
+
     function typewriter(el, text, speed, onDone) {
-        el.textContent = "";
+        el.innerHTML = "";
         let i = 0;
         (function tick() {
             if (i >= text.length) {
                 if (onDone) onDone();
                 return;
             }
-            el.textContent += text.charAt(i);
-            if (global.SFX) global.SFX.play("type"); // one tick per character
             i += 1;
+            el.innerHTML = colorizeKeywords(text.slice(0, i)); // colours keywords as they complete
+            if (global.SFX) global.SFX.play("type"); // one tick per character
             global.setTimeout(tick, speed);
         })();
     }

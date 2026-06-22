@@ -674,7 +674,10 @@ Dark interior bg + batteries in all three slots:
 - **small-left** = 4 blue (part 1), **small-right** = 6 yellow (part 2),
 - **big** = 4 blue (top row) + 6 yellow (bottom row) = the whole.
 `concept.js` builds the battery groups (display-only, `SCALE 0.82`) and plays a
-two-phase animation synced to the banner prompt **"These 2 parts make this whole."**:
+two-phase animation synced to the banner prompt **"These 2 parts make this whole."**
+(the keywords are highlighted for impact: **parts** = blue, **whole** = green — both concept
+typewriters wrap whole-word `parts`/`whole` in `.kw--parts`/`.kw--whole` spans as they finish
+typing; colours in screen.css. Screen 8's "This whole is made of these 2 parts." gets the same):
 - **Phase A ("These 2 parts")**: starts as the prompt begins typing; the big-slot
   batteries dim to 20% (`.battery.is-dim`); the two **part SLOTS glow one by one**
   (`.slot-glow--small-left` then `--small-right`, `SLOT_GLOW_STAGGER` apart;
