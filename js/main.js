@@ -70,10 +70,13 @@
         }
         // The tutorial's Screen-3 bot (orange/purple) is legged — clear any
         // floating-dance flag left over from a chooser blue-bot celebration.
+        // Also reset the dancing-VIDEO state (re-armed at celebration time).
         if (screen3Bot) {
             const cb = screen3Bot.closest(".charged-bot");
-            if (cb) cb.classList.remove("is-floating");
+            if (cb) cb.classList.remove("is-floating", "is-video");
         }
+        const cvid = document.getElementById("charged-video");
+        if (cvid) { try { cvid.pause(); cvid.currentTime = 0; } catch (e) {} }
 
         // Panel colour scheme per bot/level.
         setPanelScheme(["screen-2", "screen-4"], level === 2 ? "purple" : "orange");
@@ -473,6 +476,12 @@
                 window.GameNav.show("screen-3");
                 if (screen3) screen3.classList.add("is-revealing");
                 if (window.SFX) window.SFX.play("celebrate");
+                // Chooser bots dance as the static image (the dancing VIDEO is the
+                // orange TUTORIAL bot only) — make sure it's off here.
+                const cb = screen3 ? screen3.querySelector(".charged-bot") : null;
+                if (cb) cb.classList.remove("is-video");
+                const vid = document.getElementById("charged-video");
+                if (vid) { try { vid.pause(); } catch (e) {} }
             }, 150);
 
             window.setTimeout(function () {

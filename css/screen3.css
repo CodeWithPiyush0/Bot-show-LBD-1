@@ -30,6 +30,22 @@
     transform-origin: bottom center;
 }
 
+/* Dancing-bot VIDEO (orange tutorial bot only). The clip is a near-square frame
+   with the bot centred + transparent margins, so it's sized wider than the static
+   image and pushed down to sit the bot's feet on the floor. Shown only when
+   `.charged-bot.is-video` (set by concept.js for the orange tutorial celebration). */
+.charged-bot__video {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: -10%;
+    width: 165%;
+    height: auto;
+    transform: translateX(-50%);
+}
+.charged-bot.is-video img { display: none; }
+.charged-bot.is-video .charged-bot__video { display: block; }
+
 /* Gentle celebratory dance (placeholder for the video) */
 .screen--3.is-active .charged-bot img {
     animation: botDance 1.25s ease-in-out infinite;

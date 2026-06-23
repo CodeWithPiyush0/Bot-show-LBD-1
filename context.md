@@ -59,8 +59,11 @@ LBD-1/
         │                         #   (752×480, 10s, GREEN SCREEN #00AA1C). The master.
         ├── bite_talking2.webm    # OLD: transparent VP9 (green removed) — NO LONGER USED
         │                         #   (showed GREEN on iOS/Safari: no VP9-alpha support)
-        └── bite_turn.mp4         # USED: full-screen OPAQUE composite — Bite keyed over BG.webp,
-                                  #   baked in (1920×1080, H.264). Plays on ALL devices.
+        ├── bite_turn.mp4         # USED: full-screen OPAQUE composite — Bite keyed over BG.webp,
+        │                         #   baked in (1920×1080, H.264). Plays on ALL devices.
+        ├── orange_bot_dancing.mp4# SOURCE: orange bot dancing (480×464, 10s, BLUE bg #0516F3)
+        └── orange_bot_dancing.webm# USED (Screen-3 orange tutorial bot): transparent VP9 (blue
+                                  #   removed via colorkey). ⚠️ iOS ignores VP9 alpha → blue bg shows.
 ```
 
 > ⚠️ **CASE-SENSITIVITY (deploy gotcha):** all asset folders/files are referenced in
@@ -653,10 +656,25 @@ lesson). Two uses:
 
 The celebration screen. Same room background as Screen 1
 (`var(--bg-image)` = BG.webp) + the `spotlight`, with the **charged bot centered**:
-`.charged-bot` wraps `orange_bot_charged.webp` (placeholder — **swap for a dancing
-video later**). It does a gentle CSS "dance" loop (`botDance`: bob + sway, pivot at
-feet) while `.screen--3.is-active`. Markup is a `<section class="screen screen--3"
-id="screen-3">` inside the stage.
+`.charged-bot` wraps `<color>_bot_charged.webp`. Most bots dance via the gentle CSS
+`botDance` loop (bob + sway, pivot at feet) while `.screen--3.is-active`.
+- **Orange TUTORIAL bot = dancing VIDEO.** The first/tutorial bot uses a transparent
+  dancing clip instead of the static image: `<video id="charged-video"
+  src="assets/videos/orange_bot_dancing.webm" muted loop>` inside `.charged-bot`. When the
+  orange tutorial celebration plays, `concept.js revealDancingBot()` adds `.charged-bot.is-video`
+  (CSS hides the `img`, shows the `video`) and `.play()`s it. The chooser path (`main.js exitBot`)
+  and `setupLevel` **remove** `is-video` + pause the clip, so the other bots keep the static
+  `botDance`. The video is sized `width:165%; bottom:-10%` of `.charged-bot` to match the static
+  bot's size/feet. ⚠️ It's a **VP9-alpha WebM** (transparent) — works on desktop/Android but, like
+  the Bite clip, **iOS Safari ignores the alpha** (would show the blue bg); for mobile it'd need an
+  opaque composite (bake over the room bg) instead.
+  - **Chroma key recipe** (blue bg #0516F3 → transparent, robot fully preserved incl. its blue
+    ears/eyes): `ffmpeg -i orange_bot_dancing.mp4 -vf "colorkey=0x0216FD:0.12:0.06,format=yuva420p"
+    -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 0 -crf 26 -an out.webm`. Used **`colorkey`** (RGB-distance,
+    removes only the flat bg blue) NOT `chromakey` (hue-based — would also key the robot's cyan
+    ears/eyes). No despill (it greys the blue). Verify in a BROWSER, not ffmpeg overlay (ffmpeg
+    ignores VP9 alpha).
+Markup is a `<section class="screen screen--3" id="screen-3">` inside the stage.
 
 **Order:** the dance comes **AFTER the concept** (Screen 4), not before. The
 concept screen zooms OUT of the board to reveal the dancing bot

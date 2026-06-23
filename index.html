@@ -267,13 +267,20 @@
                     aria-hidden="true"
                 />
 
-                <!-- Fully-charged bot (static image placeholder; swap for a
-                     dancing video later). -->
+                <!-- Fully-charged bot. Most bots dance as a static image (botDance).
+                     The orange TUTORIAL bot uses a transparent dancing video instead
+                     (shown via `.charged-bot.is-video`, set in concept.js). -->
                 <div class="charged-bot">
                     <img
                         data-src="assets/images/orange_bot_charged.webp"
                         alt="The bot, fully charged"
                     />
+                    <video
+                        class="charged-bot__video"
+                        id="charged-video"
+                        src="assets/videos/orange_bot_dancing.webm"
+                        muted loop playsinline preload="auto"
+                    ></video>
                 </div>
 
                 <!-- Banner: announces the result while the bot dances -->
