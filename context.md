@@ -378,8 +378,9 @@ also not tappable (`select()` ignores `.is-fixed`) and get no hover.
   `playCurtain("All Bots Fixed!", …)` → start screen.
 - **Prev / Next arrow buttons** (`#carousel-prev` / `#carousel-next`, inside `.bot-carousel`
   so they only show in chooser mode): for **desktop play / kids who don't scroll**. Gold
-  button art `next_button.webp` (from `next_button.png`, left chevron); `--next` is mirrored
-  (`scaleX(-1)`) to point right. `carousel.js nudge(dir)` finds the bot nearest centre and
+  button art `next_button.webp` (yellow rounded chevron, 3:2; from `next_btn.png` → sharp
+  webp 540×360, left chevron); `--prev` uses it as-is, `--next` is mirrored (`scaleX(-1)`)
+  to point right. `carousel.js nudge(dir)` finds the bot nearest centre and
   `tweenScroll`s to centre its neighbour (snap off during the tween). Hidden during a
   selection (`.screen--1.is-choosing .carousel-nav`) AND while the chooser elements slide in
   (`.screen--1.is-elements-in .carousel-nav`) — so the arrows only **fade in once all the bots
@@ -401,9 +402,11 @@ Background = `BG.webp` (1672×941, ~16:9; converted from `BG2.png` via sharp `we
 **light lavender-grey room** (wall ≈ `#bfb1c0`, floor ≈ `#dacdd8`). The **letterbox**
 fill outside the 16:9 stage matches it: `--letterbox-color: #bfb1c0` (main.css) +
 `LETTERBOX` entries for screens 1/3/5/7 in `navigation.js`. Contents:
-- **Spotlight** `spotlight.svg` — full-height beam centered on the bot, z1. Recoloured
-  to a **dark cool cone** (`#241E2C` → transparent, `fill-opacity 0.32`) so it reads as a
-  soft focus-shadow on the LIGHT room (the old orange beam was for the old brown room).
+- **Spotlight** `spotlight.svg` — full-height beam centered on the bot, z1. On the LIGHT
+  room it's a **warm-white light shaft** (3-stop gradient `#FFFDF6`→`#FFF6E2`, brightest at
+  the ceiling fixture + a pool on the floor, heavy `stdDeviation:22` blur) drawn with
+  **`mix-blend-mode: screen`** (`.spotlight` in screen.css) so it brightens the wall/floor
+  like real light instead of painting a flat cone. (Was the orange beam on the old brown room.)
 - **Floor shadows + warm glow** — CSS radial-gradient `div`s (`.floor*`), recreated
   from Figma ellipses (those were blurred PNGs, not exported). z2/3.
 - **Three bots** (`.bot`, sized by `width` %, positioned by Figma coords):

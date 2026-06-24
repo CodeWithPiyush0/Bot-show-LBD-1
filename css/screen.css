@@ -18,6 +18,9 @@
     width: auto;
     z-index: 1;
     pointer-events: none;
+    /* Blend the warm-white beam INTO the room so it brightens the wall/floor
+       like real light, instead of painting a flat white cone over it. */
+    mix-blend-mode: screen;
 }
 
 /* ---------- Floor shadows & glow ----------
@@ -401,7 +404,7 @@
     top: 46%;
     transform: translateY(-50%);
     width: 8.5cqw;
-    height: 6.4cqw; /* 485:365 aspect of next_button.webp */
+    height: 5.67cqw; /* 3:2 aspect of next_button.webp */
     border: 0;
     padding: 0;
     background: url("../assets/images/next_button.webp") no-repeat center / 100% 100%;
