@@ -61,9 +61,11 @@ LBD-1/
         │                         #   (showed GREEN on iOS/Safari: no VP9-alpha support)
         ├── bite_turn.mp4         # USED: full-screen OPAQUE composite — Bite keyed over BG.webp,
         │                         #   baked in (1920×1080, H.264). Plays on ALL devices.
-        ├── orange_bot_dancing.mp4# SOURCE: orange bot dancing (480×464, 10s, BLUE bg #0516F3)
-        └── orange_bot_dancing.webm# USED (Screen-3 orange tutorial bot): transparent VP9 (blue
-                                  #   removed via colorkey). ⚠️ iOS ignores VP9 alpha → blue bg shows.
+        └── <name>_bot_dancing.gif# USED (charged-bot celebration, Screens 3 & 7): transparent
+                                  #   animated GIFs of each bot dancing. Names: orange, yellow2 (=gold),
+                                  #   blue, purple, pink, red, green (=teal), green2 (=green/Part-2),
+                                  #   yellow, white (=Part-2 white/purple tutorial bot).
+                                  #   Self-animate in <img>, no codec issue. See §8b for the scheme map.
 ```
 
 > ⚠️ **CASE-SENSITIVITY (deploy gotcha):** all asset folders/files are referenced in
@@ -352,13 +354,11 @@ also not tappable (`select()` ignores `.is-fixed`) and get no hover.
   gently HOVERS (`botHover`, translateY −8%↔−12% bob; `::before` shadow smaller `width:54%` +
   `hoverShadow` scale/opacity down as it rises). The img transform is separate from the button's
   `--cf`, so hover + coverflow scale don't fight. Only while un-fixed.
-  - **Floating celebration dance:** when the blue bot is FIXED and shown dancing full-screen on
-    Screen 3, it does a **floating dance** instead of the legged `botDance`: JS adds `.is-floating`
-    on `.charged-bot` (in `batteries.js fullyCharged` when `currentScheme === "blue"`; cleared in
-    `setupLevel` for the legged tutorial bots), and `.screen--3.is-active .charged-bot.is-floating img`
-    runs **`botFloatDance`** (lifts −8%↔−13%, sways ±2% X, tilts ±3°, `transform-origin:center`) so it
-    grooves in the air rather than bouncing on (missing) feet. (Only the blue bot floats; the other
-    Part-1 bots are legged and keep `botDance`. Part-2 bots aren't the blue one, so Screen 7 is unaffected.)
+  - **Floating celebration dance (LEGACY / now bypassed):** the celebration bots now use dancing
+    GIFs (see §8b), so the blue bot's full-screen groove comes from `blue_bot_dancing.gif`, not CSS.
+    The `.is-floating` → `botFloatDance` mechanism (lifts −8%↔−13%, sways ±2% X, tilts ±3°,
+    `transform-origin:center`) still exists in `screen3.css` but `batteries.js fullyCharged` no longer
+    toggles `is-floating` — it's the fallback path for any thruster-feet bot WITHOUT a gif.
 - **Flow:** tap a bot → `select()` centres it, **spotlight falls** (`.is-choosing` dims the
   rest + `.is-lit`), then `chooseBotEnter(scheme, part)` (main.js) sets `panel_<scheme>` and
   zooms in (`enterBotTo`) → charge (`screen-2`, part "1") or split (`screen-6`, part "2"),
@@ -394,7 +394,8 @@ also not tappable (`select()` ignores `.is-fixed`) and get no hover.
   once the bot art included the icon directly.)
 
 
-Background = `BG.webp`. Contents:
+Background = `BG.webp` (1672×941, ~16:9; converted from `BG2.png` via sharp `webp q88`
+→ 29KB. The source `BG2.png` is kept in `assets/images/` but unreferenced). Contents:
 - **Spotlight** `spotlight.svg` — full-height beam centered on the orange bot, z1.
 - **Floor shadows + warm glow** — CSS radial-gradient `div`s (`.floor*`), recreated
   from Figma ellipses (those were blurred PNGs, not exported). z2/3.
@@ -656,24 +657,23 @@ lesson). Two uses:
 
 The celebration screen. Same room background as Screen 1
 (`var(--bg-image)` = BG.webp) + the `spotlight`, with the **charged bot centered**:
-`.charged-bot` wraps `<color>_bot_charged.webp`. Most bots dance via the gentle CSS
-`botDance` loop (bob + sway, pivot at feet) while `.screen--3.is-active`.
-- **Orange TUTORIAL bot = dancing VIDEO.** The first/tutorial bot uses a transparent
-  dancing clip instead of the static image: `<video id="charged-video"
-  src="assets/videos/orange_bot_dancing.webm" muted loop>` inside `.charged-bot`. When the
-  orange tutorial celebration plays, `concept.js revealDancingBot()` adds `.charged-bot.is-video`
-  (CSS hides the `img`, shows the `video`) and `.play()`s it. The chooser path (`main.js exitBot`)
-  and `setupLevel` **remove** `is-video` + pause the clip, so the other bots keep the static
-  `botDance`. The video is sized `width:165%; bottom:-10%` of `.charged-bot` to match the static
-  bot's size/feet. ⚠️ It's a **VP9-alpha WebM** (transparent) — works on desktop/Android but, like
-  the Bite clip, **iOS Safari ignores the alpha** (would show the blue bg); for mobile it'd need an
-  opaque composite (bake over the room bg) instead.
-  - **Chroma key recipe** (blue bg #0516F3 → transparent, robot fully preserved incl. its blue
-    ears/eyes): `ffmpeg -i orange_bot_dancing.mp4 -vf "colorkey=0x0216FD:0.12:0.06,format=yuva420p"
-    -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 0 -crf 26 -an out.webm`. Used **`colorkey`** (RGB-distance,
-    removes only the flat bg blue) NOT `chromakey` (hue-based — would also key the robot's cyan
-    ears/eyes). No despill (it greys the blue). Verify in a BROWSER, not ffmpeg overlay (ffmpeg
-    ignores VP9 alpha).
+`.charged-bot` wraps `<color>_bot_charged.webp`. Bots without a dancing GIF dance via the
+gentle CSS `botDance` loop (bob + sway, pivot at feet) while `.screen--3.is-active`.
+- **Charged bots = dancing GIFs.** Each charged bot celebrates as an animated GIF
+  (`assets/videos/<name>_bot_dancing.gif`, transparent, self-animating in the `<img>`) instead
+  of the static image + `botDance`. `window.setDancingBot(imgEl, scheme)` (in `main.js`, right
+  after `window.setupLevel`) points the `.charged-bot img` at the gif via the `DANCE_GIFS` map and
+  adds `.is-gif` on `.charged-bot` (CSS `.charged-bot.is-gif img { animation:none }` kills botDance,
+  on Screens 3 AND 7). If a scheme has no gif it falls back to `<scheme>_bot_charged.webp` + botDance.
+  - **Scheme → gif map** (filenames don't all match scheme names): `orange→orange`, `gold→yellow2`,
+    `blue→blue`, `purple→purple`, `pink→pink`, `red→red`, `teal→green` (boxy teal bot),
+    `green→green2` (green thruster bot, Part-2 chooser), `yellow→yellow`.
+  - Called at all three celebration src-set points: `batteries.js fullyCharged` (Screen-3 chooser
+    `s3Bot`), `concept.js revealDancingBot` (Screen-3 orange tutorial), `part2.js onFixed` (Screen-7
+    chooser `s7Bot` via the map). The Part-2 white/purple **TUTORIAL** bot dances as
+    `white_bot_dancing.gif` directly (hard-coded src + `.is-gif`, not via the scheme map).
+  - GIFs animate natively in `<img>` with transparency (no codec issue) — replaced the earlier
+    VP9-alpha dancing WebM, which iOS Safari rendered with its blue bg showing.
 Markup is a `<section class="screen screen--3" id="screen-3">` inside the stage.
 
 **Order:** the dance comes **AFTER the concept** (Screen 4), not before. The
@@ -748,8 +748,13 @@ Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
   the two part slots glow one by one. Reuses `.s4-content`, glows, battery layout.
   After teaching, `playConcept2()` **zooms OUT** (`zoomOutTo("screen-8","screen-7")`,
   `.screen--8.is-zooming-out`) to reveal the dancing bot.
-- **Screen 7** (`screen--7`, celebrate): `White_purple_bot_charged.webp` dances under
-  the spotlight (reuses `.charged-bot`/`botDance`). In the **new flow**, after ~3s
+- **Screen 7** (`screen--7`, celebrate): the fixed bot dances under the spotlight (a
+  dancing GIF — see §8b; the white/purple tutorial bot uses `white_bot_dancing.gif`).
+  Has its own banner (`#question-7`, `data-text="This bot is fixed."`): `zoomOutTo()`,
+  when `toId==="screen-7"`, calls `openBanner(q7, "This bot is fixed.", …)` after the
+  reveal settles, so it unrolls + types while the bot dances (mirrors Screen 3's "The
+  bot is fully charged." finale — the success screen was previously empty). Banner
+  open/close clip-path is `.screen--7 .question__template` in `part2.css`. After ~3s
   `playConcept2()` calls **`startLevels(2)`** to begin the Part 2 split levels.
   **Note the order: concept (8) BEFORE the dance (7)**, same as Part 1.
 
@@ -781,7 +786,7 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 
 | In use | Asset | Notes |
 |---|---|---|
-| ✅ | `BG.webp` | Screen 1 background (was BG.png 1.8MB → 41KB) |
+| ✅ | `BG.webp` | Room background (now from `BG2.png` → webp q88, 29KB) |
 | ✅ | `Question_template.webp` | cream banner + mascot badge (both screens) |
 | ✅ | `purple_bot_low.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots (left/centre/right). `orange_bot.webp` (←`orange_bot.svg`, 900px) and `purple_bot_low.webp` (←`purple_bot_low.svg`, 950px) are regenerated via sharp (q82); their art has the low-battery icon baked into the chest. `purple_bot_low.webp` doubles as the L2 focal bot. |
 | ✅ | `Sahdow_Purple_Bot.webp` | dimmed "shadow" purple bot — now used only as the Part 2 Screen 5 left/side bot (L1). |

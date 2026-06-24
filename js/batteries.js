@@ -329,10 +329,9 @@
                 // then end the level (curtain → next).
                 const s3Bot = document.querySelector("#screen-3 .charged-bot img");
                 if (s3Bot && window.currentScheme) {
-                    s3Bot.src = "assets/images/" + window.currentScheme + "_bot_charged.webp";
-                    // the blue bot (thruster-feet) does a FLOATING celebration dance
-                    const cb = s3Bot.closest(".charged-bot");
-                    if (cb) cb.classList.toggle("is-floating", window.currentScheme === "blue");
+                    // celebrate as the bot's dancing GIF (falls back to static + botDance)
+                    if (window.setDancingBot) window.setDancingBot(s3Bot, window.currentScheme);
+                    else s3Bot.src = "assets/images/" + window.currentScheme + "_bot_charged.webp";
                 }
                 if (window.GameFx) window.GameFx.exitBot();
                 global.setTimeout(function () {

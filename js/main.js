@@ -70,19 +70,47 @@
         }
         // The tutorial's Screen-3 bot (orange/purple) is legged — clear any
         // floating-dance flag left over from a chooser blue-bot celebration.
-        // Also reset the dancing-VIDEO state (re-armed at celebration time).
         if (screen3Bot) {
             const cb = screen3Bot.closest(".charged-bot");
-            if (cb) cb.classList.remove("is-floating", "is-video");
+            if (cb) cb.classList.remove("is-floating");
         }
-        const cvid = document.getElementById("charged-video");
-        if (cvid) { try { cvid.pause(); cvid.currentTime = 0; } catch (e) {} }
 
         // Panel colour scheme per bot/level.
         setPanelScheme(["screen-2", "screen-4"], level === 2 ? "purple" : "orange");
         setPanelScheme(["screen-6", "screen-8"], level === 2 ? "blue" : "white");
     }
     window.setupLevel = setupLevel;
+
+    // ---- Dancing-bot GIFs (celebration screens 3 & 7) ----------------------
+    // Each charged bot celebrates as an animated GIF instead of the static image
+    // + CSS botDance. Mapped per scheme (the gif filenames don't all match the
+    // scheme names). Any scheme not listed falls back to the static botDance.
+    const DANCE_GIFS = {
+        orange: "assets/videos/orange_bot_dancing.gif",
+        gold:   "assets/videos/yellow2_bot_dancing.gif", // gold bot = the gold/magenta gif
+        blue:   "assets/videos/blue_bot_dancing.gif",
+        purple: "assets/videos/purple_bot_dancing.gif",
+        pink:   "assets/videos/pink_bot_dancing.gif",
+        red:    "assets/videos/red_bot_dancing.gif",
+        teal:   "assets/videos/green_bot_dancing.gif",  // teal boxy bot = the teal/green boxy gif
+        green:  "assets/videos/green2_bot_dancing.gif", // green thruster bot (Part-2 chooser)
+        yellow: "assets/videos/yellow_bot_dancing.gif",
+    };
+    // Point a celebration `.charged-bot img` at the bot's dancing GIF (self-
+    // animating, so botDance is disabled via `.is-gif`). Falls back to the static
+    // charged image + botDance for any scheme without a gif.
+    window.setDancingBot = function (imgEl, scheme) {
+        if (!imgEl) return;
+        const cb = imgEl.closest(".charged-bot");
+        const gif = DANCE_GIFS[scheme];
+        if (gif) {
+            imgEl.src = gif;
+            if (cb) cb.classList.add("is-gif");
+        } else {
+            imgEl.src = "assets/images/" + scheme + "_bot_charged.webp";
+            if (cb) cb.classList.remove("is-gif");
+        }
+    };
 
     // Theatre-curtain transition: close the curtains over the message, run
     // `onSwap` behind them, then part to reveal the next screen.
@@ -476,12 +504,6 @@
                 window.GameNav.show("screen-3");
                 if (screen3) screen3.classList.add("is-revealing");
                 if (window.SFX) window.SFX.play("celebrate");
-                // Chooser bots dance as the static image (the dancing VIDEO is the
-                // orange TUTORIAL bot only) — make sure it's off here.
-                const cb = screen3 ? screen3.querySelector(".charged-bot") : null;
-                if (cb) cb.classList.remove("is-video");
-                const vid = document.getElementById("charged-video");
-                if (vid) { try { vid.pause(); } catch (e) {} }
             }, 150);
 
             window.setTimeout(function () {

@@ -174,6 +174,15 @@
 .screen--7.is-active .charged-bot img {
     animation: botDance 1.25s ease-in-out infinite;
 }
+/* Banner: starts closed (mascot only); "This bot is fixed." types in while the
+   bot dances — mirrors the Screen 3 charged-bot banner. */
+.screen--7 .question__template {
+    clip-path: inset(0 100% 0 0); /* closed: rolled shut to the badge */
+    transition: clip-path 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen--7 .question.is-open .question__template {
+    clip-path: inset(0 0 0 0);
+}
 
 /* ---------- Screen 8 — concept: a whole is made of 2 parts ---------- */
 .screen--8 {

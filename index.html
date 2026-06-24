@@ -267,20 +267,13 @@
                     aria-hidden="true"
                 />
 
-                <!-- Fully-charged bot. Most bots dance as a static image (botDance).
-                     The orange TUTORIAL bot uses a transparent dancing video instead
-                     (shown via `.charged-bot.is-video`, set in concept.js). -->
+                <!-- Fully-charged bot, dancing. The src is swapped to the bot's
+                     dancing GIF (`<scheme>_bot_dancing.gif`) at celebration time. -->
                 <div class="charged-bot">
                     <img
                         data-src="assets/images/orange_bot_charged.webp"
                         alt="The bot, fully charged"
                     />
-                    <video
-                        class="charged-bot__video"
-                        id="charged-video"
-                        src="assets/videos/orange_bot_dancing.webm"
-                        muted loop playsinline preload="auto"
-                    ></video>
                 </div>
 
                 <!-- Banner: announces the result while the bot dances -->
@@ -434,6 +427,13 @@
                 <img class="spotlight" src="assets/images/spotlight.svg" alt="" aria-hidden="true" />
                 <div class="charged-bot">
                     <img data-src="assets/images/White_purple_bot_charged.webp" alt="The fixed bot" />
+                </div>
+
+                <!-- Banner: announces the result while the bot dances -->
+                <div class="question" id="question-7">
+                    <img class="question__template" src="assets/images/Question_template.webp" alt="" aria-hidden="true" />
+                    <video class="question__avatar" src="assets/videos/bite_talking.mp4" muted loop autoplay playsinline preload="auto" aria-hidden="true"></video>
+                    <p class="question__text" data-text="This bot is fixed."></p>
                 </div>
             </section>
 

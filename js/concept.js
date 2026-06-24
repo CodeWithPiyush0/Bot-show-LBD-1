@@ -188,12 +188,9 @@
             if (global.GameNav) global.GameNav.show("screen-3");
             if (screen3) screen3.classList.add("is-revealing");
             if (global.SFX) global.SFX.play("celebrate");
-            // Orange TUTORIAL bot dances as a transparent VIDEO (not the static
-            // image). Show + play it; other bots keep the static botDance.
-            const cb = screen3 ? screen3.querySelector(".charged-bot") : null;
-            const vid = document.getElementById("charged-video");
-            if (cb) cb.classList.add("is-video");
-            if (vid) { try { vid.currentTime = 0; var p = vid.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+            // Tutorial bot is the orange one — celebrate as its dancing GIF.
+            const s3img = screen3 ? screen3.querySelector(".charged-bot img") : null;
+            if (global.setDancingBot) global.setDancingBot(s3img, "orange");
         }, 150);
         later(function () {
             if (screen3) screen3.classList.remove("is-revealing");

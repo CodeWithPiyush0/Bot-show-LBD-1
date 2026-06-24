@@ -143,6 +143,16 @@
         global.setTimeout(function () {
             to.classList.remove("is-revealing");
             from.classList.remove("is-zooming-out");
+            // Announce the result on the celebration screen, so the banner
+            // unrolls + types "This bot is fixed." while the bot dances
+            // (mirrors Screen 3's "The bot is fully charged." finale).
+            if (toId === "screen-7") {
+                const q7 = byId("question-7");
+                if (q7) {
+                    const t = q7.querySelector(".question__text");
+                    openBanner(q7, (t && t.getAttribute("data-text")) || "This bot is fixed.", null, null);
+                }
+            }
             if (onDone) onDone();
         }, 1300);
     }
@@ -605,9 +615,15 @@
         const s7Bot = document.querySelector("#screen-7 .charged-bot img");
         if (s7Bot) {
             s7Bot.classList.remove("hue-blue");
-            s7Bot.src = (window.currentLevel === 2 && window.currentScheme)
-                ? "assets/images/" + window.currentScheme + "_bot_charged.webp"
-                : "assets/images/White_purple_bot_charged.webp";
+            if (window.currentLevel === 2 && window.currentScheme && window.setDancingBot) {
+                // chooser bot celebrates as its dancing GIF (falls back to static)
+                window.setDancingBot(s7Bot, window.currentScheme);
+            } else {
+                // Part-2 tutorial bot (white/purple) — dances as the white gif
+                const cb = s7Bot.closest(".charged-bot");
+                if (cb) cb.classList.add("is-gif");
+                s7Bot.src = "assets/videos/white_bot_dancing.gif";
+            }
         }
 
         const q = byId("question-6");
