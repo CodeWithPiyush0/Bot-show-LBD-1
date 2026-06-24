@@ -89,7 +89,9 @@ LBD-1/
 > "[0:v]scale=1920:1080,setsar=1,fps=30[bg];[1:v]chromakey=0x00AA1C:0.10:0.05,scale=1382:-1[fg];
 > [bg][fg]overlay=0:H-h:format=auto:shortest=1[out]" -map "[out]" -an -c:v libx264 -profile:v
 > high -pix_fmt yuv420p -crf 20 -preset medium -movflags +faststart -t 10 bite_turn.mp4`
-> → 1920×1080, ~1.9MB. `.turn-video` is now full-screen (`inset:0; object-fit:cover`). Sample
+> → 1920×1080, ~1.8MB. ⚠️ The room bg is **baked into this clip** — whenever `BG.webp`
+> changes, RE-BAKE `bite_turn.mp4` with this same recipe (last baked over the lavender room).
+> `.turn-video` is now full-screen (`inset:0; object-fit:cover`). Sample
 > the exact key colour from a corner pixel first (here `#00AA1C`); keep `similarity` tight
 > (0.10) so Bite's cyan isn't keyed, and NO `despill` (it greys the blue). NOTE: ffmpeg (like
 > sharp) **can't write to `F:` from the sandbox** — write
@@ -395,8 +397,13 @@ also not tappable (`select()` ignores `.is-fixed`) and get no hover.
 
 
 Background = `BG.webp` (1672×941, ~16:9; converted from `BG2.png` via sharp `webp q88`
-→ 29KB. The source `BG2.png` is kept in `assets/images/` but unreferenced). Contents:
-- **Spotlight** `spotlight.svg` — full-height beam centered on the orange bot, z1.
+→ 29KB. The source `BG2.png` is kept in `assets/images/` but unreferenced). It's a
+**light lavender-grey room** (wall ≈ `#bfb1c0`, floor ≈ `#dacdd8`). The **letterbox**
+fill outside the 16:9 stage matches it: `--letterbox-color: #bfb1c0` (main.css) +
+`LETTERBOX` entries for screens 1/3/5/7 in `navigation.js`. Contents:
+- **Spotlight** `spotlight.svg` — full-height beam centered on the bot, z1. Recoloured
+  to a **dark cool cone** (`#241E2C` → transparent, `fill-opacity 0.32`) so it reads as a
+  soft focus-shadow on the LIGHT room (the old orange beam was for the old brown room).
 - **Floor shadows + warm glow** — CSS radial-gradient `div`s (`.floor*`), recreated
   from Figma ellipses (those were blurred PNGs, not exported). z2/3.
 - **Three bots** (`.bot`, sized by `width` %, positioned by Figma coords):
