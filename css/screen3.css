@@ -13,6 +13,25 @@
     background-size: cover;
 }
 
+/* Celebration "lone bot in the spotlight" feel: darken the room around the
+   beam so the dancing bot pops. Elliptical clear zone over the centre column
+   (where the beam pools + the bot stands), darkening toward the edges/corners.
+   z-index 4 = above the spotlight beam (z1) & floor, BELOW the bot (z5/6) and
+   the banner (z10), so only the surroundings dim. Used on both celebration
+   screens (Screen 3 charge, Screen 7 fix). */
+.screen--3::after,
+.screen--7::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: radial-gradient(62% 95% at 50% 60%,
+        transparent 34%,
+        rgba(15, 10, 24, 0.55) 74%,
+        rgba(12, 8, 20, 0.85) 100%);
+}
+
 /* Charged bot, centered on the floor under the spotlight */
 .charged-bot {
     position: absolute;

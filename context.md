@@ -684,6 +684,13 @@ gentle CSS `botDance` loop (bob + sway, pivot at feet) while `.screen--3.is-acti
     `white_bot_dancing.gif` directly (hard-coded src + `.is-gif`, not via the scheme map).
   - GIFs animate natively in `<img>` with transparency (no codec issue) — replaced the earlier
     VP9-alpha dancing WebM, which iOS Safari rendered with its blue bg showing.
+- **"Lone bot in the spotlight" vignette.** Both celebration screens (3 charge, 7 fix)
+  darken the room around the beam so the dancing bot pops: `.screen--3::after,
+  .screen--7::after` paints a radial-gradient vignette (clear elliptical zone over the
+  centre column at `62% 95% at 50% 60%`, darkening to `rgba(12,8,20,0.85)` at the corners)
+  at **z-index 4** — above the spotlight beam (z1) & floor, BELOW the bot (z5/6) and banner
+  (z10), so only the surroundings dim. The letterbox for screens 3/7 is also dark
+  (`#15101c` in `navigation.js`) to match. (Screens 1/5 keep the lit lavender room.)
 Markup is a `<section class="screen screen--3" id="screen-3">` inside the stage.
 
 **Order:** the dance comes **AFTER the concept** (Screen 4), not before. The

@@ -13,9 +13,9 @@
     const LETTERBOX = {
         "screen-pre": "#0a0130", // Pre-LBD purple theatre
         "screen-1": "#bfb1c0", // room (BG.webp) lavender-grey wall
-        "screen-3": "#bfb1c0",
+        "screen-3": "#15101c", // celebration: dark room, lone bot spotlit (matches vignette)
         "screen-5": "#bfb1c0",
-        "screen-7": "#bfb1c0",
+        "screen-7": "#15101c", // celebration (Part 2)
         // Interior screens (2/4/6/8): fixed cream letterbox that matches the
         // background outside the panel, the same for every bot/level.
         "screen-2": "#fbe7cb",
