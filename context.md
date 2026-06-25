@@ -226,9 +226,9 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
 > - The **speech bubble** `#turn-bubble` ("Now, it's your turn!") pops in (`bubblePop`,
 >   rotate/overshoot) at clip ~3.0s (after the landing/stand-up) and hides (`bubbleHide`)
 >   ~6.0s, before the wrist tap. It's the **`Speech_bubble.webp`** art (a user-supplied SVG
->   `Speech_bubble.svg`, 1423×604, converted via sharp → 720×306 webp) — a glossy blue
->   bubble with sparkles + a tail — set as the `.turn-bubble` background (`aspect-ratio:
->   1423/604`). Placed **HIGH** at `left:44% top:3%` (well ABOVE Bite — at his head it
+>   `Speech_bubble.svg`, 1423×604 — the SVG embeds a base64 raster, so it's rendered via sharp
+>   to a **1600×679 q92 webp, ~46KB**, visually lossless) — a white bubble with a glossy-blue
+>   outline + a tail — set as the `.turn-bubble` background (`aspect-ratio: 1423/604`). Placed **HIGH** at `left:44% top:3%` (well ABOVE Bite — at his head it
 >   looked cramped). The **`.turn-bubble__text`** line (bold blue) is **absolutely centred
 >   in the bubble BODY** — `left:50% top:43%` + `translate(-50%,-50%)` (43%, not 50%, since
 >   the tail occupies the bottom). ANIMATIONS: bubble = `bubblePop` in then idle

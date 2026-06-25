@@ -293,11 +293,12 @@ body.qa-intercept-on #stage *::after {
     z-index: 1;
 }
 /* Glossy comic speech bubble above Bite's head while it talks (Bite lands at
-   ~36% of the stage width, head top ~38% down). Sticker look: white candy
-   body, chunky golden ring, 3D bottom edge, top gloss, and a bordered tail. */
-/* Speech bubble = the Speech_bubble.webp art (glossy blue bubble + sparkles +
-   tail). Sits HIGH above Bite (not crowding his head); the line is centred in
-   the bubble body (above the tail). Both bubble and text get an idle animation. */
+   ~36% of the stage width, head top ~38% down). White rounded body with a
+   chunky glossy-blue outline and a downward tail. */
+/* Speech bubble = the Speech_bubble.webp art (rendered q92 from the source
+   Speech_bubble.svg, aspect 1423:604). Sits HIGH above Bite (not crowding his
+   head); the line is centred in the bubble body (above the tail). Both bubble
+   and text get an idle animation. */
 .turn-bubble {
     position: absolute;
     left: 44%;
