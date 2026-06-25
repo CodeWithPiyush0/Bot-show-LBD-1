@@ -324,9 +324,13 @@ Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a
     auto-pan was removed (and its `hintShown`/`hintRunning` state). `tweenScroll`/`.no-snap`
     remain — `nudge()` (the arrows) still uses them.
   - **Banner per part** (`enterChooser`, via `Screen1Intro.setText`, a cancellable typer):
-    Part 1 = "Scroll and tap a bot to charge it.", Part 2 = "Oh no! These bots are
-    overcharged — tap one to fix it." (`intro.js` no longer auto-types `data-text2` in
-    chooser mode, which used to clobber this.)
+    Part 1 = "Scroll and tap a bot to charge it.", Part 2 = "Scroll and tap a bot to fix it."
+    (`intro.js` no longer auto-types `data-text2` in chooser mode, which used to clobber this.)
+  - **`enterChooser(centerFixed, deferText, keepText)` text modes:** default = type the banner
+    now; `deferText` = clear it now + type later via `BotChooser.typeBanner()` (curtain reveal);
+    `keepText` = re-centre only, leave the banner text untouched. `finalizeTurn` uses `keepText`
+    so the banner (already typed during the your-turn slide-in) doesn't RE-TYPE when the carousel
+    settles fully in (it was typing twice — once sliding, once on arrival). Applies to both parts.
   - **Open/close banner (screens 2/3/4/5/6/8):** the **open** art is `Question_template.webp`
     (`.question__template`), which **rolls** open/shut via `clip-path` — closed = `inset(0 91% 0 0)`
     (rolled to the badge), open = `inset(0 0 0 0)`, `transition: clip-path 0.5s cubic-bezier(0.2,0.8,0.2,1)`
@@ -556,7 +560,7 @@ groupWidth(count))` — so a 7-battery group (506px native, 415px at 0.82 > the 
 which used to overflow) shrinks to ~0.77 and always fits. Big-slot placement stays at
 `PLACED_SCALE` (the 501px big slot fits the widest group). The chooser banner is set per
 part by `enterChooser` (`Screen1Intro.setText`, a cancellable typer): Part 1 "Scroll and
-tap a bot to charge it.", Part 2 "Oh no! These bots are overcharged — tap one to fix it."
+tap a bot to charge it.", Part 2 "Scroll and tap a bot to fix it."
 
 ### Batteries & drag-drop (`batteries.js`)
 - Two **groups** (single draggable units, NOT individual batteries); counts come from

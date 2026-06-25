@@ -341,7 +341,9 @@
         if (video) { try { video.pause(); } catch (e) {} }
         window.GameNav.show("screen-1");                        // becomes active (deactivates turn screen)
         if (screen1) screen1.classList.remove("is-elements-in"); // restore bg + clear element transforms
-        if (window.BotChooser) window.BotChooser.enterChooser(false); // re-centre, fully shown
+        // Re-centre only; KEEP the banner text (it already typed during the slide) so
+        // the typewriter doesn't restart and play a second time when fully shown.
+        if (window.BotChooser) window.BotChooser.enterChooser(false, false, true);
     }
     window.startBotsPull = startBotsPull;
     window.finalizeTurn = finalizeTurn;

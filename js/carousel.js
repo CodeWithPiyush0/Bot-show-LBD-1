@@ -216,7 +216,7 @@
     // the current phase; if every level is done, completes the game.
     // centerFixed: bring the just-fixed (dancing) bot to the front instead of
     // the next selectable one — so the player sees their bot celebrating.
-    function enterChooser(centerFixed, deferText) {
+    function enterChooser(centerFixed, deferText, keepText) {
         const screen1 = document.getElementById("screen-1");
         if (screen1) screen1.classList.remove("is-choosing", "is-lit");
         bots().forEach(function (b) {
@@ -239,10 +239,13 @@
         // cancellable Screen 1 typer so it can't be clobbered.
         const textEl = document.querySelector("#screen-1 .question__text");
         const msg = phase === "split"
-            ? "Oh no! These bots are overcharged — tap one to fix it."
+            ? "Scroll and tap a bot to fix it."
             : "Scroll and tap a bot to charge it.";
         bannerMsg = msg; // remember for a deferred typeBanner() (curtain reveal)
-        if (deferText) {
+        if (keepText) {
+            // Re-centring only (e.g. after the your-turn slide) — leave the banner
+            // text exactly as-is so its typewriter isn't restarted ("types twice").
+        } else if (deferText) {
             // Coming in behind a curtain — keep the banner empty; the transition
             // calls typeBanner() once the curtains part so it types on-screen.
             if (textEl) textEl.textContent = "";
