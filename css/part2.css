@@ -29,7 +29,7 @@
 }
 .bot--oc-right {
     left: 67.81%; /* 1302 / 1920 */
-    top: 38.611%;
+    top: 42.4%; /* grounds the (shorter) yellow overcharged bot on the floor shadow */
     width: 21.114%; /* 405 / 1920 */
 }
 

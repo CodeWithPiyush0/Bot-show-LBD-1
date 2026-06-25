@@ -761,19 +761,18 @@ Part 1 charge levels** are done: `returnToChooser()` (`gamePart 1, gameStage > 4
 reuse the chooser with the overcharged bots.)
 
 Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
-- **Screen 5** (`screen--5`, intro): room bg + 3 bots in a `.s5-stage` wrapper
-  (left `teal_bot_overcharged.webp` — an OVERCHARGED carousel bot so the scene shows
-  more than one overcharged bot, matching the "a few bots have overcharged" line; was
-  the boxy `Sahdow_Purple_Bot`. Centre overcharged `White_purple_bot.webp`, right
-  charged `orange_bot_charged.webp`). `Part2.startIntro` sets the left bot's `src` in
-  JS (overrides the HTML `data-src`), and its `top` is `33.8%` to ground the teal bot
-  on its floor shadow. Three-phase choreography (in `Part2.startIntro`):
-  **A** all bots equally lit (spotlight hidden) — "Oh no! A few bots have overcharged.";
-  **B** spotlight fades in on centre + sides darken (`.screen--5.is-spotlit`) — "Let's
-  start fixing this bot."; **C** side bots fade out (`.is-gone`) + the scene zooms in a
-  little (`.s5-stage.is-focusing` scale 1.4, origin 50.7%/70%) — "Let us split its
-  batteries." Tapping the centre bot (`enterFromFocus`) continues that zoom into Screen 6.
-  The banner (sibling of `.s5-stage`) is NOT scaled by the little zoom.
+- **Screen 5** (`screen--5`, intro): mirrors the Part 1 intro — room bg + **3 OVERCHARGED
+  bots** in a `.s5-stage` wrapper, NONE charged: left `teal_bot_overcharged.webp`, centre
+  `White_purple_bot.webp` (the one to fix), right `yellow_bot_overcharged.webp` (both side
+  bots are overcharged carousel bots). `Part2.startIntro` sets BOTH side bots' `src` in JS
+  (overrides the HTML `data-src`); their `top`s ground them on the floor shadow (left `33.8%`,
+  right `42.4%` — both are shorter than the old sprites). **Two-phase choreography**:
+  **A** all three bots equally lit — "Oh no! A few bots have overcharged."; **B** spotlight
+  falls on the CENTRE bot, sides just dim (`.screen--5.is-spotlit`) but ALL THREE STAY on
+  screen — "Tap the bot to split its batteries.", then the tap is enabled. (The old 3rd phase
+  — "Let us start fixing this bot." + vanishing sides + a little zoom — was removed by request.)
+  Tapping the centre bot (`enterFromFocus`) scales `.s5-stage` ×4.5 to zoom into Screen 6.
+  The banner (sibling of `.s5-stage`) is NOT scaled by that zoom.
   - The **spotlight sweeps** onto the centre bot like a real stage light: it pivots at
     its top (`transform-origin:50% 0`) from `rotate(-20deg)` → `0`, fading in fast so the
     movement reads.

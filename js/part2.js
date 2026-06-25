@@ -176,8 +176,7 @@
         if (!q || !screen5) return;
         const textEl = q.querySelector(".question__text");
         const msg1 = textEl.getAttribute("data-text");
-        const msg2 = textEl.getAttribute("data-text2");
-        const msg3 = textEl.getAttribute("data-text3");
+        const msg2 = textEl.getAttribute("data-text2"); // "Tap the bot to split its batteries."
 
         // Set center bot blue color filter for Level 2
         const centerBot = document.querySelector(".bot--oc-center");
@@ -189,12 +188,13 @@
             }
         }
 
-        // Left side bot: an OVERCHARGED carousel bot (teal) — the line says a few
-        // bots overcharged, so we show a second overcharged one beside the centre.
+        // Both side bots are OVERCHARGED carousel bots (teal left, yellow right) —
+        // so all three bots in the scene are overcharged (none charged), mirroring
+        // the Part 1 intro's three-bot framing.
         const ocLeft = document.querySelector(".bot--oc-left");
-        if (ocLeft) {
-            ocLeft.src = "assets/images/teal_bot_overcharged.webp";
-        }
+        if (ocLeft) ocLeft.src = "assets/images/teal_bot_overcharged.webp";
+        const ocRight = document.querySelector(".bot--oc-right");
+        if (ocRight) ocRight.src = "assets/images/yellow_bot_overcharged.webp";
 
         centerTapEnabled = false;
         // reset to Phase A state
@@ -206,7 +206,7 @@
         q.classList.remove("is-open");
         textEl.textContent = "";
 
-        // Phase A: all bots equally lit; type "Oh no! ..."
+        // Phase A: all three bots equally lit; type "Oh no! ..."
         global.setTimeout(function () {
             q.classList.add("is-open");
             if (global.SFX) global.SFX.play("bannerOpen");
@@ -217,22 +217,13 @@
             }, 650);
         }, 150);
 
-        // Phase B: spotlight on the centre, sides darken; "Let's start fixing this bot."
+        // Phase B: spotlight falls on the CENTRE bot (sides stay, just dimmed —
+        // all three remain on screen, like the Part 1 intro); type the tap prompt
+        // and enable the tap. (No "fixing this bot" step, no vanishing sides.)
         function phaseB() {
             screen5.classList.add("is-spotlit");
             if (global.SFX) global.SFX.play("spotlight");
             typewriter(textEl, msg2, TYPE, function () {
-                global.setTimeout(phaseC, 1400);
-            });
-        }
-
-        // Phase C: remove the side bots, zoom in a little; "Let us split its batteries."
-        function phaseC() {
-            sideBots().forEach(function (b) {
-                b.classList.add("is-gone");
-            });
-            if (stage5) stage5.classList.add("is-focusing");
-            typewriter(textEl, msg3, TYPE, function () {
                 centerTapEnabled = true; // now the bot can be tapped
             });
         }
