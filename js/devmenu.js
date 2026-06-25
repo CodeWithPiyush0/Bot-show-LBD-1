@@ -54,7 +54,13 @@
     // Show a celebrating-bot screen with a specific charged sprite.
     function danceBot(screenId, sprite) {
         const img = document.querySelector("#" + screenId + " .charged-bot img");
-        if (img) { img.removeAttribute("data-src"); img.src = "assets/images/" + sprite + ".webp"; }
+        if (img) {
+            img.removeAttribute("data-src");
+            img.src = "assets/images/" + sprite + ".webp";
+            // static sprite → clear the anim flag so the CSS botDance runs
+            const cb = img.closest(".charged-bot");
+            if (cb) cb.classList.remove("is-gif");
+        }
         nav(screenId);
     }
 
@@ -95,6 +101,42 @@
         if (global.setupLevel) global.setupLevel(lvl);
     }
 
+    // Transition/phase classes a screen may leave behind mid-animation. When we
+    // hard-jump elsewhere these would linger (a half-zoomed / faded screen), so
+    // wipe them before setting up the target screen.
+    var TRANSIENT = [
+        "is-zooming", "is-zooming-out", "is-entering", "is-revealing",
+        "is-spotlit", "is-focusing", "is-elements-in", "is-choosing",
+        "is-gone", "is-lit", "is-intro",
+    ];
+
+    // Reset to a clean state before a manual jump: cancel the pending timer
+    // chain from the screen we're leaving (so it can't flip screens on us), and
+    // clear any leftover transition classes + open banners.
+    function cleanSlate() {
+        if (global.GamePause && global.GamePause.cancelAllTimers) {
+            global.GamePause.cancelAllTimers();
+        }
+        // The "your turn" clip drives navigation via timeupdate/ended (it pulls in
+        // the chooser + calls GameNav.show). If we jump away while it's playing it
+        // keeps firing and yanks us back / replays the slide on top of the new
+        // screen ("the animation appears twice"). Stop it AND strip its listeners
+        // (clone-replace) so a later replay can't double-fire either.
+        var tv = document.getElementById("turn-video");
+        if (tv) {
+            try { tv.pause(); tv.currentTime = 0; } catch (e) {}
+            if (tv.parentNode) tv.parentNode.replaceChild(tv.cloneNode(true), tv);
+        }
+        TRANSIENT.forEach(function (c) {
+            document.querySelectorAll("." + c).forEach(function (el) {
+                el.classList.remove(c);
+            });
+        });
+        document.querySelectorAll(".question.is-open").forEach(function (q) {
+            q.classList.remove("is-open");
+        });
+    }
+
     function nav(id) {
         if (global.GameNav) global.GameNav.show(id);
     }
@@ -133,6 +175,9 @@
         ".devmenu__tip::after{content:'';position:absolute;top:11px;left:-5px;width:10px;height:10px;",
         "background:rgba(20,20,24,.92);transform:rotate(45deg);}",
         ".devmenu__toggle:hover + .devmenu__tip,.devmenu__tip.is-show{opacity:1;}",
+        // During a dev-menu jump, kill the .screen opacity crossfade so the old
+        // and new screens never overlap — it's an instant CUT, not a fade.
+        "html.devmenu-jump .screen{transition:none !important;animation:none !important;}",
     ].join("");
 
     function build() {
@@ -170,8 +215,18 @@
             b.type = "button";
             b.textContent = s.label;
             b.addEventListener("click", function () {
+                var html = document.documentElement;
+                html.classList.add("devmenu-jump"); // instant cut (no crossfade)
+                cleanSlate();   // stop the previous screen's queued flow first
                 s.go();
                 panel.classList.remove("is-open");
+                // Re-enable transitions once the new screen has painted, so the
+                // target screen's own intro animations still play normally.
+                global.requestAnimationFrame(function () {
+                    global.requestAnimationFrame(function () {
+                        html.classList.remove("devmenu-jump");
+                    });
+                });
             });
             panel.appendChild(b);
         });

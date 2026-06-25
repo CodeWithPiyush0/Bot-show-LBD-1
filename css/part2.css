@@ -18,7 +18,7 @@
 /* Three bots; the white/purple one (centre) is the overcharged one to fix */
 .bot--oc-left {
     left: 7.135%;
-    top: 31.111%;
+    top: 33.8%; /* grounds the teal overcharged bot on the floor shadow */
     width: 24.896%;
 }
 .bot--oc-center {

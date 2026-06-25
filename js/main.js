@@ -82,9 +82,10 @@
     window.setupLevel = setupLevel;
 
     // ---- Dancing-bot GIFs (celebration screens 3 & 7) ----------------------
-    // Each charged bot celebrates as an animated GIF instead of the static image
-    // + CSS botDance. Mapped per scheme (the gif filenames don't all match the
-    // scheme names). Any scheme not listed falls back to the static botDance.
+    // Each charged bot celebrates as an animated GIF (transparent, self-animating
+    // in <img>) instead of the static image + CSS botDance. Mapped per scheme (the
+    // filenames don't all match the scheme names). Any scheme not listed falls back
+    // to the static botDance.
     const DANCE_GIFS = {
         orange: "assets/videos/orange_bot_dancing.gif",
         gold:   "assets/videos/yellow2_bot_dancing.gif", // gold bot = the gold/magenta gif
@@ -96,16 +97,39 @@
         green:  "assets/videos/green2_bot_dancing.gif", // green thruster bot (Part-2 chooser)
         yellow: "assets/videos/yellow_bot_dancing.gif",
     };
-    // Point a celebration `.charged-bot img` at the bot's dancing GIF (self-
-    // animating, so botDance is disabled via `.is-gif`). Falls back to the static
-    // charged image + botDance for any scheme without a gif.
+    // Swap a `.charged-bot img` to an animated dance WebP without the flash that
+    // a naive `img.src = anim` causes: if the animation is already cached the
+    // swap is instant; otherwise we keep showing the CORRECT static still
+    // (`staticSrc`) until the animation finishes loading, then swap once — never
+    // a half-loaded frame or the wrong bot. `.is-gif` disables the CSS botDance.
+    function playDance(imgEl, animSrc, staticSrc) {
+        if (!imgEl) return;
+        const cb = imgEl.closest(".charged-bot");
+        const apply = function () {
+            imgEl.src = animSrc;
+            if (cb) cb.classList.add("is-gif");
+        };
+        const pre = new Image();
+        pre.onload = apply;
+        pre.onerror = apply; // fall through to the anim src even if preload errors
+        pre.src = animSrc;
+        if (pre.complete && pre.naturalWidth) {
+            apply(); // already cached → swap immediately, no static frame shown
+        } else if (staticSrc) {
+            imgEl.src = staticSrc; // show the correct still while the anim loads
+        }
+    }
+    window.playDance = playDance;
+
+    // Point a celebration `.charged-bot img` at the bot's dancing animation
+    // (self-animating, so botDance is disabled via `.is-gif`). Falls back to the
+    // static charged image + botDance for any scheme without an animation.
     window.setDancingBot = function (imgEl, scheme) {
         if (!imgEl) return;
         const cb = imgEl.closest(".charged-bot");
-        const gif = DANCE_GIFS[scheme];
-        if (gif) {
-            imgEl.src = gif;
-            if (cb) cb.classList.add("is-gif");
+        const anim = DANCE_GIFS[scheme];
+        if (anim) {
+            playDance(imgEl, anim, "assets/images/" + scheme + "_bot_charged.webp");
         } else {
             imgEl.src = "assets/images/" + scheme + "_bot_charged.webp";
             if (cb) cb.classList.remove("is-gif");
@@ -561,6 +585,10 @@
             img.src = img.getAttribute("data-src");
             img.removeAttribute("data-src");
         });
+        // NOTE: we deliberately do NOT bulk-preload the dance GIFs here — they're
+        // ~18MB total and eager-loading them would hog bandwidth on slow networks.
+        // `playDance()` preloads each bot's GIF on demand at celebration time and
+        // shows the correct static charged frame until it's ready (no flash).
     }
     if (document.readyState === "complete") {
         loadDeferred();

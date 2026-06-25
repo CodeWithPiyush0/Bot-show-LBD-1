@@ -178,14 +178,11 @@
             }
         }
 
-        // Set left side bot to charged/fixed purple bot
+        // Left side bot: an OVERCHARGED carousel bot (teal) — the line says a few
+        // bots overcharged, so we show a second overcharged one beside the centre.
         const ocLeft = document.querySelector(".bot--oc-left");
         if (ocLeft) {
-            if (window.currentLevel === 2) {
-                ocLeft.src = "assets/images/purple_bot_charged.webp";
-            } else {
-                ocLeft.src = "assets/images/Sahdow_Purple_Bot.webp";
-            }
+            ocLeft.src = "assets/images/teal_bot_overcharged.webp";
         }
 
         centerTapEnabled = false;
@@ -616,10 +613,14 @@
         if (s7Bot) {
             s7Bot.classList.remove("hue-blue");
             if (window.currentLevel === 2 && window.currentScheme && window.setDancingBot) {
-                // chooser bot celebrates as its dancing GIF (falls back to static)
+                // chooser bot celebrates as its dancing animation (falls back to static)
                 window.setDancingBot(s7Bot, window.currentScheme);
+            } else if (window.playDance) {
+                // Part-2 tutorial bot (white/purple) — dances as the white anim,
+                // flash-free (static White_purple still shown until it loads)
+                window.playDance(s7Bot, "assets/videos/white_bot_dancing.gif",
+                    "assets/images/White_purple_bot_charged.webp");
             } else {
-                // Part-2 tutorial bot (white/purple) — dances as the white gif
                 const cb = s7Bot.closest(".charged-bot");
                 if (cb) cb.classList.add("is-gif");
                 s7Bot.src = "assets/videos/white_bot_dancing.gif";

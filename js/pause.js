@@ -149,9 +149,25 @@
 
     if (document.hidden) pause(); // loaded while already hidden
 
+    // Cancel every pending game-flow timer (timeouts AND intervals). Used when
+    // HARD-jumping to a screen (e.g. the dev menu), so the screen we left can't
+    // keep firing its queued `GameNav.show(...)` chain and flip us to a different
+    // screen after we've already navigated away.
+    function cancelAllTimers() {
+        Object.keys(timers).forEach(function (id) {
+            var rec = timers[id];
+            if (rec.real != null) {
+                if (rec.kind === "interval") realClearInterval(rec.real);
+                else realClearTimeout(rec.real);
+            }
+            delete timers[id];
+        });
+    }
+
     global.GamePause = {
         pause: pause,
         resume: resume,
-        isPaused: function () { return paused; }
+        isPaused: function () { return paused; },
+        cancelAllTimers: cancelAllTimers
     };
 })(window);

@@ -62,10 +62,14 @@ LBD-1/
         ├── bite_turn.mp4         # USED: full-screen OPAQUE composite — Bite keyed over BG.webp,
         │                         #   baked in (1920×1080, H.264). Plays on ALL devices.
         └── <name>_bot_dancing.gif# USED (charged-bot celebration, Screens 3 & 7): transparent
-                                  #   animated GIFs of each bot dancing. Names: orange, yellow2 (=gold),
-                                  #   blue, purple, pink, red, green (=teal), green2 (=green/Part-2),
-                                  #   yellow, white (=Part-2 white/purple tutorial bot).
-                                  #   Self-animate in <img>, no codec issue. See §8b for the scheme map.
+                                  #   animated GIF of each bot dancing (~18MB total). Names: orange,
+                                  #   yellow2 (=gold), blue, purple, pink, red, green (=teal), green2
+                                  #   (=green/Part-2), yellow, white (=Part-2 tutorial). §8b = scheme map.
+                                  #   ⚠️ DO NOT re-encode to animated WebP via `ffmpeg -vf fps=N` — twice
+                                  #   tried, both JITTERED (the GIFs are mixed 20/25/16.67fps; a fixed
+                                  #   fps filter drops frames unevenly). Reverted to the original GIFs.
+                                  #   They're loaded ON DEMAND (playDance, §8b), NOT bulk-preloaded, so
+                                  #   the 18MB doesn't hog bandwidth on slow networks.
 ```
 
 > ⚠️ **CASE-SENSITIVITY (deploy gotcha):** all asset folders/files are referenced in
@@ -357,7 +361,7 @@ also not tappable (`select()` ignores `.is-fixed`) and get no hover.
   `hoverShadow` scale/opacity down as it rises). The img transform is separate from the button's
   `--cf`, so hover + coverflow scale don't fight. Only while un-fixed.
   - **Floating celebration dance (LEGACY / now bypassed):** the celebration bots now use dancing
-    GIFs (see §8b), so the blue bot's full-screen groove comes from `blue_bot_dancing.gif`, not CSS.
+    animations (see §8b), so the blue bot's full-screen groove comes from `blue_bot_dancing.gif`, not CSS.
     The `.is-floating` → `botFloatDance` mechanism (lifts −8%↔−13%, sways ±2% X, tilts ±3°,
     `transform-origin:center`) still exists in `screen3.css` but `batteries.js fullyCharged` no longer
     toggles `is-floating` — it's the fallback path for any thruster-feet bot WITHOUT a gif.
@@ -667,23 +671,31 @@ lesson). Two uses:
 
 The celebration screen. Same room background as Screen 1
 (`var(--bg-image)` = BG.webp) + the `spotlight`, with the **charged bot centered**:
-`.charged-bot` wraps `<color>_bot_charged.webp`. Bots without a dancing GIF dance via the
+`.charged-bot` wraps `<color>_bot_charged.webp`. Bots without a dancing anim dance via the
 gentle CSS `botDance` loop (bob + sway, pivot at feet) while `.screen--3.is-active`.
 - **Charged bots = dancing GIFs.** Each charged bot celebrates as an animated GIF
   (`assets/videos/<name>_bot_dancing.gif`, transparent, self-animating in the `<img>`) instead
   of the static image + `botDance`. `window.setDancingBot(imgEl, scheme)` (in `main.js`, right
-  after `window.setupLevel`) points the `.charged-bot img` at the gif via the `DANCE_GIFS` map and
-  adds `.is-gif` on `.charged-bot` (CSS `.charged-bot.is-gif img { animation:none }` kills botDance,
-  on Screens 3 AND 7). If a scheme has no gif it falls back to `<scheme>_bot_charged.webp` + botDance.
-  - **Scheme → gif map** (filenames don't all match scheme names): `orange→orange`, `gold→yellow2`,
+  after `window.setupLevel`) routes through `playDance()` and adds `.is-gif` on `.charged-bot`
+  (CSS `.charged-bot.is-gif img { animation:none }` kills botDance, on Screens 3 AND 7). If a
+  scheme isn't mapped it falls back to `<scheme>_bot_charged.webp` + botDance.
+  - **Flash-free swap (`window.playDance(imgEl, animSrc, staticSrc)`):** the celebration used to
+    flash the static frame while the multi-MB GIF downloaded. `playDance` preloads the GIF via
+    an off-DOM `Image`; if already cached it swaps instantly, else it shows the CORRECT static
+    still until the GIF finishes loading, then swaps once (never a half-frame or wrong bot). The
+    GIFs are loaded ON DEMAND here (NOT bulk-preloaded — 18MB would hog slow connections).
+  - ⚠️ **Kept as GIF on purpose.** Animated-WebP conversion was attempted twice and both jittered
+    (mixed-fps GIFs + `ffmpeg fps=` resampling). Reverted. Don't redo without a frame-exact tool.
+  - **Scheme → anim map** (filenames don't all match scheme names): `orange→orange`, `gold→yellow2`,
     `blue→blue`, `purple→purple`, `pink→pink`, `red→red`, `teal→green` (boxy teal bot),
     `green→green2` (green thruster bot, Part-2 chooser), `yellow→yellow`.
   - Called at all three celebration src-set points: `batteries.js fullyCharged` (Screen-3 chooser
     `s3Bot`), `concept.js revealDancingBot` (Screen-3 orange tutorial), `part2.js onFixed` (Screen-7
-    chooser `s7Bot` via the map). The Part-2 white/purple **TUTORIAL** bot dances as
-    `white_bot_dancing.gif` directly (hard-coded src + `.is-gif`, not via the scheme map).
-  - GIFs animate natively in `<img>` with transparency (no codec issue) — replaced the earlier
-    VP9-alpha dancing WebM, which iOS Safari rendered with its blue bg showing.
+    chooser `s7Bot` via the map). The Part-2 white/purple **TUTORIAL** bot dances via
+    `playDance(s7Bot, "…/white_bot_dancing.gif", "…/White_purple_bot_charged.webp")` directly.
+  - GIFs animate natively in `<img>` with transparency — replaced the earlier VP9-alpha WebM (iOS
+    showed bg). An animated-WebP optimization was tried (to shrink the 18MB) but jittered both times,
+    so the original GIFs are kept (see §8b warning + asset tree).
 - **"Lone bot in the spotlight" vignette.** Both celebration screens (3 charge, 7 fix)
   darken the room around the beam so the dancing bot pops: `.screen--3::after,
   .screen--7::after` paints a radial-gradient vignette (clear elliptical zone over the
@@ -741,8 +753,12 @@ reuse the chooser with the overcharged bots.)
 
 Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
 - **Screen 5** (`screen--5`, intro): room bg + 3 bots in a `.s5-stage` wrapper
-  (left `purple_bot.webp`, centre overcharged `White_purple_bot.webp`, right
-  `orange_bot_charged.webp`). Three-phase choreography (in `Part2.startIntro`):
+  (left `teal_bot_overcharged.webp` — an OVERCHARGED carousel bot so the scene shows
+  more than one overcharged bot, matching the "a few bots have overcharged" line; was
+  the boxy `Sahdow_Purple_Bot`. Centre overcharged `White_purple_bot.webp`, right
+  charged `orange_bot_charged.webp`). `Part2.startIntro` sets the left bot's `src` in
+  JS (overrides the HTML `data-src`), and its `top` is `33.8%` to ground the teal bot
+  on its floor shadow. Three-phase choreography (in `Part2.startIntro`):
   **A** all bots equally lit (spotlight hidden) — "Oh no! A few bots have overcharged.";
   **B** spotlight fades in on centre + sides darken (`.screen--5.is-spotlit`) — "Let's
   start fixing this bot."; **C** side bots fade out (`.is-gone`) + the scene zooms in a
@@ -806,7 +822,7 @@ but unused — they bloat the deploy upload (~17MB) and can be removed if desire
 | ✅ | `BG.webp` | Room background (now from `BG2.png` → webp q88, 29KB) |
 | ✅ | `Question_template.webp` | cream banner + mascot badge (both screens) |
 | ✅ | `purple_bot_low.webp` / `orange_bot.webp` / `White_blue_bot.webp` | Screen 1 bots (left/centre/right). `orange_bot.webp` (←`orange_bot.svg`, 900px) and `purple_bot_low.webp` (←`purple_bot_low.svg`, 950px) are regenerated via sharp (q82); their art has the low-battery icon baked into the chest. `purple_bot_low.webp` doubles as the L2 focal bot. |
-| ✅ | `Sahdow_Purple_Bot.webp` | dimmed "shadow" purple bot — now used only as the Part 2 Screen 5 left/side bot (L1). |
+| ✅ | `Sahdow_Purple_Bot.webp` | dimmed "shadow" purple bot — NO LONGER USED (the Part 2 Screen 5 left bot is now `teal_bot_overcharged.webp`). |
 | ✅ | `blue_bot_low.webp` / `pink_bot_low.webp` | low-battery blue & pink bots for the L2+ chooser carousel (exported from Figma `284:11` / `286:94`). |
 | ✅ | `White_purple_bot.webp` (overcharged) / `White_purple_bot_charged.webp` (fixed) | Part 2 centre bot |
 | ✅ | `purple_bot.webp` / `orange_bot_charged.webp` | Part 2 Screen 5 side bots |
@@ -923,6 +939,8 @@ only proceeds when the page is BOTH visible AND `document.hasFocus()`. On pause 
   reschedules with the remaining ms). So the setTimeout-driven flow (transitions, charge/concept
   sequences, the Bite timeline) does not advance while away. Shim verified transparent for normal
   timing. (Loaded right after audio.js so the shim is installed before any module schedules a timer.)
+  Also exposes **`GamePause.cancelAllTimers()`** — clears every pending timer/interval; used by the
+  dev menu to stop the screen we're leaving from firing its queued `GameNav.show(...)` chain.
 
 To add `win`: drop `win.mp3` into `assets/audios/`. Per-sound volume trims live in `PER`;
 master volume `MASTER = 0.85`.
@@ -957,8 +975,19 @@ screen — for testing without playing through. Sections mirror the new flow:
 curtains). Helpers: `chooser(stage, part)` (sets `gamePart`), `chooserPuzzle(stage, part,
 scheme)`, `BotChooser.reset()`. Each entry sets `gamePart` before navigating. Self-contained
 (injects its own CSS/DOM). **Remove for production:** delete the file and its
-`<script src="js/devmenu.js">` tag in index.html. Reload for a clean state (jumps don't
-cancel a previous screen's pending timers).
+`<script src="js/devmenu.js">` tag in index.html. Every jump:
+1. adds `html.devmenu-jump` (CSS `.screen{transition:none}`) for 2 rAFs so the switch is an
+   INSTANT CUT, not the 0.35s opacity crossfade — otherwise the old + new screens overlap
+   ("both screens at once / one after another"); restored after paint so the target's own
+   intro animations still play.
+2. runs `cleanSlate()`: `GamePause.cancelAllTimers()` + strips leftover transition classes
+   (`is-zooming`, `is-revealing`, `is-spotlit`, `is-choosing`, …) + closes open banners, so the
+   screen you left can't keep firing its queued `GameNav.show(...)` chain and flip you to another
+   screen mid-jump. **Also pauses + clone-replaces `#turn-video`** to kill its accumulated
+   `timeupdate`/`ended` listeners — the your-turn clip drives navigation (`doPull` → chooser slide
+   → `GameNav.show("screen-1")`), so jumping away while it played would yank you back / replay the
+   slide on the new screen ("the animation appears twice"). Verified in headless Edge.
+Together these fix the "multiple screens conflict / hang / animation twice" when jumping mid-flow.
 
 ---
 
