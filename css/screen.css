@@ -502,9 +502,11 @@
 
 /* A fixed bot shows its charged image and can't be re-picked. It stays STATIC
    (no dance) so it doesn't draw the eye / invite a tap — the dancing celebration
-   happens full-screen on Screen 3/7 instead. */
+   happens full-screen on Screen 3/7 instead. Dimmed to ~75% opacity so it reads
+   as "done" and clearly not tappable (both parts). */
 .carousel-bot.is-fixed {
     cursor: default;
+    opacity: 0.75;
 }
 
 /* The BLUE bot has thruster-feet (no legs) → it should HOVER above the floor,
