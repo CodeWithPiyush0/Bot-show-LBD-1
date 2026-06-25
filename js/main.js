@@ -140,7 +140,11 @@
     // `onSwap` behind them, then part to reveal the next screen.
     // openAt (optional): when the curtains start re-opening — default 2600ms
     // holds the message; pass ~1500 for a quick textless close-and-part.
-    function playCurtain(title, sub, onSwap, openAt) {
+    // onReveal (optional): fired once the curtains have fully PARTED, for the
+    // next screen's intro/typewriter — so its animation runs ON-SCREEN, not
+    // hidden behind the closed curtain. (onSwap still does the screen swap +
+    // layout behind the curtain at 950ms.)
+    function playCurtain(title, sub, onSwap, openAt, onReveal) {
         const OPEN = openAt || 2600;
         const curtains = document.getElementById("curtains");
         const titleEl = document.getElementById("curtain-title");
@@ -154,6 +158,7 @@
 
         if (!curtains) {
             onSwap();
+            if (onReveal) onReveal();
             return;
         }
         curtains.classList.add("is-active");
@@ -164,6 +169,9 @@
         window.setTimeout(function () {
             curtains.classList.remove("is-closed");
         }, OPEN); // hold the message, then open
+        // Curtains take 0.85s to part → start the next screen's intro once
+        // they're fully open, so its text animation isn't hidden behind them.
+        if (onReveal) window.setTimeout(onReveal, OPEN + 850);
         window.setTimeout(function () {
             curtains.classList.remove("is-active");
         }, OPEN + 1000);
@@ -483,8 +491,14 @@
                 if (window.SFX) window.SFX.play("win");
                 if (window.gamePart === 1) {
                     // Part 1 (charge) done → on to the Part 2 (split) tutorial.
+                    // Swap the screen behind the curtain; START the intro only once
+                    // the curtains part (onReveal) so its banner types on-screen.
                     playCurtain("Part 1 Complete!", "Now let's fix the overcharged bots…", function () {
-                        startPart2Tutorial();
+                        window.gamePart = 2;
+                        setupLevel(1);
+                        window.GameNav.show("screen-5");
+                    }, undefined, function () {
+                        if (window.Part2) window.Part2.startIntro();
                     });
                 } else {
                     // Part 2 (split) done → the whole game is complete.
@@ -496,10 +510,14 @@
                 }
             } else {
                 // Next level of the same part — TEXTLESS curtain (no level text).
+                // Position the chooser behind the curtain, but defer the banner
+                // typing until the curtains part (onReveal).
                 playCurtain("", "", function () {
                     window.GameNav.show("screen-1");
-                    if (window.BotChooser) window.BotChooser.enterChooser(false);
-                }, 1500);
+                    if (window.BotChooser) window.BotChooser.enterChooser(false, true);
+                }, 1500, function () {
+                    if (window.BotChooser && window.BotChooser.typeBanner) window.BotChooser.typeBanner();
+                });
             }
         }
         window.returnToChooser = returnToChooser;
@@ -527,6 +545,15 @@
             window.setTimeout(function () {
                 window.GameNav.show("screen-3");
                 if (screen3) screen3.classList.add("is-revealing");
+                // Close the banner AND clear its text on entry so neither a
+                // leftover-open template nor stale text from the previous
+                // celebration flashes before showMessage re-opens + retypes it.
+                const q3 = document.getElementById("question-3");
+                if (q3) {
+                    q3.classList.remove("is-open");
+                    const t3 = q3.querySelector(".question__text");
+                    if (t3) t3.textContent = "";
+                }
                 if (window.SFX) window.SFX.play("celebrate");
             }, 150);
 

@@ -187,6 +187,15 @@
         later(function () {
             if (global.GameNav) global.GameNav.show("screen-3");
             if (screen3) screen3.classList.add("is-revealing");
+            // Close the banner AND clear its text on entry so neither a
+            // leftover-open template nor stale text flashes before showMessage
+            // re-opens + retypes it.
+            const q3 = document.getElementById("question-3");
+            if (q3) {
+                q3.classList.remove("is-open");
+                const t3 = q3.querySelector(".question__text");
+                if (t3) t3.textContent = "";
+            }
             if (global.SFX) global.SFX.play("celebrate");
             // Tutorial bot is the orange one — celebrate as its dancing GIF.
             const s3img = screen3 ? screen3.querySelector(".charged-bot img") : null;

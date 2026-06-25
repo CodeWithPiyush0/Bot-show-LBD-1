@@ -19,6 +19,7 @@
     let wired = false;
     let phase = "charge"; // "charge" (low bots) | "split" (overcharged bots)
     let lastFixed = null; // the bot just fixed — centred so it's seen dancing
+    let bannerMsg = "";   // last chooser banner text, for a deferred typeBanner()
 
     /* ---- scroll SFX: one `one_scroll` tick PER BOT crossed ----
        As the row scrolls, every time a new bot passes the centre we play one
@@ -215,7 +216,7 @@
     // the current phase; if every level is done, completes the game.
     // centerFixed: bring the just-fixed (dancing) bot to the front instead of
     // the next selectable one — so the player sees their bot celebrating.
-    function enterChooser(centerFixed) {
+    function enterChooser(centerFixed, deferText) {
         const screen1 = document.getElementById("screen-1");
         if (screen1) screen1.classList.remove("is-choosing", "is-lit");
         bots().forEach(function (b) {
@@ -240,7 +241,12 @@
         const msg = phase === "split"
             ? "Oh no! These bots are overcharged — tap one to fix it."
             : "Scroll and tap a bot to charge it.";
-        if (window.Screen1Intro && window.Screen1Intro.setText) {
+        bannerMsg = msg; // remember for a deferred typeBanner() (curtain reveal)
+        if (deferText) {
+            // Coming in behind a curtain — keep the banner empty; the transition
+            // calls typeBanner() once the curtains part so it types on-screen.
+            if (textEl) textEl.textContent = "";
+        } else if (window.Screen1Intro && window.Screen1Intro.setText) {
             window.Screen1Intro.setText(msg);
         } else if (textEl) {
             textEl.textContent = msg;
@@ -316,12 +322,25 @@
         return { levelComplete: true };
     }
 
+    // Type the chooser banner that was deferred (enterChooser(_, true)) — called
+    // by the level→level curtain once the curtains have parted.
+    function typeBanner() {
+        if (!bannerMsg) return;
+        if (global.Screen1Intro && global.Screen1Intro.setText) {
+            global.Screen1Intro.setText(bannerMsg);
+        } else {
+            const el = document.querySelector("#screen-1 .question__text");
+            if (el) el.textContent = bannerMsg;
+        }
+    }
+
     global.BotChooser = {
         init: init,
         enterChooser: enterChooser,
         onFixed: onFixed,
         markFixed: onFixed, // back-compat alias
         reset: reset,
+        typeBanner: typeBanner,
     };
     document.addEventListener("DOMContentLoaded", init);
 })(window);

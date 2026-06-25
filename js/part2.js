@@ -138,6 +138,17 @@
         global.setTimeout(function () {
             global.GameNav.show(toId);
             to.classList.add("is-revealing");
+            // Close the banner AND clear its text on entry so neither a
+            // leftover-open template nor stale text from the previous celebration
+            // flashes before openBanner re-opens + retypes it.
+            if (toId === "screen-7") {
+                const q7c = byId("question-7");
+                if (q7c) {
+                    q7c.classList.remove("is-open");
+                    const t7 = q7c.querySelector(".question__text");
+                    if (t7) t7.textContent = "";
+                }
+            }
             if (toId === "screen-7" && global.SFX) global.SFX.play("celebrate");
         }, 150);
         global.setTimeout(function () {

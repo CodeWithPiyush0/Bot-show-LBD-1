@@ -158,9 +158,14 @@ and the typewriter runs from `Screen1Intro.play()` (NOT on page load).
 
 **Level transition = theatre curtains.** `#curtains` sits **outside `#stage`** (direct
 child of `#game`) and is `position: fixed` so it covers the **whole viewport** including
-the letterbox bars. Two velvet curtain halves. `playCurtain(title, sub, onSwap)` (main.js,
-the shared helper) closes them over a finished level, runs `onSwap` to swap the screen
-behind them, then parts them to reveal the next — matching the auditorium-stage theme.
+the letterbox bars. Two velvet curtain halves. `playCurtain(title, sub, onSwap, openAt, onReveal)`
+(main.js, the shared helper) closes them over a finished level, runs `onSwap` (~950ms) to swap the
+screen behind them, then parts them (0.85s) to reveal the next — matching the auditorium-stage theme.
+⚠️ **`onReveal` fires AFTER the curtains fully part** (`OPEN+850`) — use it for the next screen's
+intro/typewriter so its animation runs ON-SCREEN, not hidden behind the closed curtain. Both the
+Part 1→2 transition (`Part2.startIntro` in onReveal; swap screen-5 in onSwap) and the level→level
+chooser (`BotChooser.enterChooser(false, true)` positions behind the curtain with the banner DEFERRED,
+then `BotChooser.typeBanner()` in onReveal) use this.
 The per-level transition is **TEXTLESS** (by request — no "Level N Complete" text; uses
 `playCurtain("", "", swap, 1500)`); only the **part-complete** ("Part 1 Complete!", →
 Part 2 tutorial) and **game-complete** ("All Bots Fixed!") curtains still show a message. (The legacy
@@ -615,6 +620,9 @@ Once the batteries are in the big slot and it's glowing green, the finale plays
    It fires **AFTER the reveal settles (~1300ms)**, not at screen-show — otherwise the
    unroll finishes during the zoom-out and is never seen. The dance windows give it
    room: tutorial `onDanced` after 3800ms; levels `returnToChooser` after 5100ms.
+   ⚠️ Both Screen-3 entries (and the Screen-7 `zoomOutTo`) now `classList.remove("is-open")`
+   on the celebration banner AT screen-show — otherwise a banner left open from the previous
+   celebration flashes for ~1s before showMessage re-opens it ("template appears twice").
 4. **~1.6s after the finale starts** (shortened — no message hold),
    it transitions onward: tutorial → Screen 4 concept; levels → **Screen 3** via `GameFx.exitBot()`
    — the **reverse** of the enter-zoom: we pull back OUT of the chest (same 49.6%/73%
@@ -727,9 +735,10 @@ Dark interior bg + batteries in all three slots:
 - **big** = 4 blue (top row) + 6 yellow (bottom row) = the whole.
 `concept.js` builds the battery groups (display-only, `SCALE 0.82`) and plays a
 two-phase animation synced to the banner prompt **"These 2 parts make this whole."**
-(the keywords are highlighted for impact: **parts** = blue, **whole** = green — both concept
+(the keywords are highlighted for impact: **parts** AND **whole** are BOTH green — both concept
 typewriters wrap whole-word `parts`/`whole` in `.kw--parts`/`.kw--whole` spans as they finish
-typing; colours in screen.css. Screen 8's "This whole is made of these 2 parts." gets the same):
+typing; both classes share the same green in screen.css. Screen 8's "This whole is made of
+these 2 parts." gets the same):
 - **Phase A ("These 2 parts")**: starts as the prompt begins typing; the big-slot
   batteries dim to 20% (`.battery.is-dim`); the two **part SLOTS glow one by one**
   (`.slot-glow--small-left` then `--small-right`, `SLOT_GLOW_STAGGER` apart;
