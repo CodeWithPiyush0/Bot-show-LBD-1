@@ -81,6 +81,12 @@ export async function refreshComments() {
     return cachedComments;
 }
 
+// ALL comments for this app (every page), fetched fresh — used by the CSV export
+// so the bug sheet is the complete list, not just the current page's cache.
+export async function fetchAllCommentsForApp() {
+    return await fetchComments({});
+}
+
 // Top-level comments only — replies are nested.
 export function getCommentsForCurrentScreen(screen) {
     return cachedComments.filter(c => c.screen === screen && !c.parentId);

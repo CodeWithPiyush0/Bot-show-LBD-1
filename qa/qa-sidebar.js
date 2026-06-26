@@ -16,7 +16,7 @@ const STATUS_LABEL = {
 };
 const STATUS_OPTIONS = ['all', 'open', 'in_progress', 'resolved', 'wontfix'];
 
-export function createSidebarModule({ onItemClick, onDelete, onInspectToggle, onSwitchRole, onShowHelp }) {
+export function createSidebarModule({ onItemClick, onDelete, onInspectToggle, onSwitchRole, onShowHelp, onExport }) {
     let sidebarEl = null;
     let collapsed = false;
     let inspectOn = false;
@@ -45,6 +45,8 @@ export function createSidebarModule({ onItemClick, onDelete, onInspectToggle, on
                     <option value="resolved">Resolved</option>
                     <option value="wontfix">Won't Fix</option>
                 </select>
+                <button class="qa-sidebar__export" type="button"
+                        title="Download all comments as a CSV bug sheet" hidden>⬇ Export CSV</button>
             </div>
             <ul class="qa-sidebar__list"></ul>
             <div class="qa-sidebar__empty">No comments on this screen yet.</div>
@@ -83,10 +85,18 @@ export function createSidebarModule({ onItemClick, onDelete, onInspectToggle, on
             statusFilter = e.target.value;
             if (lastScreen) render(lastScreen);
         });
+
+        sidebarEl.querySelector('.qa-sidebar__export').addEventListener('click', () => {
+            if (typeof onExport === 'function') onExport();
+        });
     }
 
     function setIdentity({ name, role } = {}) {
         if (!sidebarEl) build();
+        // Export is a power-role action (owner/qa, password-protected). "other"
+        // testers don't get the button.
+        const exportBtn = sidebarEl.querySelector('.qa-sidebar__export');
+        if (exportBtn) exportBtn.hidden = !(role === 'owner' || role === 'qa');
         const nameEl = sidebarEl.querySelector('.qa-sidebar__author');
         const roleEl = sidebarEl.querySelector('.qa-sidebar__role-tag');
         if (nameEl) nameEl.textContent = name || '—';

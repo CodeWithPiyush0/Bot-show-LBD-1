@@ -20,11 +20,13 @@ import {
     canReply,
     verifyPassword,
     refreshComments,
+    fetchAllCommentsForApp,
     hasSavedPassword,
     getReplies,
 } from './qa-storage.js';
 import { createPopupModule } from './qa-popup.js';
 import { createSidebarModule } from './qa-sidebar.js';
+import { exportCommentsToCsv } from './qa-export.js';
 
 function isQAActive() {
     return new URLSearchParams(location.search).get('qa') === 'true';
@@ -709,6 +711,25 @@ async function init() {
         },
         onInspectToggle: setInterceptEnabled,
         onShowHelp: () => { showWelcomeModal(); },
+        onExport: async () => {
+            // Power roles only (the button is already hidden for "other"; re-check
+            // here so it can't be triggered another way).
+            if (!isPowerRole(getRole())) return;
+            let all = [];
+            try {
+                all = await fetchAllCommentsForApp();
+            } catch (e) {
+                console.warn('[QA] export fetch failed', e);
+                showToast('Could not load comments to export', 'error');
+                return;
+            }
+            if (!all.length) {
+                showToast('No comments to export yet', 'info');
+                return;
+            }
+            const n = exportCommentsToCsv(all);
+            showToast(`Exported ${n} comment${n === 1 ? '' : 's'} to CSV`, 'success');
+        },
         onSwitchRole: async () => {
             const result = await showRoleModal({
                 initialName: getAuthor(),

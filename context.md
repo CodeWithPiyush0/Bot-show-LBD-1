@@ -1029,6 +1029,24 @@ someone typed a comment. So the game honours the flag itself, in **three layers*
   the QA UI lives on `<body>` and keeps animating).
 All of this is **inert during normal play** — the class only exists in QA mode.
 
+### Export-to-CSV (`qa/qa-export.js`)
+Lets a reviewer download the comment list as a **CSV "bug sheet"** (replacing the
+spreadsheet she used to keep by hand). Button "⬇ Export CSV" sits in the sidebar
+**filter row** (right-aligned); shown **only for owner/qa** roles (the password-protected
+ones) — `qa-sidebar.js setIdentity` toggles `[hidden]` by role; `other` never sees it.
+- Click → `qa-mode.js onExport` → `fetchAllCommentsForApp()` (storage; `fetchComments({})`
+  = ALL comments for this `app_name`, every page) → `exportCommentsToCsv(all)`.
+- **Option A: exports the FULL list** (all authors), so the Author + Reply-To columns are
+  meaningful and threads reconstruct. (We discussed "her comments only" but the columns
+  need the whole set; role isn't stored on a comment anyway — only `author`.)
+- Columns: **#, Screen, Status, Comment, Author, Created, Type, Reply To, Won't-Fix Reason**.
+  Every row (comment OR reply) gets a sequential `#`; replies carry their parent's `#` in
+  "Reply To". Status enums (`open/in_progress/resolved/wontfix`) → readable labels.
+  `wontfixReason` only filled on wontfix rows. CSV is escaped (commas/quotes/newlines) with
+  a UTF-8 BOM so Excel reads it cleanly. Filename `qa-comments_<app_name>_<YYYY-MM-DD>.csv`.
+- **Reusable**: columns derive from the generic comment shape and the filename from
+  `APP_NAME`, so the `/qa/` folder still works dropped into another project.
+
 ---
 
 ## 12. Previewing / testing
