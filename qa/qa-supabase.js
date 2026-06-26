@@ -30,8 +30,13 @@ function rowToComment(row) {
         author:         row.author,
         appName:        row.app_name,
         parentId:       row.parent_id,
-        status:         row.status,
+        status:         row.status,                       // Dev status (open/in_progress/resolved/wontfix)
         wontfixReason:  row.wontfix_reason || null,
+        // QA bug fields (only populated on QA-authored bug comments).
+        qaStatus:       row.qa_status || null,            // 'pass' | 'fail'
+        steps:          row.steps_to_reproduce || null,
+        expected:       row.expected_result || null,
+        actual:         row.actual_result || null,
         createdAt:      row.created_at ? new Date(row.created_at).getTime() : Date.now(),
     };
 }
@@ -55,9 +60,14 @@ export async function fetchComments({ page, screen } = {}) {
     return (data || []).map(rowToComment);
 }
 
-export async function insertComment({ selector, x, y, text, page, screen, author, parentId }) {
+export async function insertComment({ selector, x, y, text, page, screen, author, parentId, qaStatus, steps, expected, actual }) {
     const row = { selector, x, y, text, page, screen, author, app_name: APP_NAME };
     if (parentId) row.parent_id = parentId;
+    // QA bug fields (set when a QA tester logs a structured bug; omitted otherwise).
+    if (qaStatus != null) row.qa_status          = qaStatus;
+    if (steps    != null) row.steps_to_reproduce = steps;
+    if (expected != null) row.expected_result    = expected;
+    if (actual   != null) row.actual_result      = actual;
     const { data, error } = await supabase
         .from('qa_comments')
         .insert([row])

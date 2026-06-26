@@ -16,7 +16,8 @@ import {
     clearSession,
     isPowerRole,
     canEditComment,
-    canChangeStatus,
+    canChangeDevStatus,
+    canChangeQaStatus,
     canReply,
     verifyPassword,
     refreshComments,
@@ -516,9 +517,12 @@ async function init() {
     // (status pill, reply thread, delete button, conditional read-only mode).
     function openExistingComment(c) {
         const editable    = canEditComment(c);
-        const statusOK    = canChangeStatus();
+        const devStatusOK = canChangeDevStatus(); // owner
+        const qaStatusOK  = canChangeQaStatus();  // owner or qa
         const replyOK     = canReply();
         const canDelReply = (r) => canEditComment(r);
+        // A QA bug carries the structured fields; a plain comment doesn't.
+        const isBug = !!(c.qaStatus || c.steps || c.expected || c.actual);
 
         const replyHandlers = {
             canReply: replyOK,
@@ -557,15 +561,39 @@ async function init() {
             readOnly: !editable,
             canDelete: editable,
             status: currentStatus,
-            canChangeStatus: statusOK,
+            canChangeStatus: devStatusOK,         // Dev status → owner only
             wontfixReason: c.wontfixReason || '',
+            // QA bug fields (only meaningful when this is a QA bug)
+            bugForm: isBug,
+            steps: c.steps || '',
+            expected: c.expected || '',
+            actual: c.actual || '',
+            qaStatus: c.qaStatus || 'fail',
+            canChangeQaStatus: qaStatusOK,        // QA status → owner or qa
             byline: `${c.author || 'Unknown'} · ${new Date(c.createdAt).toLocaleString()}`,
             replies: getReplies(c.id),
             ...replyHandlers,
 
-            onSave: async (text) => {
-                const result = await updateComment(c.id, { text });
+            onSave: async (payload) => {
+                // payload = { text, steps?, expected?, actual? }
+                const patch = { text: payload.text };
+                if (isBug) {
+                    patch.steps_to_reproduce = payload.steps || null;
+                    patch.expected_result    = payload.expected || null;
+                    patch.actual_result      = payload.actual || null;
+                }
+                const result = await updateComment(c.id, patch);
                 if (!result.ok) { showToast(result.error || 'Update failed', 'error'); return; }
+                // keep local refs in sync for re-open
+                c.text = payload.text;
+                if (isBug) { c.steps = payload.steps; c.expected = payload.expected; c.actual = payload.actual; }
+                renderPins();
+                sidebar.render(currentScreen);
+            },
+            onQaStatusChange: async (newQaStatus) => {
+                const result = await updateComment(c.id, { qa_status: newQaStatus });
+                if (!result.ok) { showToast(result.error || 'QA status change failed', 'error'); return; }
+                c.qaStatus = newQaStatus;
                 renderPins();
                 sidebar.render(currentScreen);
             },
@@ -628,8 +656,11 @@ async function init() {
         });
     }
 
-    // Open the popup for a new comment (no status, no replies, just text).
+    // Open the popup for a NEW comment. QA testers get the structured bug form
+    // (Description + Steps + Expected + Actual + QA status); everyone else gets
+    // the simple comment box.
     function openNewComment(x, y, selectorStr) {
+        const isQa = getRole() === 'qa';
         popup.open({
             x, y,
             selector: selectorStr,
@@ -639,9 +670,16 @@ async function init() {
             canDelete: false,
             replies: [],
             canReply: false,
-            onSave: async (text) => {
+            bugForm: isQa,
+            qaStatus: 'fail', // a freshly logged bug defaults to QA Fail
+            onSave: async (payload) => {
+                // payload = { text, steps?, expected?, actual?, qaStatus? }
                 const created = await addComment({
-                    selector: selectorStr, x, y, text, screen: currentScreen,
+                    selector: selectorStr, x, y, text: payload.text, screen: currentScreen,
+                    steps:    payload.steps,
+                    expected: payload.expected,
+                    actual:   payload.actual,
+                    qaStatus: payload.qaStatus,
                 });
                 if (!created) { showToast('Save failed', 'error'); return; }
                 renderPins();
@@ -712,9 +750,9 @@ async function init() {
         onInspectToggle: setInterceptEnabled,
         onShowHelp: () => { showWelcomeModal(); },
         onExport: async () => {
-            // Power roles only (the button is already hidden for "other"; re-check
-            // here so it can't be triggered another way).
-            if (!isPowerRole(getRole())) return;
+            const role = getRole();
+            // Power roles only (button is hidden for "other"; re-check here too).
+            if (role !== 'owner' && role !== 'qa') return;
             let all = [];
             try {
                 all = await fetchAllCommentsForApp();
@@ -723,12 +761,19 @@ async function init() {
                 showToast('Could not load comments to export', 'error');
                 return;
             }
-            if (!all.length) {
-                showToast('No comments to export yet', 'info');
-                return;
+            if (role === 'qa') {
+                // QA exports only HER OWN top-level bugs (her bug sheet).
+                const me = getAuthor();
+                const mine = all.filter((c) => c.author === me && !c.parentId);
+                if (!mine.length) { showToast('No comments of yours to export yet', 'info'); return; }
+                const n = exportCommentsToCsv(mine, 'qa');
+                showToast(`Exported ${n} of your comment${n === 1 ? '' : 's'} to CSV`, 'success');
+            } else {
+                // Owner exports the FULL list (all authors + replies).
+                if (!all.length) { showToast('No comments to export yet', 'info'); return; }
+                const n = exportCommentsToCsv(all, 'owner');
+                showToast(`Exported ${n} comment${n === 1 ? '' : 's'} to CSV`, 'success');
             }
-            const n = exportCommentsToCsv(all);
-            showToast(`Exported ${n} comment${n === 1 ? '' : 's'} to CSV`, 'success');
         },
         onSwitchRole: async () => {
             const result = await showRoleModal({

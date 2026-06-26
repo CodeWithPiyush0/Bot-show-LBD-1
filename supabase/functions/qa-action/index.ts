@@ -11,8 +11,11 @@
 //     → returns { role: 'owner' | 'qa' }  (401 on bad password)
 //
 //   POST /qa-action { password, action: 'update_comment',
-//                     payload: { id, text?, status? } }
+//                     payload: { id, text?, steps_to_reproduce?, expected_result?,
+//                                actual_result?, status?, wontfix_reason?, qa_status? } }
 //     → returns { ok: true, row: <updated> }
+//     Permissions: Dev status (status / wontfix_reason) = OWNER only;
+//                  QA status (qa_status) = OWNER or QA; content edits on others = OWNER.
 //
 //   POST /qa-action { password, action: 'delete_comment',
 //                     payload: { id } }
@@ -117,19 +120,31 @@ serve(async (req) => {
                 if (!payload?.id) return json({ error: 'Missing id' }, 400);
                 const { id, ...patch } = payload;
                 const allowed: Record<string, unknown> = {};
-                if ('text'           in patch) allowed.text           = patch.text;
-                if ('status'         in patch) allowed.status         = patch.status;
-                if ('wontfix_reason' in patch) allowed.wontfix_reason = patch.wontfix_reason;
+                // Content fields (the QA bug form + plain comment text).
+                if ('text'               in patch) allowed.text               = patch.text;
+                if ('steps_to_reproduce' in patch) allowed.steps_to_reproduce = patch.steps_to_reproduce;
+                if ('expected_result'    in patch) allowed.expected_result    = patch.expected_result;
+                if ('actual_result'      in patch) allowed.actual_result      = patch.actual_result;
+                // Statuses.
+                if ('status'         in patch) allowed.status         = patch.status;          // Dev status
+                if ('wontfix_reason' in patch) allowed.wontfix_reason = patch.wontfix_reason;   // goes with Dev status
+                if ('qa_status'      in patch) allowed.qa_status      = patch.qa_status;        // QA status (Pass/Fail)
                 if (Object.keys(allowed).length === 0) {
                     return json({ error: 'No allowed fields to update' }, 400);
                 }
 
-                // Status changes need OWNER or QA.
-                if ('status' in allowed && !isPower) {
-                    return json({ error: 'Only Owner/QA can change status' }, 403);
+                // Dev status (and its Won't-Fix reason) → OWNER only.
+                if (('status' in allowed || 'wontfix_reason' in allowed) && !isOwner) {
+                    return json({ error: 'Only Owner can change Dev status' }, 403);
                 }
-                // Text edits on others' comments need OWNER.
-                if ('text' in allowed && !isOwner) {
+                // QA status (Pass/Fail) → OWNER or QA.
+                if ('qa_status' in allowed && !isPower) {
+                    return json({ error: 'Only QA/Owner can change QA status' }, 403);
+                }
+                // Editing comment CONTENT on others' comments → OWNER; own → author match.
+                const CONTENT = ['text', 'steps_to_reproduce', 'expected_result', 'actual_result'];
+                const editingContent = CONTENT.some((k) => k in allowed);
+                if (editingContent && !isOwner) {
                     if (!author) return json({ error: 'Not authorised' }, 403);
                     const ownerName = await getCommentAuthor(id);
                     if (ownerName !== author) {

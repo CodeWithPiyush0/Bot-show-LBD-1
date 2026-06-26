@@ -1029,23 +1029,33 @@ someone typed a comment. So the game honours the flag itself, in **three layers*
   the QA UI lives on `<body>` and keeps animating).
 All of this is **inert during normal play** — the class only exists in QA mode.
 
-### Export-to-CSV (`qa/qa-export.js`)
-Lets a reviewer download the comment list as a **CSV "bug sheet"** (replacing the
-spreadsheet she used to keep by hand). Button "⬇ Export CSV" sits in the sidebar
-**filter row** (right-aligned); shown **only for owner/qa** roles (the password-protected
-ones) — `qa-sidebar.js setIdentity` toggles `[hidden]` by role; `other` never sees it.
-- Click → `qa-mode.js onExport` → `fetchAllCommentsForApp()` (storage; `fetchComments({})`
-  = ALL comments for this `app_name`, every page) → `exportCommentsToCsv(all)`.
-- **Option A: exports the FULL list** (all authors), so the Author + Reply-To columns are
-  meaningful and threads reconstruct. (We discussed "her comments only" but the columns
-  need the whole set; role isn't stored on a comment anyway — only `author`.)
-- Columns: **#, Screen, Status, Comment, Author, Created, Type, Reply To, Won't-Fix Reason**.
-  Every row (comment OR reply) gets a sequential `#`; replies carry their parent's `#` in
-  "Reply To". Status enums (`open/in_progress/resolved/wontfix`) → readable labels.
-  `wontfixReason` only filled on wontfix rows. CSV is escaped (commas/quotes/newlines) with
-  a UTF-8 BOM so Excel reads it cleanly. Filename `qa-comments_<app_name>_<YYYY-MM-DD>.csv`.
-- **Reusable**: columns derive from the generic comment shape and the filename from
-  `APP_NAME`, so the `/qa/` folder still works dropped into another project.
+### Role-based bug form + two statuses + export
+The QA tool captures bugs differently per role (so the QA tester gets a real bug sheet):
+- **Roles & capture** (`qa-mode.js openNewComment`): **QA** role → a structured **bug form**
+  (`.qa-popup--bug`): *Bug description* (required) + *Steps to reproduce* + *Expected result*
+  + *Actual result* + a **QA status** dropdown (Pass/Fail, defaults **Fail**). **Other/Owner**
+  → the plain single-textarea comment. The form is driven by `bugForm` in `qa-popup.js build()`.
+- **Two statuses** (both on the popup header for existing items, via `.qa-popup__pills`):
+  - **Dev status** = the existing `status` (Open/In Progress/Resolved/Won't Fix) — the
+    developer's workflow, **OWNER-only** (`canChangeDevStatus`). Shown on **all** comments.
+  - **QA status** (Pass/Fail) = the tester's verdict, **owner/qa** (`canChangeQaStatus`). Shown
+    on **QA bugs only**. She flips Fail→Pass on retest.
+  Both pills also render in the sidebar list (QA pill only for bugs).
+- **New DB fields** (`qa_comments`): `qa_status`, `steps_to_reproduce`, `expected_result`,
+  `actual_result`. Description = existing `text`; Dev status = existing `status`. Mapped in
+  `qa-supabase.js rowToComment` (camelCase: `qaStatus/steps/expected/actual`); set on INSERT
+  (direct) and on UPDATE via the **edge function** (`qa-action`), which now whitelists the new
+  columns and enforces: Dev status/wontfix = OWNER, QA status = owner/qa, content edits on
+  others = OWNER. **Both the `ALTER TABLE` and the redeployed edge function are required.**
+- **Export (`qa/qa-export.js`)** — "⬇ Export CSV" button in the sidebar filter row, **owner/qa
+  only** (`[hidden]` toggled by role in `setIdentity`; `other` never sees it). Role-based scope:
+  - **QA** → only **her own top-level bugs** (`author === me && !parentId`), columns: #, Screen,
+    Bug description, Steps, Expected, Actual, QA status, Dev status, Created.
+  - **Owner** → the **full list** (all authors + replies), same columns **plus** Author, Type,
+    Reply To (parent's #), Won't-Fix Reason.
+  CSV escaped (commas/quotes/newlines) + UTF-8 BOM for Excel. Filename
+  `qa-comments_<app_name>_<YYYY-MM-DD>.csv`. **Reusable** — columns derive from the generic
+  comment shape, filename from `APP_NAME`.
 
 ---
 

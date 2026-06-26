@@ -14,6 +14,7 @@ const ROLE_LABEL = { owner: 'Owner', qa: 'QA', other: 'Other' };
 const STATUS_LABEL = {
     open: 'Open', in_progress: 'In Progress', resolved: 'Resolved', wontfix: "Won't Fix",
 };
+const QA_STATUS_LABEL = { pass: 'QA Pass', fail: 'QA Fail' };
 const STATUS_OPTIONS = ['all', 'open', 'in_progress', 'resolved', 'wontfix'];
 
 export function createSidebarModule({ onItemClick, onDelete, onInspectToggle, onSwitchRole, onShowHelp, onExport }) {
@@ -139,9 +140,11 @@ export function createSidebarModule({ onItemClick, onDelete, onInspectToggle, on
             const li = document.createElement('li');
             li.className = `qa-sidebar__item qa-sidebar__item--status-${status}`;
             li.dataset.id = c.id;
+            const qa = c.qaStatus; // 'pass' | 'fail' | null (QA bugs only)
             li.innerHTML = `
                 <div class="qa-sidebar__row">
                     <span class="qa-sidebar__num">${idx + 1}</span>
+                    ${qa ? `<span class="qa-pill qa-pill--qa-${qa}">${QA_STATUS_LABEL[qa]}</span>` : ''}
                     <span class="qa-pill qa-pill--${status}">${STATUS_LABEL[status]}</span>
                     <div class="qa-sidebar__row-spacer"></div>
                     ${editable ? '<button class="qa-sidebar__del" type="button" title="Delete">×</button>' : ''}

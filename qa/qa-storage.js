@@ -66,7 +66,12 @@ export function canEditComment(comment) {
     if (role === 'owner') return true;
     return comment && comment.author === getAuthor();
 }
-export function canChangeStatus() {
+// Dev status (Open/In Progress/Resolved/Won't Fix) is the developer's workflow →
+// OWNER only. QA status (Pass/Fail) is the tester's verdict → OWNER or QA.
+export function canChangeDevStatus() {
+    return getRole() === 'owner';
+}
+export function canChangeQaStatus() {
     return isPowerRole(getRole()); // owner or qa
 }
 export function canReply() {
@@ -102,13 +107,14 @@ export function getReplies(commentId) {
         .sort((a, b) => a.createdAt - b.createdAt);
 }
 
-export async function addComment({ selector, x, y, text, screen, parentId }) {
+export async function addComment({ selector, x, y, text, screen, parentId, qaStatus, steps, expected, actual }) {
     const entry = await insertComment({
         selector, x, y, text,
         page:   location.pathname,
         screen: screen || 'Other',
         author: getAuthor() || 'Anonymous',
         parentId,
+        qaStatus, steps, expected, actual, // QA bug fields (undefined for plain comments)
     });
     if (entry) cachedComments.push(entry);
     return entry;

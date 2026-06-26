@@ -9,6 +9,7 @@
 
 const POPUP_W = 320;
 
+// Dev status (the developer's workflow).
 const STATUS_LABELS = {
     open:         'Open',
     in_progress:  'In Progress',
@@ -16,6 +17,10 @@ const STATUS_LABELS = {
     wontfix:      "Won't Fix",
 };
 const STATUS_ORDER = ['open', 'in_progress', 'resolved', 'wontfix'];
+
+// QA status (the tester's verdict — used on retest).
+const QA_STATUS_LABELS = { fail: 'QA Fail', pass: 'QA Pass' };
+const QA_STATUS_ORDER  = ['fail', 'pass'];
 
 function fmtTime(ts) {
     return new Date(ts).toLocaleString();
@@ -61,16 +66,24 @@ export function createPopupModule() {
             text = '',
             readOnly = false,
             canDelete = false,
-            status = 'open',
-            canChangeStatus = false,
+            status = 'open',              // Dev status
+            canChangeStatus = false,      // can change Dev status (owner)
             wontfixReason = '',
+            // QA bug form
+            bugForm = false,              // render the structured bug fields?
+            steps = '',
+            expected = '',
+            actual = '',
+            qaStatus = 'fail',            // QA status (Pass/Fail)
+            canChangeQaStatus = false,    // can change QA status (owner/qa)
             byline = '',
             replies = [],
             canReply = false,
             canDeleteReply = () => false,
             onSave,
             onDelete,
-            onStatusChange,
+            onStatusChange,               // Dev status change
+            onQaStatusChange,             // QA status change
             onReply,
             onReplyDelete,
         } = params;
@@ -78,20 +91,30 @@ export function createPopupModule() {
         const el = document.createElement('div');
         el.className = 'qa-popup'
             + (readOnly ? ' qa-popup--readonly' : '')
-            + (isNew    ? ' qa-popup--new'      : '');
+            + (isNew    ? ' qa-popup--new'      : '')
+            + (bugForm  ? ' qa-popup--bug'      : '');
 
-        // ── Header ─────────────────────────────────────────────────
+        // ── Header (label + status pills) ──────────────────────────
         const header = document.createElement('div');
         header.className = 'qa-popup__header';
 
         const label = document.createElement('div');
         label.className = 'qa-popup__label';
-        label.innerHTML = 'Comment on: <code></code>';
+        label.innerHTML = (bugForm ? 'Bug on: <code></code>' : 'Comment on: <code></code>');
         label.querySelector('code').textContent = selector || '(unknown)';
         header.appendChild(label);
 
+        // Existing comments show their status pills. QA bugs show BOTH the QA
+        // status (tester's verdict) and the Dev status (developer's workflow);
+        // plain comments show only the Dev status.
         if (!isNew) {
-            header.appendChild(buildStatusPill(status, canChangeStatus, onStatusChange));
+            const pills = document.createElement('div');
+            pills.className = 'qa-popup__pills';
+            if (bugForm) {
+                pills.appendChild(buildQaStatusControl(qaStatus || 'fail', canChangeQaStatus, onQaStatusChange));
+            }
+            pills.appendChild(buildStatusPill(status, canChangeStatus, onStatusChange));
+            header.appendChild(pills);
         }
         el.appendChild(header);
 
@@ -103,7 +126,7 @@ export function createPopupModule() {
             el.appendChild(b);
         }
 
-        // ── Won't Fix reason (only if status is wontfix and reason set) ──
+        // ── Won't Fix reason (Dev status, only if set) ─────────────
         if (!isNew && status === 'wontfix' && wontfixReason) {
             const box = document.createElement('div');
             box.className = 'qa-popup__wontfix';
@@ -112,15 +135,70 @@ export function createPopupModule() {
             el.appendChild(box);
         }
 
-        // ── Comment textarea ──────────────────────────────────────
-        const ta = document.createElement('textarea');
-        ta.className = 'qa-popup__text';
-        ta.placeholder = isNew ? 'Type your comment...' : '';
-        ta.value = text;
-        if (readOnly) ta.readOnly = true;
-        el.appendChild(ta);
+        // ── Body fields ────────────────────────────────────────────
+        // `fields` holds the <textarea>/<select> refs we read back on save.
+        const fields = {};
 
-        // ── Action buttons row ────────────────────────────────────
+        function fieldBox(labelText, value, placeholder, opts) {
+            opts = opts || {};
+            const wrap = document.createElement('label');
+            wrap.className = 'qa-field';
+            const lab = document.createElement('span');
+            lab.className = 'qa-field__label';
+            lab.textContent = labelText + (opts.required ? ' *' : '');
+            const ta = document.createElement('textarea');
+            ta.className = 'qa-field__input';
+            ta.value = value || '';
+            ta.placeholder = placeholder || '';
+            if (opts.rows) ta.rows = opts.rows;
+            if (readOnly) ta.readOnly = true;
+            wrap.appendChild(lab);
+            wrap.appendChild(ta);
+            return { wrap, ta };
+        }
+
+        if (bugForm) {
+            // QA structured bug: Description (required) + Steps + Expected + Actual.
+            const desc = fieldBox('Bug description', text, 'What is the bug?', { required: true, rows: 2 });
+            const stp  = fieldBox('Steps to reproduce', steps, '1.\n2.\n3.', { rows: 3 });
+            const exp  = fieldBox('Expected result', expected, 'What should happen?', { rows: 2 });
+            const act  = fieldBox('Actual result', actual, 'What happens instead?', { rows: 2 });
+            fields.text = desc.ta; fields.steps = stp.ta; fields.expected = exp.ta; fields.actual = act.ta;
+            el.appendChild(desc.wrap); el.appendChild(stp.wrap); el.appendChild(exp.wrap); el.appendChild(act.wrap);
+
+            // NEW bug → choose QA status here (default Fail). Existing bug → header pill.
+            if (isNew) {
+                const qaWrap = document.createElement('label');
+                qaWrap.className = 'qa-field qa-field--inline';
+                const qaLab = document.createElement('span');
+                qaLab.className = 'qa-field__label';
+                qaLab.textContent = 'QA status';
+                const sel = document.createElement('select');
+                sel.className = `qa-qa-select qa-qa-pill--${qaStatus || 'fail'}`;
+                QA_STATUS_ORDER.forEach((s) => {
+                    const o = document.createElement('option');
+                    o.value = s; o.textContent = QA_STATUS_LABELS[s];
+                    sel.appendChild(o);
+                });
+                sel.value = qaStatus || 'fail';
+                sel.addEventListener('change', () => { sel.className = `qa-qa-select qa-qa-pill--${sel.value}`; });
+                qaWrap.appendChild(qaLab);
+                qaWrap.appendChild(sel);
+                fields.qaStatusSelect = sel;
+                el.appendChild(qaWrap);
+            }
+        } else {
+            // Plain comment — single textarea (Other / Owner quick note).
+            const ta = document.createElement('textarea');
+            ta.className = 'qa-popup__text';
+            ta.placeholder = isNew ? 'Type your comment...' : '';
+            ta.value = text;
+            if (readOnly) ta.readOnly = true;
+            fields.text = ta;
+            el.appendChild(ta);
+        }
+
+        // ── Action buttons row ─────────────────────────────────────
         const actions = document.createElement('div');
         actions.className = 'qa-popup__actions';
 
@@ -148,12 +226,14 @@ export function createPopupModule() {
             saveBtn.className = 'qa-btn qa-btn--save';
             saveBtn.type = 'button';
             saveBtn.textContent = isNew ? 'Save' : 'Update';
-            saveBtn.addEventListener('click', () => attemptSave(ta));
+            saveBtn.addEventListener('click', attemptSave);
             actions.appendChild(saveBtn);
 
-            ta.addEventListener('keydown', (e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') attemptSave(ta);
-            });
+            if (fields.text) {
+                fields.text.addEventListener('keydown', (e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') attemptSave();
+                });
+            }
         }
         el.appendChild(actions);
 
@@ -165,10 +245,19 @@ export function createPopupModule() {
             el.appendChild(section);
         }
 
-        function attemptSave(textarea) {
-            const t = textarea.value.trim();
-            if (!t) { close(); return; }
-            onSave?.(t);
+        // Gather all field values and hand a payload object to onSave. The
+        // "description" (or comment) is required; empty just closes.
+        function attemptSave() {
+            const desc = (fields.text && fields.text.value || '').trim();
+            if (!desc) { close(); return; }
+            const payload = { text: desc };
+            if (bugForm) {
+                payload.steps    = (fields.steps    && fields.steps.value    || '').trim();
+                payload.expected = (fields.expected && fields.expected.value || '').trim();
+                payload.actual   = (fields.actual   && fields.actual.value   || '').trim();
+                if (fields.qaStatusSelect) payload.qaStatus = fields.qaStatusSelect.value;
+            }
+            onSave?.(payload);
             close();
         }
 
@@ -196,6 +285,30 @@ export function createPopupModule() {
             // Update the visual class immediately for snappy feedback.
             select.className = `qa-status-select qa-status-pill--${next}`;
             onStatusChange?.(next);
+        });
+        return select;
+    }
+
+    // QA status control (Pass/Fail). Read-only pill, or a dropdown for owner/qa.
+    function buildQaStatusControl(qaStatus, canChange, onChange) {
+        if (!canChange) {
+            const pill = document.createElement('span');
+            pill.className = `qa-qa-pill qa-qa-pill--${qaStatus}`;
+            pill.textContent = QA_STATUS_LABELS[qaStatus] || qaStatus;
+            return pill;
+        }
+        const select = document.createElement('select');
+        select.className = `qa-qa-select qa-qa-pill--${qaStatus}`;
+        QA_STATUS_ORDER.forEach((s) => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = QA_STATUS_LABELS[s];
+            select.appendChild(opt);
+        });
+        select.value = qaStatus;
+        select.addEventListener('change', () => {
+            select.className = `qa-qa-select qa-qa-pill--${select.value}`;
+            onChange?.(select.value);
         });
         return select;
     }
