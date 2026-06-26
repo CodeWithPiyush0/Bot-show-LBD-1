@@ -121,6 +121,18 @@
     }
     window.playDance = playDance;
 
+    // Warm a scheme's celebration assets — the charged still AND the dance anim —
+    // so by the time the bot is fixed they're cached: the celebration shows the
+    // RIGHT bot instantly instead of leaving the previous/default bot on screen
+    // for a second (or flashing the static) while a multi-MB GIF downloads.
+    // Called when a bot is chosen (its puzzle is seconds away).
+    window.preloadCelebration = function (scheme) {
+        if (!scheme) return;
+        const urls = ["assets/images/" + scheme + "_bot_charged.webp"];
+        if (DANCE_GIFS[scheme]) urls.push(DANCE_GIFS[scheme]);
+        urls.forEach(function (u) { const img = new Image(); img.src = u; });
+    };
+
     // Point a celebration `.charged-bot img` at the bot's dancing animation
     // (self-animating, so botDance is disabled via `.is-gif`). Falls back to the
     // static charged image + botDance for any scheme without an animation.
@@ -464,6 +476,10 @@
         // panel colour scheme.
         function chooseBotEnter(scheme, part) {
             window.currentScheme = scheme;
+            // Warm this bot's celebration assets NOW (puzzle is seconds away), so
+            // the dance screen shows the right bot instantly — not the previous
+            // default bot while its charged image + GIF download.
+            if (window.preloadCelebration) window.preloadCelebration(scheme);
             if (part === "2") {
                 if (window.setPanelScheme) window.setPanelScheme(["screen-6", "screen-8"], scheme);
                 // Reset the split board to its fresh state NOW — before the zoom
@@ -614,10 +630,13 @@
             img.src = img.getAttribute("data-src");
             img.removeAttribute("data-src");
         });
-        // NOTE: we deliberately do NOT bulk-preload the dance GIFs here — they're
-        // ~18MB total and eager-loading them would hog bandwidth on slow networks.
-        // `playDance()` preloads each bot's GIF on demand at celebration time and
-        // shows the correct static charged frame until it's ready (no flash).
+        // We do NOT bulk-preload ALL dance GIFs (~18MB — would hog bandwidth on
+        // slow networks). Instead: the two TUTORIAL bots' GIFs (orange = Part 1,
+        // white = Part 2) are guaranteed to play, so warm just those here; every
+        // CHOOSER bot's assets are warmed on selection (preloadCelebration). That
+        // way every celebration shows the right bot instantly, cheaply.
+        ["assets/videos/orange_bot_dancing.gif", "assets/videos/white_bot_dancing.gif"]
+            .forEach(function (u) { const img = new Image(); img.src = u; });
     }
     if (document.readyState === "complete") {
         loadDeferred();

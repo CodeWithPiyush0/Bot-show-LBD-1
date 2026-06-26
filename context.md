@@ -68,8 +68,8 @@ LBD-1/
                                   #   ⚠️ DO NOT re-encode to animated WebP via `ffmpeg -vf fps=N` — twice
                                   #   tried, both JITTERED (the GIFs are mixed 20/25/16.67fps; a fixed
                                   #   fps filter drops frames unevenly). Reverted to the original GIFs.
-                                  #   They're loaded ON DEMAND (playDance, §8b), NOT bulk-preloaded, so
-                                  #   the 18MB doesn't hog bandwidth on slow networks.
+                                  #   Warmed per-bot on selection (preloadCelebration) + 2 tutorial
+                                  #   gifs on load; NOT all 18MB bulk-preloaded. See §8b.
 ```
 
 > ⚠️ **CASE-SENSITIVITY (deploy gotcha):** all asset folders/files are referenced in
@@ -691,11 +691,16 @@ gentle CSS `botDance` loop (bob + sway, pivot at feet) while `.screen--3.is-acti
   after `window.setupLevel`) routes through `playDance()` and adds `.is-gif` on `.charged-bot`
   (CSS `.charged-bot.is-gif img { animation:none }` kills botDance, on Screens 3 AND 7). If a
   scheme isn't mapped it falls back to `<scheme>_bot_charged.webp` + botDance.
-  - **Flash-free swap (`window.playDance(imgEl, animSrc, staticSrc)`):** the celebration used to
-    flash the static frame while the multi-MB GIF downloaded. `playDance` preloads the GIF via
-    an off-DOM `Image`; if already cached it swaps instantly, else it shows the CORRECT static
-    still until the GIF finishes loading, then swaps once (never a half-frame or wrong bot). The
-    GIFs are loaded ON DEMAND here (NOT bulk-preloaded — 18MB would hog slow connections).
+  - **Flash-free swap (`window.playDance(imgEl, animSrc, staticSrc)`):** `playDance` preloads the
+    GIF via an off-DOM `Image`; if cached it swaps instantly, else it shows the static charged
+    still until the GIF loads, then swaps once (never a half-frame).
+  - **Preload so the RIGHT bot shows instantly (`window.preloadCelebration(scheme)`):** without
+    this, the chooser celebration left the PREVIOUS/default bot on screen for ~1s+ while the chosen
+    scheme's charged-webp + GIF downloaded on demand ("another bot's image before the dance"). Fix:
+    warm both assets the moment a bot is chosen — `chooseBotEnter` calls `preloadCelebration(scheme)`
+    (covers all chooser bots, both parts); the two TUTORIAL gifs (orange/white) are warmed in
+    `loadDeferred`. So every celebration is cached → correct bot, no flash. Still NOT a bulk preload
+    of all 18MB (only the bot in play + 2 tutorial gifs) — bandwidth-friendly.
   - ⚠️ **Kept as GIF on purpose.** Animated-WebP conversion was attempted twice and both jittered
     (mixed-fps GIFs + `ffmpeg fps=` resampling). Reverted. Don't redo without a frame-exact tool.
   - **Scheme → anim map** (filenames don't all match scheme names): `orange→orange`, `gold→yellow2`,
