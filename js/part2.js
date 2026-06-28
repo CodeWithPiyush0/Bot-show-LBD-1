@@ -434,6 +434,13 @@
         const oldGroups = s6.querySelectorAll(".battery-group");
         oldGroups.forEach(el => el.remove());
 
+        // Reset the current-flow FX so a replay starts clean.
+        const splitFx = s6.querySelector(".charge-fx");
+        if (splitFx) {
+            splitFx.classList.remove("is-active", "is-green");
+            splitFx.style.display = "none";
+        }
+
         // Set counts from the current stage's Part 2 (split) config.
         const c = window.getCounts ? window.getCounts(2) : { blue: 4, yellow: 6 };
         GROUPS[0].count = c.blue;
@@ -607,7 +614,6 @@
         splitEnabled = false;
         abortHint();
         cancelIdle();
-        if (global.SFX) global.SFX.play("success");
 
         // The Screen 7 celebrating bot: in chooser levels it's the chosen
         // bot's charged art; in the tutorial it's the white/purple bot.
@@ -629,11 +635,23 @@
             }
         }
 
-        const q = byId("question-6");
-        // announce, then stay inside the bot to teach the concept (Screen 8).
-        // The celebrating dance now comes AFTER the concept (playConcept2
-        // zooms out to reveal it).
-        openBanner(q, "This bot is fixed.", null, null);
+        // KEEP the banner open (closing it left the prompt text floating without
+        // its template). Run the DOWNWARD current-flow (big → small slots) WITH
+        // sfx, exactly like Part 1's charge: an electricity crackle while it flows,
+        // then powerUp as it settles green. The "This bot is fixed." line is NOT
+        // shown here — it appears on Screen 7 while the bot dances.
+        const splitFx = document.querySelector("#screen-6 .charge-fx");
+        if (splitFx) {
+            splitFx.style.display = "block";
+            void splitFx.offsetWidth;            // restart the flow animation
+            splitFx.classList.add("is-active");  // current pulses down the connectors
+            if (global.SFX) global.SFX.play("electricity", { loop: true });
+            global.setTimeout(function () {
+                splitFx.classList.add("is-green"); // settles to the balanced/fixed glow
+                if (global.SFX) { global.SFX.stop("electricity"); global.SFX.play("powerUp"); }
+            }, 1200);
+        }
+
         global.setTimeout(function () {
             if (window.currentLevel === 2) {
                 // Chooser level: zoom out to the bot dancing full-screen
@@ -649,7 +667,7 @@
                 global.GameNav.show("screen-8");
                 playConcept2();
             }
-        }, 2200);
+        }, 2600); // let the current-flow + powerUp finish before moving on
     }
 
     /* ---------- Screen 8: concept "a whole is made of 2 parts" ---------- */

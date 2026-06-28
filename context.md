@@ -497,7 +497,7 @@ Background = dark radial gradient. Structure:
 │   ├── img.panel (battery_slots.svg)            # full circuit-board panel: border+slots+connectors
 │   ├── img.slot-glow.slot-glow--big (Bigger_Slot.svg)  # green charged-glow overlay (hidden until charged)
 │   ├── .slot.slot--big / --small-left / --small-right  # invisible drop-zones
-│   ├── svg.charge-fx (#charge-fx)               # current-flow overlay (see charge seq)
+│   ├── svg.charge-fx (#charge-fx)               # current-flow overlay, UPWARD (see charge seq). Screen-6 has a twin (#split-fx) that flows DOWNWARD.
 │   ├── .tray.tray--blue / .tray--yellow         # CSS-built trays (nested rounded rects + accent + decorator tabs)
 │   └── (battery groups injected here by JS)
 └── .question (#question-2)          # banner (NOT scaled) — see §7
@@ -790,9 +790,20 @@ Screens (continue the `screen--N` numbering; deep-links `#5`–`#8`):
 - **Screen 6** (`screen--6`, split puzzle): the **big slot starts FULL** (blue row +
   yellow row, green `panel--big is-green`); small slots empty. Banner prompts "Drag the
   batteries to the small slots." then closes; the player drags each group **big → small**.
-  When **both small slots are filled**, `onFixed()` shows "This bot is fixed." then
-  goes **straight to the concept** (Screen 8) — stays inside the bot. (Same drag
-  pattern as Part 1, reversed direction.)
+  When **both small slots are filled**, `onFixed()` **keeps the banner open** (closing it
+  left the prompt text floating without its template) and runs the **DOWNWARD current-flow**
+  — a `.charge-fx` SVG in `#screen-6` (id `split-fx`) whose connector paths are Part 1's
+  reversed (`M 748 420 L 660 540` etc.), so the pulse runs big slot → the two small slots.
+  `onFixed` adds `.is-active` + plays `electricity` (loop), then at ~1200ms adds `.is-green`
+  + stops electricity + plays `powerUp` — the SAME flow sfx as Part 1's charge. `resetSplit`
+  hides/clears it for replay. (The standalone `success` sfx was dropped; `powerUp` is the cue,
+  like Part 1.) (screen-6
+  reuses screen-2's shared `.slot--*` positions, so the same connector geometry aligns;
+  the `.charge-fx`/`.charge-flow`/`.charge-glow` CSS lives in `screen2.css` and applies
+  globally.) **No "This bot is fixed." here** — that line now appears only on **Screen 7**
+  while the bot dances (via `zoomOutTo`'s `#question-7` banner). Then `onFixed` zooms to
+  the dance (chooser) or to the concept Screen 8 (tutorial). (Same drag pattern as Part 1,
+  reversed direction — and now the same current-flow, reversed too.)
 - **Screen 8** (`screen--8`, concept): "This whole is made of these 2 parts." — the
   **inverse** of Screen 4: Phase A "This whole" → big slot glows; Phase B "…2 parts" →
   the two part slots glow one by one. Reuses `.s4-content`, glows, battery layout.

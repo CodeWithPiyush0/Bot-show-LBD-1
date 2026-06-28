@@ -408,6 +408,29 @@
                     <div class="slot slot--small-left" data-slot="small-left" aria-hidden="true"></div>
                     <div class="slot slot--small-right" data-slot="small-right" aria-hidden="true"></div>
 
+                    <!-- Current flows DOWN the connectors when the split succeeds
+                         (big slot → the two small slots) — the inverse of Part 1's
+                         upward charge current. Paths are Part 1's connectors reversed. -->
+                    <svg
+                        class="charge-fx"
+                        id="split-fx"
+                        viewBox="0 0 1920 1080"
+                        preserveAspectRatio="none"
+                        aria-hidden="true"
+                    >
+                        <g class="charge-glow">
+                            <path d="M 748 420 L 660 540" />
+                            <path d="M 1172 420 L 1260 540" />
+                            <path d="M 1070 628 L 850 628" />
+                        </g>
+                        <!-- Travelling current pulses (diagonals only), flowing
+                             big → small (downward). -->
+                        <g class="charge-flow">
+                            <path d="M 748 420 L 660 540" />
+                            <path d="M 1172 420 L 1260 540" />
+                        </g>
+                    </svg>
+
                     <!-- Batteries injected by js/split.js (start in the big slot) -->
                 </div>
 
