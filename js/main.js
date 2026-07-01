@@ -523,6 +523,11 @@
                     playCurtain("All Bots Fixed!", "Fantastic work — you fixed every bot!", function () {
                         window.gamePart = 1;
                         setupLevel(1);
+                        // Game finished → the start button becomes a REPLAY button.
+                        const playImg = document.querySelector("#play-btn img");
+                        if (playImg) playImg.src = "assets/images/replay_btn.webp";
+                        const playBtn = document.getElementById("play-btn");
+                        if (playBtn) playBtn.setAttribute("aria-label", "Replay");
                         window.GameNav.show("screen-pre");
                     });
                 }
