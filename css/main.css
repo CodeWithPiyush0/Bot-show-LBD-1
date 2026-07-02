@@ -263,6 +263,10 @@ body.qa-intercept-on #stage *::after {
 .play-btn--icon:active {
     transform: translateX(-50%) scale(0.95);
 }
+/* Game-complete "Play Again" button — a little bigger than the initial Play. */
+.play-btn--icon.is-again {
+    width: 20.5cqw;
+}
 @keyframes playBob {
     0%, 100% { transform: translateX(-50%) scale(1) translateY(0); }
     50% { transform: translateX(-50%) scale(1.04) translateY(-0.7cqw); }

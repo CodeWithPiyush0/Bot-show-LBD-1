@@ -153,10 +153,10 @@ anchored `bottom:2%` (lowered so it clears the background battery icon), with a 
 bounce + drop-shadow. (Replaced the earlier CSS green circle / the older
 `play_btn.webp` orange disc — both unused now.) Clicking it (`main.js`) → `startGame()` →
 Part 1 charging tutorial. **On game-complete** ("All Bots Fixed!" curtain → back to
-screen-pre), `returnToChooser` swaps this same `#play-btn img` to **`replay_btn.webp`**
-(glossy-gold ↻ replay icon, rendered q90 from the raster-backed `replay_btn.svg` → 660×441,
-32KB; the 1.5MB SVG is kept as unused source) + sets `aria-label="Replay"`. Same button/
-handler, so clicking replay just re-runs `startGame()`. Because of this,
+screen-pre), `returnToChooser` swaps this same `#play-btn img` to **`play_again.webp`**
+(glossy-gold "Play Again" button, rendered q90 from the user's `play_again.png` → 660×440,
+~57KB) + sets `aria-label="Play again"`. Same button/handler, so clicking it just re-runs
+`startGame()`. (Earlier `replay_btn.webp`/`.svg`/`.png` are superseded/unused.) Because of this,
 Screen 1's intro is **on-demand**: its CSS animations are scoped to `.screen--1.is-intro`
 and the typewriter runs from `Screen1Intro.play()` (NOT on page load).
 
